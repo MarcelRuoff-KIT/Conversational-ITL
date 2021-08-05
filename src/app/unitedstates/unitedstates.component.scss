@@ -1,0 +1,281 @@
+:host {
+    display: flex;
+    justify-content: space-evenly;
+    align-items: center;
+}
+
+.card-container {
+  margin-top: 55px;
+  min-width:1400px
+}
+
+
+.webchat-container {
+  height: 50%;//285px;
+  width: 100%;
+  overflow: hidden;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  justify-content: flex-end;
+  border: 3px solid #122e51;
+  padding-right: 10px;
+  z-index: 101;
+
+}
+
+.filter-container {
+  height: 50%;
+  width: 100%;
+  overflow-y: scroll;
+  position: relative;
+  justify-content: flex-end;
+  border: 1px solid #122e51;
+  padding-right: 10px;
+  z-index: 101;
+  float: left;
+}
+
+.itl-container {
+  display: none;
+  flex-direction: column;
+  border: 3px solid #122e51;
+  overflow-x: scroll;
+  width:75%;
+  height: 66%;
+}
+
+.infoBox{
+  overflow: visible;
+  width:100%;
+  height: fit-content;
+  display: none;
+  margin-bottom: 12px;
+  position: relative;
+  background-color: rgb(255, 255, 255);
+  border-radius: 0px;
+  padding: 10px 32px 8px;
+  position: relative;
+  border: 1px solid rgb(218, 220, 229);
+  box-shadow: rgba(0, 0, 0, 0.17) 0px 2px 10px 0px;
+  float: none;
+}
+
+.textField{
+  width: 91%;
+}
+
+
+.arrow.bottom{
+  position: absolute;
+  z-index: 11;
+  border-left: 30px solid transparent;
+  border-right: 30px solid transparent;
+  left: 12px;
+  border-top: 10px solid rgb(255, 208, 0);
+  bottom: -12px;
+}
+
+.arrow.bottom.large{
+  position: absolute;
+  z-index: 10;
+  border-left: 32px solid transparent;
+  border-right: 32px solid transparent;
+  left: 10px;
+  border-top: 12px solid rgb(102, 102, 102);
+  bottom: -14px;
+}
+
+.connector{
+  width: 100px;
+  height: 15px;
+  background-color: white;
+  top: -15px;
+  position: absolute;
+  z-index: 100;
+  left: 10px;
+  border-left: 1px solid #dadce5;
+  border-right: 1px solid #dadce5;
+  text-align: center;
+  color: #94969e;
+}
+
+.draggable {
+  border:1px solid #122e51;
+  width: max-content;
+  height: max-content; 
+  margin: 3px;
+  padding: 0px 2px;
+  background-color: gray;
+  color: white
+  //flex: 1 0 auto;
+}
+
+.interactiveField {
+  position: relative;
+  border: 1px solid #122e51; 
+  margin-right: 30px; 
+  display:flex; 
+  flex-wrap: wrap;
+  justify-content: space-evenly;
+  z-index: 20;
+}
+
+.filterTitle{
+  width:100%;
+  display: flex;
+}
+
+.filterContent{
+  width:90%;
+  display:flex; 
+  flex-wrap: wrap;
+  justify-content: space-evenly;
+  margin-top: 10px;
+  text-align: center;
+}
+
+.filterSettings{
+  width: 10%;
+  display:flex; 
+  flex-wrap: wrap;
+  justify-content: space-evenly;
+  margin-top: 10px;
+  text-align: center;
+}
+.mouseBlock {
+  height: 100vh; 
+  width: 100%; 
+  position: fixed; 
+  top: 0; 
+  left: 0; 
+  z-index: -1; 
+  background-color: aliceblue; 
+  opacity:0
+}
+
+
+.nopadding {
+  padding-left: 0 !important;
+  margin: 0 !important;
+}
+
+
+
+.popup-overlay {
+  /*Hides pop-up when there is no "active" class*/
+  visibility: hidden;
+  position: absolute;
+  background-color: #8080808f;
+  border: 3px solid #666666;
+  height: 100%;
+  width: 100%;
+  top: 0px;
+  z-index: 200;
+}
+
+.popup-overlay.active {
+  /*displays pop-up when "active" class is present*/
+  visibility: visible;
+  text-align: center;
+}
+
+.popup-content {
+  /*Hides pop-up content when there is no "active" class */
+  visibility: hidden;
+}
+
+.popup-content.active {
+  /*Shows pop-up content when "active" class is present */
+  visibility: visible;
+}
+
+
+/* Style buttons */
+.btn {
+  background-color: gray; /* Blue background */
+  border: none; /* Remove borders */
+  color: white; /* White text */
+  padding: 12px 16px; /* Some padding */
+  font-size: 16px; /* Set a font size */
+  cursor: pointer; /* Mouse pointer on hover */
+  height: 50px;
+  width: 50px;
+  background-size: 35px 35px; 
+  background-repeat: no-repeat; 
+  background-position: center
+}
+
+/* Darker background on mouse-over */
+.btn:hover {
+  background-color: RoyalBlue;
+}
+
+/* Darker background on mouse-over */
+.btn.active {
+  background-color: DodgerBlue;
+}
+
+.col.closed {
+  display: none;
+}
+
+.k-button {
+  box-shadow: none;
+  background: none;
+  position: absolute;
+  top: 5px;
+  right: 0;
+}
+
+
+
+/* Dropdown Button */
+.dropbtn {
+  background-color: #3498DB;
+  color: white;
+  padding: 16px;
+  font-size: 16px;
+  border: none;
+  cursor: pointer;
+}
+
+/* Dropdown button on hover & focus */
+.dropbtn:hover, .dropbtn:focus {
+  background-color: #2980B9;
+}
+
+/* The container <div> - needed to position the dropdown content */
+.dropdown {
+  left:10px;
+  position: relative;
+  display: inline-block;
+}
+
+/* Dropdown Content (Hidden by Default) */
+.dropdown-content {
+  display: none;
+  position: absolute;
+  left:-80px;
+  top:25px;
+  background-color: #f1f1f1;
+  min-width: 160px;
+  box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
+  z-index: 10000;
+}
+
+/* Links inside the dropdown */
+.dropdown-content select {
+  color: black;
+  padding: 12px 16px;
+  text-decoration: none;
+  display: block;
+}
+
+
+/* Show the dropdown menu (use JS to add this class to the .dropdown-content container when the user clicks on the dropdown button) */
+.show {display:block;}
+
+
+/* ENDING DROPDOWN */

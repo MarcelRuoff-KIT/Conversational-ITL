@@ -1,0 +1,44 @@
+      <div class="dashboard">
+        <div class="card">
+          <div class="card-body">
+            <div class="row">
+              <div style="width: 100%;"> <!--class="col-12 col-lg-6 col-xl pb-4 active-issues"-->
+                <span class="comp-label">
+                  <strong>{{cases | number:'1.0':'en-US' }} </strong>
+                  <small>{{selectedMetric}} as of {{date}} </small>
+                </span>
+                <kendo-chart [transitions]="false" style="height: 100px;">
+                  <kendo-chart-series-defaults type="area"
+                                               [overlay]="false"></kendo-chart-series-defaults>
+                  <kendo-chart-series>
+                    <kendo-chart-series-item [color]="'#888'"
+                                             [data]="covid"
+                                             field="cases"
+                                             categoryField="dateTime"
+                                             aggregate="sum">
+                      <kendo-chart-series-item-tooltip>
+                        <ng-template let-category="category">
+                          <span>{{category | date: 'shortDate'}}</span> <!--let-value="value"       : {{value |  number:'1.0':'en-US' }}-->
+                        </ng-template>
+                      </kendo-chart-series-item-tooltip>
+                    </kendo-chart-series-item>
+                  </kendo-chart-series>
+                  <kendo-chart-category-axis>
+                    <kendo-chart-category-axis-item [baseUnit]="baseUnit"
+                                                    [majorTicks]="{visible: false}"
+                                                    [labels]="{step: 30, skip: 2, font: '10px sans-serif'}"
+                                                    [majorGridLines]="{visible: false}"
+                                                    [line]="{visible: false}">
+
+                    </kendo-chart-category-axis-item>
+                  </kendo-chart-category-axis>
+                  <kendo-chart-value-axis>
+                    <kendo-chart-value-axis-item [visible]="false" [majorGridLines]="{visible: false}">
+                    </kendo-chart-value-axis-item>
+                  </kendo-chart-value-axis>
+                </kendo-chart>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>

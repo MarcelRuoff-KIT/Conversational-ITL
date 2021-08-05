@@ -1,0 +1,33 @@
+<div id="Header" class="row" style="float: right;margin-right: 15px;">
+    <p><b>Group By: </b></p> <p id="Second Legend"></p>
+    <div class="toggle">
+        <label>
+            <input type="checkbox" id ="GroupBy" (input)="this.switchToggled($event)"  checked> <span class="slider"></span> </label>
+    </div>
+    <p>Metrics</p>
+
+    <div style="width: 50px;"></div>
+
+    <p><b>Metric:</b> Distinct</p>
+    <div class="toggle">
+        <label>
+            <input type="checkbox" id ="Cumulative" (input)="this.switchToggled($event)"> <span class="slider"></span> </label>
+    </div>
+    <p>Cumulative</p>
+
+    <div style="width: 50px;"></div>
+
+    <p>Aggregate data &nbsp;</p>
+    <select id = "Aggregate" name="Aggregate">
+        <option value="D">by Day</option>
+        <option value="W">by Week</option>
+        <option value="M">by Month</option>
+        <option value="Y">by Year</option>
+      </select>
+
+    <div id="testSVG" #testSVG  style="height: 100px; width:125px; overflow-x: hidden; position: absolute; left: 540px; top: 200px; z-index: 1000"></div>
+
+</div>
+
+
+
