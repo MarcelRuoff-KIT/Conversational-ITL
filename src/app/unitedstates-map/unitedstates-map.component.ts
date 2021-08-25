@@ -50,7 +50,7 @@ export class UnitedStatesMapComponent implements OnInit, AfterViewInit {
   @Output() dateChanged = new EventEmitter<any>();
   @Output() toggleChanged = new EventEmitter<any>();
 
-  @Input() filterValue = {Date: [new Date("2020-01-21").getTime(), new Date("2021-06-30").getTime()], Tests: [0, false], Cases: [0, false], Deaths: [0, false], Population: [0, false], PartialVaccinated: [0, false], FullyVaccinated: [0, false]};
+  @Input() filterValue = { Date: [new Date("2020-01-21").getTime(), new Date("2021-06-30").getTime()], Tests: [0, false], Cases: [0, false], Deaths: [0, false], Population: [0, false], PartialVaccinated: [0, false], FullyVaccinated: [0, false] };
 
   hostElement; // Native element hosting the SVG container
   svg; // Top level SVG element
@@ -118,6 +118,7 @@ export class UnitedStatesMapComponent implements OnInit, AfterViewInit {
 
   statesSelect = [];
   datesSelect = [];
+  dateSetting = "Selection";
 
   legendChanged: boolean = true;
   treatment: string;
@@ -126,7 +127,7 @@ export class UnitedStatesMapComponent implements OnInit, AfterViewInit {
   date = "2021-06-30";
   dateMin = "2020-01-21";
   dateMax = "2021-06-30";
-  userID; 
+  userID;
   legend_Values: string;
   y_Axis_Values: string[] = [];
   chartType: string = "barChart";
@@ -138,8 +139,8 @@ export class UnitedStatesMapComponent implements OnInit, AfterViewInit {
   unqiueGroupArray: string[] = [];
 
   aggregate = "D";
-  cumulative = "false";
-  groupBy = "Metric"
+  cumulative = "Total";
+  groupBy = "OR"
 
   private _routerSub = Subscription.EMPTY;
 
@@ -150,7 +151,7 @@ export class UnitedStatesMapComponent implements OnInit, AfterViewInit {
     .style("opacity", 0);
 
   /* slider */
-  public value: any[] = ["2020-01-21", "2021-06-30"];
+  public value: any[] = ["2020-01-01", "2021-06-30"];
 
 
   constructor(
@@ -181,14 +182,14 @@ export class UnitedStatesMapComponent implements OnInit, AfterViewInit {
           if (this.route.snapshot.params['treatment']) {
             this.treatment = this.route.snapshot.params['treatment'];
           }
-          else{
+          else {
             this.treatment = "0";
           }
 
           if (this.route.snapshot.params['task']) {
             this.task = this.route.snapshot.params['task'];
           }
-          else{
+          else {
             this.task = "0";
           }
 
@@ -207,19 +208,19 @@ export class UnitedStatesMapComponent implements OnInit, AfterViewInit {
             this.date = formatDate(new Date().setDate(new Date().getDate() - 1), 'yyyy-MM-dd', 'en');
           }
           */
-          
+
           // Go to homepage default
           if (this.router.url === "/") {
             this.location.go('unitedstates/' + this.metric + "/" + this.date + "/" + this.userID + "/" + this.treatment + "/" + this.task);
           }
-          
+
           if (this.router.url.indexOf('/unitedstates') != -1 || this.router.url === "/") {
             this.removeExistingMapFromParent();
             this.updateMap();
           }
           /**/
 
-          
+
 
 
         });
@@ -232,8 +233,8 @@ export class UnitedStatesMapComponent implements OnInit, AfterViewInit {
   public ngAfterViewInit(): void {
     parent.postMessage("IframeLoaded", "*")
     //console.log('Site Loaded')
-    
-    
+
+
   }
 
   public removeExistingMapFromParent() {
@@ -246,7 +247,7 @@ export class UnitedStatesMapComponent implements OnInit, AfterViewInit {
       .remove();
 
     d3.select("#testSVG")
-    .selectAll("svg")
+      .selectAll("svg")
       .remove();
   }
 
@@ -267,16 +268,16 @@ export class UnitedStatesMapComponent implements OnInit, AfterViewInit {
     this.width = document.getElementById("map").clientWidth
     document.getElementById("testSVG").style.left = String(this.width - 130) + 'px'
 
-    
+
     var that = this;
-      //if(this.metric == "Total Cases") { //Total Cases
-      that.end = 900000;
-      //}
-      //else if(this.metric == "Total Deaths"){ //Total Deaths
-      //that.end = 20000;
+    //if(this.metric == "Total Cases") { //Total Cases
+    that.end = 900000;
+    //}
+    //else if(this.metric == "Total Deaths"){ //Total Deaths
+    //that.end = 20000;
     //}
 
-    
+
 
     // Set date to max date if no data available
     if (new Date(that.date) > new Date(that.dateMax)) {
@@ -284,59 +285,61 @@ export class UnitedStatesMapComponent implements OnInit, AfterViewInit {
       //that.value[1] = that.max;
       this.location.go('unitedstates/' + this.metric + "/" + that.date + "/" + that.userID + "/" + this.treatment + "/" + this.task);
     }
-    
-    
-    
-    if (this.chartType == "barChart"){
+
+
+
+    if (this.chartType == "barChart") {
 
       var dataColumns = this.y_Axis_Values//[that.treatment, "Stage_PartialVaccinateds"]//['Cases', 'Deaths']; 
       var legend = this.legend_Values//that.task//"State"
 
       var z = d3.scaleOrdinal().domain(["Cases", "Deaths", "Population", "PartialVaccinated", "FullyVaccinated", "Tests"]).range(["blue", "orange", "purple", "darkseagreen", "green", "#22cee0"])
 
-      
-      if(this.legendChanged){
+
+      if (this.legendChanged) {
         this.legendChanged = false;
-        await $.post('http://127.0.0.1:5000//barChart', {y: dataColumns, legend: legend, Aggregate: this.aggregate, Cumulative: this.cumulative, GroupBy: this.groupBy, Date: formatDate(new Date(this.filterValue["Date"][1]), 'yyyy-MM-dd', 'en')}, function(dataMax) {
-        var dataTransfer = {TestsMax: d3.max(dataMax, d => d['Tests']),
-        CasesMax: d3.max(dataMax, d => d['Cases']),
-        DeathsMax: d3.max(dataMax, d => d['Deaths']),
-        PopulationMax: d3.max(dataMax, d => d['Population']),
-        PartialVaccinatedMax: d3.max(dataMax, d => d['PartialVaccinated']),
-        FullyVaccinatedMax: d3.max(dataMax, d => d['FullyVaccinated'])          	                  
-        }
-        that.dateChanged.emit(dataTransfer)
-      }, "json");
+        await $.post('http://127.0.0.1:5000//barChart', { y: dataColumns, legend: legend, Aggregate: this.aggregate, Cumulative: this.cumulative, GroupBy: this.groupBy, Date: formatDate(new Date(this.filterValue["Date"][1]), 'yyyy-MM-dd', 'en') }, function (dataMax) {
+          var dataTransfer = {
+            TestsMax: d3.max(dataMax, d => d['Tests']),
+            CasesMax: d3.max(dataMax, d => d['Cases']),
+            DeathsMax: d3.max(dataMax, d => d['Deaths']),
+            PopulationMax: d3.max(dataMax, d => d['Population']),
+            PartialVaccinatedMax: d3.max(dataMax, d => d['PartialVaccinated']),
+            FullyVaccinatedMax: d3.max(dataMax, d => d['FullyVaccinated'])
+          }
+          that.dateChanged.emit(dataTransfer)
+        }, "json");
 
-      
-    }
 
-      var filterBar = {0: {dataField: 'State', target: that.statesSelect}, 
-                        1: {dataField: 'Date',From:formatDate(new Date(this.filterValue["Date"][0]), 'yyyy-MM-dd', 'en'), To:formatDate(new Date(this.filterValue["Date"][1]), 'yyyy-MM-dd', 'en')},
-                        2: {dataField: 'Tests',From: this.filterValue["Tests"][0], To: this.filterValue["Tests"][1]},
-                        3: {dataField: 'Cases',From: this.filterValue["Cases"][0], To: this.filterValue["Cases"][1]},
-                        4: {dataField: 'Deaths',From: this.filterValue["Deaths"][0], To: this.filterValue["Deaths"][1]},
-                        5: {dataField: 'Population',From: this.filterValue["Population"][0], To: this.filterValue["Population"][1]},
-                        6: {dataField: 'PartialVaccinated',From: this.filterValue["PartialVaccinated"][0], To: this.filterValue["PartialVaccinated"][1]},
-                        7: {dataField: 'FullyVaccinated',From: this.filterValue["FullyVaccinated"][0], To: this.filterValue["FullyVaccinated"][1]}                  
-                      }
+      }
+
+      var filterBar = {
+        0: { dataField: 'State', target: that.statesSelect },
+        1: { dataField: 'Date', target: that.datesSelect },
+        2: { dataField: 'Tests', From: this.filterValue["Tests"][0], To: this.filterValue["Tests"][1] },
+        3: { dataField: 'Cases', From: this.filterValue["Cases"][0], To: this.filterValue["Cases"][1] },
+        4: { dataField: 'Deaths', From: this.filterValue["Deaths"][0], To: this.filterValue["Deaths"][1] },
+        5: { dataField: 'Population', From: this.filterValue["Population"][0], To: this.filterValue["Population"][1] },
+        6: { dataField: 'PartialVaccinated', From: this.filterValue["PartialVaccinated"][0], To: this.filterValue["PartialVaccinated"][1] },
+        7: { dataField: 'FullyVaccinated', From: this.filterValue["FullyVaccinated"][0], To: this.filterValue["FullyVaccinated"][1] }
+      }
 
       console.log(filterBar)
-      await $.post('http://127.0.0.1:5000/barChart', {y: dataColumns, legend: legend, Aggregate: this.aggregate, Cumulative: this.cumulative, GroupBy: this.groupBy, Date: formatDate(new Date(this.filterValue["Date"][1]), 'yyyy-MM-dd', 'en'), Filter: JSON.stringify(filterBar)}, function(data) {
+      await $.post('http://127.0.0.1:5000/barChart', { y: dataColumns, legend: legend, DateSetting: this.dateSetting, Aggregate: this.aggregate, Cumulative: this.cumulative, GroupBy: this.groupBy, Date: formatDate(new Date(this.filterValue["Date"][1]), 'yyyy-MM-dd', 'en'), Filter: JSON.stringify(filterBar) }, function (data) {
         that.newCases = data
         that.removeExistingMapFromParent()
       }, "json");
 
 
-      
-      
+
+
 
       var interval = Math.ceil(that.newCases.length / 20)
 
       this.createSVG()
 
       that.g = this.svg.append("g")
-      .attr("transform", `translate(${60},${30})`);
+        .attr("transform", `translate(${60},${30})`);
 
       var xScale0 = d3.scaleBand().range([0, this.width - 60 - 50]).padding(.2)
       var xScale1 = d3.scaleBand()
@@ -349,20 +352,20 @@ export class UnitedStatesMapComponent implements OnInit, AfterViewInit {
 
       var xAxis = d3.axisBottom(xScale0).ticks(10).tickSizeOuter(0);
       var yAxis = d3.axisLeft(yScale).ticks(10).tickSizeOuter(0)
-        .tickFormat(function(d: number) {
-        var s = formatNumber(d / 1e6);
-        return this.parentNode.nextSibling
+        .tickFormat(function (d: number) {
+          var s = formatNumber(d / 1e6);
+          return this.parentNode.nextSibling
             ? "\xa0" + s
             : "" + s + " million";
-      }); 
+        });
 
       var sorted = false
 
-      if(sorted){
-        that.newCases.sort(function(b, a) {
+      if (sorted) {
+        that.newCases.sort(function (b, a) {
           return a[dataColumns[0]] - b[dataColumns[0]];
         });
-    }
+      }
 
       xScale0.domain(that.newCases.map(d => d[legend]))
 
@@ -372,229 +375,168 @@ export class UnitedStatesMapComponent implements OnInit, AfterViewInit {
         .attr("class", legend)
         .attr("transform", d => `translate(${xScale0(d[legend])},0)`);
 
-      var max_Value = 1.25 * d3.max(that.newCases, d => Math.max.apply(null, Object.keys(d).map(function(x){ if (typeof d[x] != "string" && dataColumns.includes(x)) {return d[x]} else {return 0} })))
+      var max_Value = 1.25 * d3.max(that.newCases, d => Math.max.apply(null, Object.keys(d).map(function (x) { if (typeof d[x] != "string" && dataColumns.includes(x)) { return d[x] } else { return 0 } })))
       yScale.domain([0, max_Value]) //d3.max(that.newCases, d => d[dataColumns[0]] > d[dataColumns[1]] ? d[dataColumns[0]] : d[dataColumns[1]])]
 
 
-
-
-      if(this.groupBy == "Legend"){
-
+        /**
+         * Added for new UI
+         */
         var groupByLegend;
-        if(legend == "Date"){
+        if (legend == "Date") {
           groupByLegend = "State"
         }
-        else if(legend == "State"){
+        else if (legend == "State") {
           groupByLegend = "Date"
         }
-         
+
 
         this.unqiueGroupArray = []
 
-        for (var i = 0, n = this.newCases.length; i < n; i++){
-          if(!this.unqiueGroupArray.includes(this.newCases[i][groupByLegend])){
+        for (var i = 0, n = this.newCases.length; i < n; i++) {
+          if (!this.unqiueGroupArray.includes(this.newCases[i][groupByLegend])) {
             this.unqiueGroupArray.push(this.newCases[i][groupByLegend])
           }
         }
 
-        
-        var z = d3.scaleOrdinal().domain(this.unqiueGroupArray)
-        .range(this.color_Scatter);
 
-        xScale1.domain(this.unqiueGroupArray).range([0, xScale0.bandwidth()])
-
-        for (var i = 0, n = this.unqiueGroupArray.length; i < n; i++){
-
-          state_name.selectAll(".bar." + CSS.escape(this.unqiueGroupArray[i]))
-            .data(d => [d])
-            .enter()
-            .filter( d => {return d[groupByLegend] == that.unqiueGroupArray[i]})
-            .append("rect")
-            .attr("class", "bar " + that.unqiueGroupArray[i])
-            .attr("fill", function(d){ return z(d[groupByLegend]) })
-            .attr("x", d => xScale1(that.unqiueGroupArray[i]))
-            .attr("y", d => yScale(d[dataColumns[0]]))
-            .attr("width", xScale1.bandwidth())
-            .attr("height", d => { return this.height - 10 - 30 - yScale(d[dataColumns[0]])})
-            .on("mouseover", function (d, unknown, bar) {
-              that.tooltip
-                .transition()
-                .duration(200)
-                .style("opacity", 0.9);
-                that.tooltip
-                .html(
-                  
-                  d[legend] + "<br/>"+ d[groupByLegend]+"<br/><b>" + bar[0].classList[1] + ":</b> " + that.formatDecimal(d[dataColumns[0]])
-                )
-                .style("left", d3.event.pageX + "px")
-                .style("top", d3.event.pageY + "px");
-    
-                that.changeDetectorRef.detectChanges();
-            })
-            .on("mouseout", function (d) {
-              that.tooltip
-                .transition()
-                .duration(300)
-                .style("opacity", 0);
-    
-                that.changeDetectorRef.detectChanges();
-            });
-        } 
+        /**Ended */
 
 
-
-        this.legend_Container = d3
-      .select("#testSVG");
-
-      var legend_Axis = this.legend_Container.append("svg")
-          .attr("font-family", "sans-serif")
-          .attr("font-size", 9)
-          .attr("text-anchor", "end")
-          .attr("height", 20.1*this.unqiueGroupArray.length)
-        .selectAll("g")
-        .data(this.unqiueGroupArray.slice())
-        .enter().append("g")
-          .attr("transform", function(d, i) { return "translate(0," + i * 20 + ")"; });
-
-      legend_Axis.append("rect")
-          .attr("x", 80) //this.width - 19 - 60
-          .attr("width", 19)
-          .attr("height", 19)
-          .attr("fill", function(d){ return z(d) });
-
-      legend_Axis.append("text")
-          .attr("x", 75)//this.width - 24 - 60
-          .attr("y", 9.5)
-          .attr("dy", "0.32em")
-          .text(function(d) { return d; });
-      }
-      else if(this.groupBy == "Metric"){
-
-        
         xScale1.domain(dataColumns).range([0, xScale0.bandwidth()])
 
-        for (var i = 0, n = dataColumns.length; i < n; i++){
-          state_name.selectAll(".bar." + dataColumns[i])
-            .data(d => [d])
-            .enter()
-            .append("rect")
-            .attr("class", "bar " + dataColumns[i])
-            .attr("fill", z(dataColumns[i]))
-            .attr("x", d => xScale1(dataColumns[i]))
-            .attr("y", d => yScale(d[dataColumns[i]]))
-            .attr("width", xScale1.bandwidth())
-            .attr("height", d => {
-              return this.height - 10 - 30 - yScale(d[dataColumns[i]])
-            })
-            .on("mouseover", function (d, unknown, bar) {
-              that.tooltip
-                .transition()
-                .duration(200)
-                .style("opacity", 0.9);
+        for (var i = 0, n = dataColumns.length; i < n; i++) {
+          for (var j = 0, m = this.unqiueGroupArray.length; j < m; j++) {
+            var width = xScale1.bandwidth() / this.unqiueGroupArray.length
+            state_name.selectAll(".bar." + dataColumns[i])
+              .data(d => [d])
+              .enter()
+              .append("rect")
+              .attr("class", "bar " + dataColumns[i] + "|" + this.unqiueGroupArray[j])
+              .attr("fill", z(dataColumns[i]))
+              .attr("x", d => xScale1(dataColumns[i]) + j * width)
+              .attr("y", d => yScale(d[dataColumns[i]]))
+              .attr("width", width)
+              .attr("height", d => {
+                if (d[groupByLegend] == this.unqiueGroupArray[j]) {
+                  return this.height - 10 - 30 - yScale(d[dataColumns[i]])
+                }
+                else {
+                  return 0
+                }
+              })
+              .on("mouseover", function (d, unknown, bar) {
                 that.tooltip
-                .html(
-                  
-                  d[legend] + "<br/><b>" + bar[0].classList[1] + ":</b> " + that.formatDecimal(d[bar[0].classList[1]])
-                )
-                .style("left", d3.event.pageX + "px")
-                .style("top", d3.event.pageY + "px");
-    
+                  .transition()
+                  .duration(200)
+                  .style("opacity", 0.9);
+                that.tooltip
+                  .html(
+
+                    d[groupByLegend] + "<br/>" + d[legend] + "<br/><b>" + bar[0].classList[1].split("|")[0] + ":</b> " + that.formatDecimal(d[bar[0].classList[1].split("|")[0]])
+                  )
+                  .style("left", d3.event.pageX + "px")
+                  .style("top", d3.event.pageY + "px");
+
                 that.changeDetectorRef.detectChanges();
-            })
-            .on("mouseout", function (d) {
-              that.tooltip
-                .transition()
-                .duration(300)
-                .style("opacity", 0);
-    
+              })
+              .on("mouseout", function (d) {
+                that.tooltip
+                  .transition()
+                  .duration(300)
+                  .style("opacity", 0);
+
                 that.changeDetectorRef.detectChanges();
-            });
+              });
+          }
         }
 
 
         this.legend_Container = d3
-      .select("#testSVG");
+          .select("#testSVG");
 
-      var legend_Axis = this.legend_Container.append("svg")
+        var legend_Axis = this.legend_Container.append("svg")
           .attr("font-family", "sans-serif")
           .attr("font-size", 9)
           .attr("text-anchor", "end")
-          .attr("height", 20*dataColumns.length)
-        .selectAll("g")
-        .data(dataColumns.slice())
-        .enter().append("g")
-          .attr("transform", function(d, i) { return "translate(0," + i * 20 + ")"; });
+          .attr("height", 20 * dataColumns.length)
+          .selectAll("g")
+          .data(dataColumns.slice())
+          .enter().append("g")
+          .attr("transform", function (d, i) { return "translate(0," + i * 20 + ")"; });
 
-      legend_Axis.append("rect")
+        legend_Axis.append("rect")
           .attr("x", 80) //this.width - 19 - 60
           .attr("width", 19)
           .attr("height", 19)
-          .attr("fill", function(d){ return z(d) });
+          .attr("fill", function (d) { return z(d) });
 
-      legend_Axis.append("text")
+        legend_Axis.append("text")
           .attr("x", 75)//this.width - 24 - 60
           .attr("y", 9.5)
           .attr("dy", "0.32em")
-          .text(function(d) { return d; });
-
-      }
-      
+          .text(function (d) { return d; });
 
       
+
+
+
 
       // Add the X Axis
       var xAxis_Vis = that.g.append("g");
 
       xAxis_Vis.attr("class", "x axis")
-      .attr("transform", `translate(0,${this.height - 10 - 30})`)
-      .call(xAxis)
-      .selectAll("text")	
+        .attr("transform", `translate(0,${this.height - 10 - 30})`)
+        .call(xAxis)
+        .selectAll("text")
         .style("text-anchor", "end")
         .attr("dx", "-.8em")
         .attr("dy", ".15em")
         .attr("transform", "rotate(-65)")
-        .each(function(d,i) {
-          if(i % interval != 0 && legend !== "State"){
+        .each(function (d, i) {
+          if (i % interval != 0 && legend !== "State") {
             d3.select(this).attr("visibility", "hidden")
           }
         });
 
-        xAxis_Vis.selectAll("line")	
-        .each(function(d,i) {
-          if(i % interval != 0 && legend == "Date"){
+      xAxis_Vis.selectAll("line")
+        .each(function (d, i) {
+          if (i % interval != 0 && legend == "Date") {
             d3.select(this).attr("visibility", "hidden")
           }
         });
 
       // Add the Y Axis
       that.g.append("g")
-      .attr("class", "y axis")
-      .call(yAxis);
+        .attr("class", "y axis")
+        .call(yAxis);
 
 
-      
 
-          this.removeAllExceptOne()
 
-/**/
+      this.removeAllExceptOne()
+
+      /**/
 
     }
-/**/
+    /**/
 
 
-    if (this.chartType == "scatter"){
+    if (this.chartType == "scatter") {
 
 
       //that.g = this.svg.append("g")
       //.attr("transform", `translate(${0},${30})`);
+
       
 
 
-      if (this.y_Axis_Values.length == 1){
+
+      if (this.y_Axis_Values.length == 1) {
         var x_Axis = this.y_Axis_Values[0]
         var y_Axis = ""
       }
-      else if(this.y_Axis_Values.length > 1){
+      else if (this.y_Axis_Values.length > 1) {
         var x_Axis = this.y_Axis_Values[0]
         var y_Axis = this.y_Axis_Values[1]
       }
@@ -603,31 +545,41 @@ export class UnitedStatesMapComponent implements OnInit, AfterViewInit {
 
       var legend = this.legend_Values
 
-      if(this.legendChanged){
-        await $.post('http://127.0.0.1:5000/scatter', {x: x_Axis, y: y_Axis, legend: legend, Aggregate: this.aggregate, Cumulative: this.cumulative, GroupBy: this.groupBy, Date: formatDate(new Date(that.filterValue["Date"][1]), 'yyyy-MM-dd', 'en')}, function(data) {
-        var dataTransfer = {TestsMax: d3.max(data, d => d['Tests']),
-        CasesMax: d3.max(data, d => d['Cases']),
-        DeathsMax: d3.max(data, d => d['Deaths']),
-        PopulationMax: d3.max(data, d => d['Population']),
-        PartialVaccinatedMax: d3.max(data, d => d['PartialVaccinated']),
-        FullyVaccinatedMax: d3.max(data, d => d['FullyVaccinated'])          	                  
+      var groupByLegend;
+        if (legend == "Date") {
+          groupByLegend = "State"
         }
-        that.dateChanged.emit(dataTransfer)
-      }, "json");
+        else if (legend == "State") {
+          groupByLegend = "Date"
+        }
 
-      this.legendChanged = false;
-    }
+      if (this.legendChanged) {
+        await $.post('http://127.0.0.1:5000/scatter', { x: x_Axis, y: y_Axis, legend: legend, Aggregate: this.aggregate, Cumulative: this.cumulative, GroupBy: this.groupBy, Date: formatDate(new Date(that.filterValue["Date"][1]), 'yyyy-MM-dd', 'en') }, function (data) {
+          var dataTransfer = {
+            TestsMax: d3.max(data, d => d['Tests']),
+            CasesMax: d3.max(data, d => d['Cases']),
+            DeathsMax: d3.max(data, d => d['Deaths']),
+            PopulationMax: d3.max(data, d => d['Population']),
+            PartialVaccinatedMax: d3.max(data, d => d['PartialVaccinated']),
+            FullyVaccinatedMax: d3.max(data, d => d['FullyVaccinated'])
+          }
+          that.dateChanged.emit(dataTransfer)
+        }, "json");
 
-      var filterScatter = {0: {dataField: 'State', target: that.statesSelect}, 
-                            1: {dataField: 'Date',From:formatDate(new Date(this.filterValue["Date"][0]), 'yyyy-MM-dd', 'en'), To:formatDate(new Date(this.filterValue["Date"][1]), 'yyyy-MM-dd', 'en')},
-                            2: {dataField: 'Tests',From: this.filterValue["Tests"][0], To: this.filterValue["Tests"][1]},
-                            3: {dataField: 'Cases',From: this.filterValue["Cases"][0], To: this.filterValue["Cases"][1]},
-                            4: {dataField: 'Deaths',From: this.filterValue["Deaths"][0], To: this.filterValue["Deaths"][1]},
-                            5: {dataField: 'Population',From: this.filterValue["Population"][0], To: this.filterValue["Population"][1]},
-                            6: {dataField: 'PartialVaccinated',From: this.filterValue["PartialVaccinated"][0], To: this.filterValue["PartialVaccinated"][1]},
-                            7: {dataField: 'FullyVaccinated',From: this.filterValue["FullyVaccinated"][0], To: this.filterValue["FullyVaccinated"][1]}                  
-                          }
-      await $.post('http://127.0.0.1:5000/scatter', {x: x_Axis, y: y_Axis, legend: legend, Aggregate: this.aggregate, Cumulative: this.cumulative, GroupBy: this.groupBy, Date: formatDate(new Date(that.filterValue["Date"][1]), 'yyyy-MM-dd', 'en'), Filter: JSON.stringify(filterScatter)}, function(data) {
+        this.legendChanged = false;
+      }
+
+      var filterScatter = {
+        0: { dataField: 'State', target: that.statesSelect },
+        1: { dataField: 'Date', target: that.datesSelect },
+        2: { dataField: 'Tests', From: this.filterValue["Tests"][0], To: this.filterValue["Tests"][1] },
+        3: { dataField: 'Cases', From: this.filterValue["Cases"][0], To: this.filterValue["Cases"][1] },
+        4: { dataField: 'Deaths', From: this.filterValue["Deaths"][0], To: this.filterValue["Deaths"][1] },
+        5: { dataField: 'Population', From: this.filterValue["Population"][0], To: this.filterValue["Population"][1] },
+        6: { dataField: 'PartialVaccinated', From: this.filterValue["PartialVaccinated"][0], To: this.filterValue["PartialVaccinated"][1] },
+        7: { dataField: 'FullyVaccinated', From: this.filterValue["FullyVaccinated"][0], To: this.filterValue["FullyVaccinated"][1] }
+      }
+      await $.post('http://127.0.0.1:5000/scatter', { x: x_Axis, y: y_Axis, legend: legend, DateSetting: this.dateSetting, Aggregate: this.aggregate, Cumulative: this.cumulative, GroupBy: this.groupBy, Date: formatDate(new Date(that.filterValue["Date"][1]), 'yyyy-MM-dd', 'en'), Filter: JSON.stringify(filterScatter) }, function (data) {
         that.newCases = data
         that.removeExistingMapFromParent()
       }, "json");
@@ -635,7 +587,7 @@ export class UnitedStatesMapComponent implements OnInit, AfterViewInit {
 
 
 
-      
+
 
 
       this.createSVG()
@@ -647,31 +599,31 @@ export class UnitedStatesMapComponent implements OnInit, AfterViewInit {
 
       // Add X axis
       const x = d3.scaleLinear()
-      .domain([0, 1.1*d3.max(that.newCases, d => d[x_Axis])])
-      .range([ 60, this.width-50 ]);
+        .domain([0, 1.1 * d3.max(that.newCases, d => d[x_Axis])])
+        .range([60, this.width - 50]);
       this.svg.append("g")
-      .attr("transform", "translate(0," + this.height + ")")
-      .call(d3.axisBottom(x).ticks(5).tickFormat(d3.format("d")));
+        .attr("transform", "translate(0," + this.height + ")")
+        .call(d3.axisBottom(x).ticks(5).tickFormat(d3.format("d")));
 
       // text label for the x axis
-      this.svg.append("text")             
-      .attr("transform",
-            "translate(" + (this.width -50) + " ," + 
-                          (this.height - 10) + ")")
-      .style("text-anchor", "middle")
-      .attr("font-family", "sans-serif")
-      .attr("font-size", 10)
-      .attr("font-weight", "bold")
-      .text(x_Axis);
+      this.svg.append("text")
+        .attr("transform",
+          "translate(" + (this.width - 50) + " ," +
+          (this.height - 10) + ")")
+        .style("text-anchor", "middle")
+        .attr("font-family", "sans-serif")
+        .attr("font-size", 10)
+        .attr("font-weight", "bold")
+        .text(x_Axis);
 
       // Add Y axis
       const y = d3.scaleLinear()
-      .domain([0, 1.1*d3.max(that.newCases, d => d[y_Axis])])
-      .range([ this.height, 0]);
+        .domain([0, 1.1 * d3.max(that.newCases, d => d[y_Axis])])
+        .range([this.height, 0]);
       this.svg.append("g")
-      .attr("transform", "translate(60,0)")
-      .call(d3.axisLeft(y))
-      .append("text")
+        .attr("transform", "translate(60,0)")
+        .call(d3.axisLeft(y))
+        .append("text")
         .attr("x", 2)
         .attr("y", y(y.ticks().pop()) + 0.5)
         .attr("dy", "0.32em")
@@ -683,66 +635,66 @@ export class UnitedStatesMapComponent implements OnInit, AfterViewInit {
       // Add dots
       const dots = this.svg.append('g');
       dots.selectAll("dot")
-      .data(that.newCases)
-      .enter()
-      .append("circle")
-      .attr("cx", d => {if(typeof d[x_Axis] != 'undefined'){return x(d[x_Axis])} else{return 60}})
-      .attr("cy", d => {if(typeof d[y_Axis] != 'undefined'){return y(d[y_Axis])} else{return 400}  })
-      .attr("r", 7)
-      .style("opacity", .5)
-      .style("fill", function(d){ return z(d[legend]) })
-      .on("mouseover", function (d) {
-        that.tooltip
-          .transition()
-          .duration(200)
-          .style("opacity", 0.9);
+        .data(that.newCases)
+        .enter()
+        .append("circle")
+        .attr("cx", d => { if (typeof d[x_Axis] != 'undefined') { return x(d[x_Axis]) } else { return 60 } })
+        .attr("cy", d => { if (typeof d[y_Axis] != 'undefined') { return y(d[y_Axis]) } else { return 400 } })
+        .attr("r", 7)
+        .style("opacity", .5)
+        .style("fill", function (d) { return z(d[legend]) })
+        .on("mouseover", function (d) {
+          that.tooltip
+            .transition()
+            .duration(200)
+            .style("opacity", 0.9);
 
           that.tooltip
-          .html(
-            d[legend] + "<br/><b>" + x_Axis + "</b>: " + that.formatDecimal(d[x_Axis]) + "<br/><b>" + y_Axis + "</b>: " + that.formatDecimal(d[y_Axis])
-          )
-          .style("left", d3.event.pageX-70 + "px")
-          .style("top", d3.event.pageY +10 + "px");
+            .html(
+              d[groupByLegend]  + "<br/>" + d[legend] + "<br/><b>" + x_Axis + "</b>: " + that.formatDecimal(d[x_Axis]) + "<br/><b>" + y_Axis + "</b>: " + that.formatDecimal(d[y_Axis])
+            )
+            .style("left", d3.event.pageX - 70 + "px")
+            .style("top", d3.event.pageY + 10 + "px");
 
           that.changeDetectorRef.detectChanges();
-      })
-      .on("mouseout", function (d) {
-        that.tooltip
-          .transition()
-          .duration(300)
-          .style("opacity", 0);
+        })
+        .on("mouseout", function (d) {
+          that.tooltip
+            .transition()
+            .duration(300)
+            .style("opacity", 0);
 
           that.changeDetectorRef.detectChanges();
-      });
+        });
 
       this.legend_Container = d3
-      .select("#testSVG");
+        .select("#testSVG");
 
       console.log(legend_Data.slice())
 
       var legend_Axis = this.legend_Container.append("svg")
-          .attr("height", 3* this.height -60)
-          .attr("font-family", "sans-serif")
-          .attr("font-size", 10)
-          .attr("text-anchor", "end")
-          .attr("height", 20*legend_Data.length)
+        .attr("height", 3 * this.height - 60)
+        .attr("font-family", "sans-serif")
+        .attr("font-size", 10)
+        .attr("text-anchor", "end")
+        .attr("height", 20 * legend_Data.length)
         .selectAll("g")
         .data(legend_Data.slice())
         .enter().append("g")
-          .attr("transform", function(d, i) { return "translate(0," + i * 20 + ")"; });
-      
+        .attr("transform", function (d, i) { return "translate(0," + i * 20 + ")"; });
+
       legend_Axis.append("rect")
-          //.data(that.newCases)
-          .attr("x", 80) //this.width - 19 - 60
-          .attr("width", 19)
-          .attr("height", 19)
-          .attr("fill", function(d){ return z(d) });
+        //.data(that.newCases)
+        .attr("x", 80) //this.width - 19 - 60
+        .attr("width", 19)
+        .attr("height", 19)
+        .attr("fill", function (d) { return z(d) });
 
       legend_Axis.append("text")
-          .attr("x", 75) //this.width - 24 - 60
-          .attr("y", 9.5)
-          .attr("dy", "0.32em")
-          .text(function(d) { return d; });
+        .attr("x", 75) //this.width - 24 - 60
+        .attr("y", 9.5)
+        .attr("dy", "0.32em")
+        .text(function (d) { return d; });
 
 
       this.removeAllExceptOne()
@@ -752,45 +704,47 @@ export class UnitedStatesMapComponent implements OnInit, AfterViewInit {
 
 
 
-    if (this.chartType == "Map"){
-      
-      if (this.y_Axis_Values.length >= 1){
+    if (this.chartType == "Map") {
+
+      if (this.y_Axis_Values.length >= 1) {
         var y_Axis = this.y_Axis_Values[0]
       }
 
-      if(this.legendChanged){
-        await $.post('http://127.0.0.1:5000/mapChart', {value: y_Axis, Aggregate: this.aggregate, Cumulative: this.cumulative}, function(data) {
-        var dataTransfer = {TestsMax: d3.max(data, d => d['Tests']),
-        CasesMax: d3.max(data, d => d['Cases']),
-        DeathsMax: d3.max(data, d => d['Deaths']),
-        PopulationMax: d3.max(data, d => d['Population']),
-        PartialVaccinatedMax: d3.max(data, d => d['PartialVaccinated']),
-        FullyVaccinatedMax: d3.max(data, d => d['FullyVaccinated'])          	                  
-        }
-        that.dateChanged.emit(dataTransfer)
-      }, "json");
+      if (this.legendChanged) {
+        await $.post('http://127.0.0.1:5000/mapChart', { value: y_Axis, Aggregate: this.aggregate, Cumulative: this.cumulative }, function (data) {
+          var dataTransfer = {
+            TestsMax: d3.max(data, d => d['Tests']),
+            CasesMax: d3.max(data, d => d['Cases']),
+            DeathsMax: d3.max(data, d => d['Deaths']),
+            PopulationMax: d3.max(data, d => d['Population']),
+            PartialVaccinatedMax: d3.max(data, d => d['PartialVaccinated']),
+            FullyVaccinatedMax: d3.max(data, d => d['FullyVaccinated'])
+          }
+          that.dateChanged.emit(dataTransfer)
+        }, "json");
 
-      this.legendChanged = false;
-    }
+        this.legendChanged = false;
+      }
 
-      var filterMap = {0: {dataField: 'State', target: that.statesSelect}, 
-                        1: {dataField: 'Date',From:formatDate(new Date(this.filterValue["Date"][0]), 'yyyy-MM-dd', 'en'), To:formatDate(new Date(this.filterValue["Date"][1]), 'yyyy-MM-dd', 'en')},
-                        2: {dataField: 'Tests',From: this.filterValue["Tests"][0], To: this.filterValue["Tests"][1]},
-                        3: {dataField: 'Cases',From: this.filterValue["Cases"][0], To: this.filterValue["Cases"][1]},
-                        4: {dataField: 'Deaths',From: this.filterValue["Deaths"][0], To: this.filterValue["Deaths"][1]},
-                        5: {dataField: 'Population',From: this.filterValue["Population"][0], To: this.filterValue["Population"][1]},
-                        6: {dataField: 'PartialVaccinated',From: this.filterValue["PartialVaccinated"][0], To: this.filterValue["PartialVaccinated"][1]},
-                        7: {dataField: 'FullyVaccinated',From: this.filterValue["FullyVaccinated"][0], To: this.filterValue["FullyVaccinated"][1]}                  
-                      }
+      var filterMap = {
+        0: { dataField: 'State', target: that.statesSelect },
+        1: { dataField: 'Date', target: that.datesSelect },
+        2: { dataField: 'Tests', From: this.filterValue["Tests"][0], To: this.filterValue["Tests"][1] },
+        3: { dataField: 'Cases', From: this.filterValue["Cases"][0], To: this.filterValue["Cases"][1] },
+        4: { dataField: 'Deaths', From: this.filterValue["Deaths"][0], To: this.filterValue["Deaths"][1] },
+        5: { dataField: 'Population', From: this.filterValue["Population"][0], To: this.filterValue["Population"][1] },
+        6: { dataField: 'PartialVaccinated', From: this.filterValue["PartialVaccinated"][0], To: this.filterValue["PartialVaccinated"][1] },
+        7: { dataField: 'FullyVaccinated', From: this.filterValue["FullyVaccinated"][0], To: this.filterValue["FullyVaccinated"][1] }
+      }
 
-    await $.post('http://127.0.0.1:5000/mapChart', {value: y_Axis, Aggregate: this.aggregate, Cumulative: this.cumulative, Filter: JSON.stringify(filterMap)}, function(data) {
+      await $.post('http://127.0.0.1:5000/mapChart', { value: y_Axis, DateSetting: this.dateSetting, Aggregate: this.aggregate, Cumulative: this.cumulative, Filter: JSON.stringify(filterMap) }, function (data) {
         that.newCases = data
       }, "json");
 
 
 
 
-      
+
 
       this.createSVG()
 
@@ -804,7 +758,7 @@ export class UnitedStatesMapComponent implements OnInit, AfterViewInit {
       ) {
         var metric;
         metric = covid ? covid[y_Axis] : 0;
-  
+
         return {
           name: state.properties.name,
           metric: metric,
@@ -824,13 +778,13 @@ export class UnitedStatesMapComponent implements OnInit, AfterViewInit {
 
       // Sqrt Scale
 
-      that.sqrtScale = d3.scaleSqrt().domain([1, 0.9*d3.max(that.merged, d => d["metric"])]).range([0, 1]);
+      that.sqrtScale = d3.scaleSqrt().domain([1, 0.9 * d3.max(that.merged, d => d["metric"])]).range([0, 1]);
 
       that.colorScaleSqrt = d3.scaleSequential(d =>
         d3.interpolateReds(that.sqrtScale(d))
       );
 
-      
+
       that.legendLabels = [
         "<" + that.getMetrics(0.2),
         ">" + that.getMetrics(0.2),
@@ -848,7 +802,7 @@ export class UnitedStatesMapComponent implements OnInit, AfterViewInit {
         .enter()
         .append("path")
         .attr("d", that.path)
-        .attr("id", function(d) { return d.name.replace(" ", "_") ; })
+        .attr("id", function (d) { return d.name.replace(" ", "_"); })
         .attr("class", "feature")
         .on("click", function (d) {
           console.log("drillDownMouseUS")
@@ -861,13 +815,13 @@ export class UnitedStatesMapComponent implements OnInit, AfterViewInit {
         .attr("fill", function (d) {
           var metric = d.metric;
           var metric = metric ? metric : 0;
-          if(false){//that.statesSelect.includes(d.abbrev)) {
-              return "#1e90ff"//"#ffa500"
+          if (false) {//that.statesSelect.includes(d.abbrev)) {
+            return "#1e90ff"//"#ffa500"
           }
           else if (metric > 0) {
-                return that.colorScaleSqrt(metric);
+            return that.colorScaleSqrt(metric);
           } else {
-            return "#ffffff";  
+            return "#ffffff";
             //return "#f2f2f2";
           }
         })
@@ -877,14 +831,14 @@ export class UnitedStatesMapComponent implements OnInit, AfterViewInit {
             .duration(200)
             .style("opacity", 0.9);
 
-            that.tooltip
+          that.tooltip
             .html(
               d.name + "<br/><b>Total " + y_Axis + ":</b> " + that.formatDecimal(d.metric)
             )
             .style("left", d3.event.pageX + "px")
             .style("top", d3.event.pageY + "px");
 
-            that.changeDetectorRef.detectChanges();
+          that.changeDetectorRef.detectChanges();
         })
         .on("mouseout", function (d) {
           that.tooltip
@@ -892,7 +846,7 @@ export class UnitedStatesMapComponent implements OnInit, AfterViewInit {
             .duration(300)
             .style("opacity", 0);
 
-            that.changeDetectorRef.detectChanges();
+          that.changeDetectorRef.detectChanges();
         });
 
       /*  
@@ -911,68 +865,62 @@ export class UnitedStatesMapComponent implements OnInit, AfterViewInit {
         .enter().append("g")
         .attr("class", "legend")
 
-        legend_Axis
+      legend_Axis
         .append("text")
         .attr("x", that.legendContainerSettings.x + 13)
         .attr("y", that.legendContainerSettings.y + 14)
         .style("font-size", 14)
         .text("COVID-19 " + y_Axis + " by State");
 
-        legend_Axis
-          .append("rect")
-          .attr("x", function (d, i) {
-            return (
-              that.legendContainerSettings.x + that.legendBoxSettings.width * i + 20
-            );
-          })
-          .attr("y", that.legendBoxSettings.y)
-          .attr("width", that.legendBoxSettings.width)
-          .attr("height", that.legendBoxSettings.height)
-          .style("fill", function (d, i) {
-              if(d <= 1){
-                return that.colorScaleSqrt(that.sqrtScale.invert(d));
-              }
-              else if(d == 3){
-                return "#1e90ff";
-              }
-              else {
-                return "#ffffff";
-              }
-          })
-          .style("opacity", 1);
-
-        
-
-        legend_Axis
-          .append("text")
-          .attr("x", function (d, i) {
-            return (
-              that.legendContainerSettings.x + that.legendBoxSettings.width * i + 30
-            );
-          })
-          .attr("y", that.legendContainerSettings.y + 50)
-          .style("font-size", 12)
-          .text(function (d, i) {
-            if(d <= 1){
-            return that.legendLabels[i];
+      legend_Axis
+        .append("rect")
+        .attr("x", function (d, i) {
+          return (
+            that.legendContainerSettings.x + that.legendBoxSettings.width * i + 20
+          );
+        })
+        .attr("y", that.legendBoxSettings.y)
+        .attr("width", that.legendBoxSettings.width)
+        .attr("height", that.legendBoxSettings.height)
+        .style("fill", function (d, i) {
+          if (d <= 1) {
+            return that.colorScaleSqrt(that.sqrtScale.invert(d));
           }
-          else if(d == 3){
-            return "Selected";
+          else {
+            return "#ffffff";
+          }
+        })
+        .style("opacity", 1);
+
+
+
+      legend_Axis
+        .append("text")
+        .attr("x", function (d, i) {
+          return (
+            that.legendContainerSettings.x + that.legendBoxSettings.width * i + 30
+          );
+        })
+        .attr("y", that.legendContainerSettings.y + 50)
+        .style("font-size", 12)
+        .text(function (d, i) {
+          if (d <= 1) {
+            return that.legendLabels[i];
           }
           else {
             return "";
           }
-          });
+        });
 
-          this.removeAllExceptOne()
+      this.removeAllExceptOne()
 
-      
+
     }
 
   }
 
   getMetrics(rangeValue) {
-        return this.formatDecimal(this.sqrtScale.invert(rangeValue));
+    return this.formatDecimal(this.sqrtScale.invert(rangeValue));
   }
 
   reset(d, p) {
@@ -1016,7 +964,7 @@ export class UnitedStatesMapComponent implements OnInit, AfterViewInit {
       .duration(300)
       .style("opacity", 0);
 
-    
+
     p.svg
       .transition()
       .duration(750)
@@ -1025,18 +973,18 @@ export class UnitedStatesMapComponent implements OnInit, AfterViewInit {
         d3.zoomIdentity.translate(stateParameters.x, stateParameters.y).scale(stateParameters.scale)
       )
       .on("end", p.drillDown(d.abbrev, p.metric, p.date)); // updated for d3 v4
-      
-      
+
+
   }
 
-  select(state){
+  select(state) {
     d3.select('path#' + state).dispatch('click');
   }
 
   drillDown(state, metric, date) {
     var stateParameters = this.drillDownService.countiesMapped.find(stateElement => stateElement.State === state)
 
-    
+
     this.drillDownService.scale = stateParameters.scale;
     if (state == "Alaska" || state == "Hawaii") {
       this.drillDownService.x = (stateParameters.x - 300);
@@ -1045,7 +993,7 @@ export class UnitedStatesMapComponent implements OnInit, AfterViewInit {
       this.drillDownService.x = stateParameters.x;
       this.drillDownService.y = stateParameters.y;
     }
-    
+
     this.router.navigate(["/counties/" + state + "/" + metric + "/" + date + "/" + this.userID + "/" + this.treatment + "/" + this.task]);
   }
 
@@ -1069,11 +1017,11 @@ export class UnitedStatesMapComponent implements OnInit, AfterViewInit {
   }
 
 
-  removeAllExceptOne(){
+  removeAllExceptOne() {
     while (document.getElementById("testSVG").childNodes.length > 1) {
       document.getElementById("testSVG").removeChild(document.getElementById("testSVG").lastChild);
     }
-    
+
     while (document.getElementById("unitedStatesMap").childNodes.length > 2 && document.getElementById("unitedStatesMap").lastChild["id"] !== "Header") {
       document.getElementById("unitedStatesMap").removeChild(document.getElementById("unitedStatesMap").lastChild);
     }
@@ -1081,20 +1029,20 @@ export class UnitedStatesMapComponent implements OnInit, AfterViewInit {
     while (document.getElementById("unitedStatesMap").childNodes.length > 2 && document.getElementById("unitedStatesMap").firstChild["id"] !== "Header") {
       document.getElementById("unitedStatesMap").removeChild(document.getElementById("unitedStatesMap").firstChild);
     }
-    
+
   }
 
 
-  switchToggled(event){
-    if(typeof this.legend_Values == 'undefined' && event.target == "GroupBy"){
+  switchToggled(event) {
+    if (typeof this.legend_Values == 'undefined' && event.target == "GroupBy") {
       document.getElementById('GroupBy')["checked"] = true
-    } 
-    else{
-      this.toggleChanged.emit({[event["target"]["id"]]: event["target"]["checked"]})
     }
-    
+    else {
+      this.toggleChanged.emit({ [event["target"]["id"]]: event["target"]["checked"] })
+    }
+
   }
-  
+
 
 
 

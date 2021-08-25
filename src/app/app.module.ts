@@ -9,6 +9,8 @@ import { UnitedStatesMapComponent} from './unitedstates-map/unitedstates-map.com
 import { MetricSummaryComponent } from './metric-summary/metric-summary.component';
 import { DrillDownService } from './shared/drilldown.services';
 import { FunctionService } from './shared/function.services';
+import { SimpleService } from './shared/simple.services';
+
 
 import { ButtonsModule } from '@progress/kendo-angular-buttons';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
@@ -50,7 +52,7 @@ declare var $: any;
     FormsModule,
     //GridModule 
   ],
-  providers: [DrillDownService, FunctionService],
+  providers: [DrillDownService, FunctionService, SimpleService],
   bootstrap: [AppComponent]
 })
 export class AppModule { }

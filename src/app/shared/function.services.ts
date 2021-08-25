@@ -5,6 +5,7 @@ import { param } from 'jquery';
 import {
   formatDate
 } from '@angular/common';
+import { element } from 'protractor';
 
 @Injectable()
 export class FunctionService {
@@ -54,15 +55,46 @@ export class FunctionService {
     if (action["Add"]["DataFields"] != "none" && action["Add"]["DataFields"].length != 0 && action["Add"]["DataFields"] != "All") {
       this.addMetric(that, action["Add"]["DataFields"])
     }
-    console.log(typeof action["Add"]["Filter"][0]["State"])
-    if(typeof action["Add"]["Filter"][0]["State"] !== 'undefined' && action["Add"]["Filter"][0]["State"][0] == 'All'){
-      this.addFilter(that, action["Add"]["Filter"])
+
+    /**
+     *  State Functionality
+     */
+
+    if (action["Remove"]["State"].includes("All")) {
+      this.removeState(that, action["Remove"]["State"])
+    }
+    if (action["Add"]["State"].includes("All")) {
+      this.addState(that, action["Add"]["State"])
+    }
+    if (action["Remove"]["State"] != "none" && action["Remove"]["State"].length != 0 && action["Remove"]["State"] != "All") {
+      this.removeState(that, action["Remove"]["State"])
+    }
+    if (action["Add"]["State"] != "none" && action["Add"]["State"].length != 0 && action["Add"]["State"] != "All") {
+      this.addState(that, action["Add"]["State"])
+    }
+
+
+    /**
+     *  Date Functionality
+     */
+
+     if (action["Remove"]["Date"].includes("All")) {
+      this.removeDate(that, action["Remove"]["Date"])
+    }
+    if (action["Add"]["Date"].includes("All")) {
+      this.addDate(that, action["Add"]["Date"])
+    }
+    if (action["Remove"]["Date"] != "none" && action["Remove"]["Date"].length != 0 && action["Remove"]["Date"] != "All") {
+      this.removeDate(that, action["Remove"]["Date"])
+    }
+    if (action["Add"]["Date"] != "none" && action["Add"]["Date"].length != 0 && action["Add"]["Date"] != "All") {
+      this.addDate(that, action["Add"]["Date"])
     }
 
     if (action["Remove"]["Filter"] != "none" && action["Remove"]["Filter"].length != 0) {
       this.removeFilter(that, action["Remove"]["Filter"])
     }
-    if (action["Add"]["Filter"] != "none" && action["Add"]["Filter"].length != 0 && !(typeof action["Add"]["Filter"][0]["State"] !== 'undefined' && action["Add"]["Filter"][0]["State"][0] == 'All')) {
+    if (action["Add"]["Filter"] != "none" && action["Add"]["Filter"].length != 0) {
       this.addFilter(that, action["Add"]["Filter"])
     }
 
@@ -74,8 +106,8 @@ export class FunctionService {
       this.changeCumulative(that, action["Add"]["Cumulative"])
     }
 
-    if (action["Add"]["GroupBy"] != "none" && action["Add"]["GroupBy"].length != 0) {
-      this.changeGroupBy(that, action["Add"]["GroupBy"])
+    if (action["Add"]["StatesSelect"] != "none" && action["Add"]["StatesSelect"].length != 0) {
+      this.changeStatesSelect(that, action["Add"]["StatesSelect"])
     }
 
 
@@ -93,13 +125,15 @@ export class FunctionService {
 */
 
   public changeVisualization(that, visualization) {
+    that.addElementtoITL('ChangeVis', visualization);
+    
     var current = document.getElementsByClassName("btn active");
     if (current.length > 0) {
       current[0].className = current[0].className.replace(" active", "");
     }
     document.getElementById(visualization)["className"] += " active";
 
-    that.addElementtoITL('ChangeVis', visualization);
+    
 
     that.unitedStatesMap.chartType = visualization
 
@@ -117,7 +151,7 @@ export class FunctionService {
     }
     else if (visualization == "Map") {
       that.legendLabel = "States"
-      that.metricLabel = "Filling"
+      that.metricLabel = "Color"
       document.getElementById("scatterUnused")["style"]["display"] = " block";
     }
 
@@ -163,29 +197,11 @@ export class FunctionService {
       that.unitedStatesMap.legendChanged = true;
       that.unitedStatesMap.legend_Values = legend
     }
-
-    document.getElementById(legend + "_Filter").className = document.getElementById(legend + "_Filter").className.replace(" closed", "")
-    if (document.getElementById("No_Filter")["className"] != "col closed") {
-      document.getElementById("No_Filter")["className"] += " closed";
-    }
-    this.checkToggleBotton(that)
   }
 
   public removeLegend(that, legend) {
     var entity = document.getElementById(legend)
     document.getElementById("data_Field").appendChild(entity);
-
-    //Check if Filter is not relevant
-    if (legend == 'State' && that.statesSelect.length == 0) {
-      if (document.getElementById(legend + "_Filter")["className"] != "col closed") {
-        document.getElementById(legend + "_Filter")["className"] += " closed";
-      }
-    }
-    else if (legend !== 'State' && that.filterValue[legend][0] == that.minSlider[legend] && that.filterValue[legend][1] == that.maxSlider[legend]) {
-      if (document.getElementById(legend + "_Filter")["className"] != "col closed") {
-        document.getElementById(legend + "_Filter")["className"] += " closed";
-      }
-    }
 
     that.unitedStatesMap.legend_Values = null
     that.unitedStatesMap.legendChanged = true;
@@ -277,9 +293,21 @@ export class FunctionService {
     }
   }
 
+
+  /**
+ * 
+ * Changing Filters
+ * 
+ * 
+ * 
+ */
+
   public removeFilter(that, filters) {
 
     for (var index in filters) {
+      if (Object.keys(filters[index])[0] == "Date" || Object.keys(filters[index])[0] == "State") {
+        continue;
+      }
 
       if (filters[index][Object.keys(filters[index])[0]][0] == "close") {
         that.addElementtoITL('RemoveFilter', Object.keys(filters[index])[0]);
@@ -287,33 +315,26 @@ export class FunctionService {
         if (document.getElementById(Object.keys(filters[index])[0] + "_Filter")["className"] != "col closed") {
           document.getElementById(Object.keys(filters[index])[0] + "_Filter")["className"] += " closed";
         }
-        if (Object.keys(filters[index])[0] == "State") {
-          that.statesSelect = []
-          that.unitedStatesMap.statesSelect = that.statesSelect
+
+        that.filterValue[Object.keys(filters[index])[0]] = [that.minSlider[Object.keys(filters[index])[0]], that.maxSlider[Object.keys(filters[index])[0]]]
+        if (Object.keys(filters[index])[0] == "Date") {
+          console.log(String(formatDate(new Date(that.filterValue[Object.keys(filters[index])[0]][1]), 'yyyy-MM-dd', 'en')))
+          document.getElementById("Date-To")["value"] = String(formatDate(new Date(that.filterValue[Object.keys(filters[index])[0]][1]), 'yyyy-MM-dd', 'en'))
         }
         else {
-          that.filterValue[Object.keys(filters[index])[0]] = [that.minSlider[Object.keys(filters[index])[0]], that.maxSlider[Object.keys(filters[index])[0]]]
-          if (Object.keys(filters[index])[0] == "Date") {
-            console.log(String(formatDate(new Date(that.filterValue[Object.keys(filters[index])[0]][1]), 'yyyy-MM-dd', 'en')))
-            document.getElementById("Date-To")["value"] = String(formatDate(new Date(that.filterValue[Object.keys(filters[index])[0]][1]), 'yyyy-MM-dd', 'en'))
-          }
-          else {
-            document.getElementById(String(Object.keys(filters[index])[0]) + "-From")["value"] = String(that.filterValue[Object.keys(filters[index])[0]][0])
-            document.getElementById(String(Object.keys(filters[index])[0]) + "-To")["value"] = String(that.filterValue[Object.keys(filters[index])[0]][1])
-          }
-          that.unitedStatesMap.filterValue = that.filterValue
+          document.getElementById(String(Object.keys(filters[index])[0]) + "-From")["value"] = String(that.filterValue[Object.keys(filters[index])[0]][0])
+          document.getElementById(String(Object.keys(filters[index])[0]) + "-To")["value"] = String(that.filterValue[Object.keys(filters[index])[0]][1])
         }
+        that.unitedStatesMap.filterValue = that.filterValue
+
       }
-      else if (Object.keys(filters[index])[0] == "State") {
-        this.removeState(that, filters[index])
-      }
-      else{
-        var newFilters = {[Object.keys(filters[index])[0]]: [0, "max"]}
-        if(filters[index][Object.keys(filters[index])[0]][0] == 0){
+      else {
+        var newFilters = { [Object.keys(filters[index])[0]]: [0, "max"] }
+        if (filters[index][Object.keys(filters[index])[0]][0] == 0) {
           newFilters[Object.keys(filters[index])[0]][0] = filters[index][Object.keys(filters[index])[0]][1]
           newFilters[Object.keys(filters[index])[0]][1] = "max"
         }
-        else{
+        else {
           newFilters[Object.keys(filters[index])[0]][1] = filters[index][Object.keys(filters[index])[0]][0]
           newFilters[Object.keys(filters[index])[0]][0] = 0
 
@@ -322,6 +343,7 @@ export class FunctionService {
       }
     }
 
+    /*
     var open = true;
     for (var child in document.getElementById("FilterField").childNodes) {
       if (document.getElementById("FilterField").childNodes[child]["className"] == "col") {
@@ -331,6 +353,7 @@ export class FunctionService {
     if (open) {
       document.getElementById("No_Filter").className = document.getElementById("No_Filter").className.replace(" closed", "")
     }
+    */
   }
 
   public changeFilter(that, filter) {
@@ -339,32 +362,7 @@ export class FunctionService {
     var key = Object.keys(filter)[0]
     that.addElementtoITL('ChangeFilter', filter);
 
-    if (key == "State") {
-      for (var state in filter[key]) {
-        if(filter[key][state] == "All"){
-          for(var index in that.scaleButtons){
-            if (that.statesSelect.indexOf(that.scaleButtons[index]) == -1) {
-              that.statesSelect.push(that.scaleButtons[index])
-            }
-          }
-        }
-        else if (that.statesSelect.indexOf(filter[key][state]) == -1) {
-          that.statesSelect.push(filter[key][state])
-        }
-      }
-
-      that.unitedStatesMap.statesSelect = that.statesSelect
-      if(that.statesSelect.length > 0){
-        $("input[id^='k']")[0]["placeholder"] = "  +"
-      }
-    }
-    else if (key == "Date") {
-      that.filterValue[String(key)][0] = new Date(filter[key][0])
-      that.filterValue[String(key)][1] = new Date(filter[key][1])
-      document.getElementById("Date-To")["value"] = String(formatDate(new Date(filter[key][1]), 'yyyy-MM-dd', 'en'))
-      that.filterValue[key] = [that.filterValue[String(key)][0], that.filterValue[String(key)][1]];
-    }
-    else {
+    if(key != "Date" && key != "State") {
       var filterValue = that.filterValue[String(key)]
 
       if (filter[key][0] !== "none") {
@@ -380,7 +378,7 @@ export class FunctionService {
         document.getElementById(String(key) + "-To")["value"] = String(filter[String(key)][1])
         filterValue[1] = parseInt(filter[key][1])
       }
-      else if(filter[key][1] == "max"){
+      else if (filter[key][1] == "max") {
         document.getElementById(String(key) + "-To")["value"] = String(that.maxSlider[key])
         filterValue[1] = parseInt(that.maxSlider[key])
       }
@@ -399,9 +397,12 @@ export class FunctionService {
   }
 
   public addFilter(that, filters) {
+
+    /*
     if (document.getElementById("No_Filter")["className"] != "col closed") {
       document.getElementById("No_Filter")["className"] += " closed";
     }
+    */
 
     for (var index in filters) {
       var key = Object.keys(filters[index])[0]
@@ -411,34 +412,158 @@ export class FunctionService {
       if (filters[index][key][0] == "open") {
         that.addElementtoITL('AddFilter', key);
       }
-      else if ((!isNaN(filters[index][key][0]) && (!isNaN(filters[index][key][1]) || filters[index][key][1] == "max")) || key == "State") {
-        this.changeFilter(that, filters[index])
-      }
-      else if (key == "Date") {
+      else if (!isNaN(filters[index][key][0]) && (!isNaN(filters[index][key][1]) || filters[index][key][1] == "max")) {
         this.changeFilter(that, filters[index])
       }
     }
   }
 
-  public removeState(that, filter) {
+  /**
+ * 
+ * Changing States
+ * 
+ * 
+ * 
+ */
 
-    that.addElementtoITL('RemoveState', filter["State"]);
+  public addState(that, states) {
 
-    if (filter["State"] == "All") {
+    that.addElementtoITL('AddState', states);
+
+    for (var state in states) {
+      if (states[state] == "All") {
+        for (var index in that.scaleButtons) {
+          if (that.statesSelect.indexOf(that.scaleButtons[index]) == -1) {
+            that.statesSelect.push(that.scaleButtons[index])
+          }
+        }
+      }
+      else if (that.statesSelect.indexOf(states[state]) == -1) {
+        that.statesSelect.push(states[state])
+      }
+    }
+
+    that.unitedStatesMap.statesSelect = that.statesSelect
+    if (that.statesSelect.length > 0) {
+      $("input[id^='k']")[1]["placeholder"] = "  +"
+    }
+  }
+
+  public removeState(that, states) {
+
+    that.addElementtoITL('RemoveState', states);
+
+    if (states[0] == "All") {
       that.statesSelect = []
       that.unitedStatesMap.statesSelect = that.statesSelect
     }
     else {
-      that.statesSelect = that.statesSelect.filter(element => !filter["State"].includes(element))
+      that.statesSelect = that.statesSelect.filter(element => !states.includes(element))
       that.unitedStatesMap.statesSelect = that.statesSelect
-      
-      if(that.statesSelect.length > 0){
-        $("input[id^='k']")[0]["placeholder"] = "  +"
+
+      if (that.statesSelect.length > 0) {
+        $("input[id^='k']")[1]["placeholder"] = "  +"
+      }
+    }
+  }
+
+
+  /**
+ * 
+ * Changing Dates
+ * 
+ * 
+ * 
+ */
+
+  public addDate(that, dates) {
+
+    that.addElementtoITL('AddDate', dates);
+
+    for (var date in dates) {
+      if (dates[date] == "All") {
+        that.datesSelect = that.dates;
+        break;
+      }
+      else if (dates[date].includes(" till ")) {
+        var dateRange = dates[date].split(" till ")
+        if(that.unitedStatesMap.dateSetting == "Selection"){
+          var range = that.dates.filter(element => (new Date(dateRange[0]) <= new Date(element) &&  new Date(dateRange[1]) >= new Date(element)))
+          for(var indexD in range){
+            if (that.datesSelect.indexOf(range[indexD]) == -1) {
+              that.datesSelect.push(range[indexD])
+            }
+          }
+        }
+        else if(that.unitedStatesMap.dateSetting == "Range"){
+          that.datesSelect = dateRange
+        }
+
+      }
+      else if (that.datesSelect.indexOf(dates[date]) == -1) {
+        that.datesSelect.push(dates[date])
       }
     }
 
+    that.unitedStatesMap.datesSelect = that.datesSelect
 
+    if (that.datesSelect.length > 0) {
+      $("input[id^='k']")[0]["placeholder"] = "  +"
+    }
+  }
 
+  public removeDate(that, dates) {
+
+    that.addElementtoITL('RemoveDate', dates);
+
+    for (var date in dates) {
+      if (dates[date] == "All") {
+        that.datesSelect = []
+
+        that.unitedStatesMap.datesSelect = that.datesSelect
+      }
+      else if (dates[date].includes(" till ")) {
+        var dateRange = dates[date].split(" till ")
+        if(that.unitedStatesMap.dateSetting == "Selection"){
+          that.datesSelect = that.datesSelect.filter(element => !(new Date(dateRange[0]) <= new Date(element) &&  new Date(dateRange[1]) >= new Date(element)))
+          that.unitedStatesMap.datesSelect = that.datesSelect
+        }
+      }
+      else{
+        that.datesSelect = that.datesSelect.filter(element => !dates.includes(element))
+        that.unitedStatesMap.datesSelect = that.datesSelect
+      }
+    }
+    if (that.datesSelect.length > 0) {
+      $("input[id^='k']")[0]["placeholder"] = "  +"
+    }
+  }
+
+  public changeDateSetting(that, setting) {
+
+    if(that.unitedStatesMap.dateSetting != setting){
+    that.addElementtoITL('ChangeDateSetting', setting);
+    that.unitedStatesMap.dateSetting = setting;
+    
+
+    if (setting == "Range" ) {
+      
+      document.getElementById("Date-To")["value"] = String(formatDate(Math.max.apply(Math, that.datesSelect.map(function (o) { return new Date(o); })), 'yyyy-MM-dd', 'en'))
+      document.getElementById("Date-From")["value"] = String(formatDate(Math.min.apply(Math, that.datesSelect.map(function (o) { return new Date(o); })), 'yyyy-MM-dd', 'en'))
+      
+      that.datesSelect = [document.getElementById("Date-From")["value"], document.getElementById("Date-To")["value"]]
+      
+    }
+    else if (setting == "Selection") {
+      
+
+      var date = that.datesSelect[0] + " till " + that.datesSelect[1]
+      this.addDate(that, [date])
+
+    }
+  }
+
+    
   }
 
 
@@ -447,6 +572,32 @@ export class FunctionService {
     that.addElementtoITL('ChangeAggregate', aggregate);
 
     document.getElementById('Aggregate')["value"] = aggregate;
+    
+
+    if (aggregate == "D") {
+      that.dates = that.possibleDatesDay
+    }
+    else if (aggregate == "M") {
+
+      that.dates = that.possibleDatesMonth
+      for(var indexD in that.datesSelect){
+        var dateSplit = that.datesSelect[indexD].split("-")
+        that.datesSelect[indexD] = dateSplit[0] + "-" + dateSplit[1] + "-01" 
+      }
+    }
+    else if (aggregate == "Y") {
+
+      that.dates = that.possibleDatesYear
+      for(var indexD in that.datesSelect){
+        var dateSplit = that.datesSelect[indexD].split("-")
+        that.datesSelect[indexD] = dateSplit[0] + "-01-01" 
+      }
+    }
+    if(that.unitedStatesMap.dateSetting == "Selection"){
+      that.datesSelect = [...new Set(that.datesSelect)]
+    }
+
+    that.unitedStatesMap.datesSelect = that.datesSelect
 
     that.unitedStatesMap.legendChanged = true;
     that.unitedStatesMap.aggregate = aggregate;
@@ -457,56 +608,21 @@ export class FunctionService {
 
     that.addElementtoITL('ChangeCumulative', cumulate);
 
-    if (cumulate == "false" || !cumulate) {
-      document.getElementById('Cumulative')["checked"] = false
-    }
-    else if (cumulate == "true" || cumulate) {
-      document.getElementById('Cumulative')["checked"] = true
-    }
+    document.getElementById('Cumulative')["value"] = cumulate;
+
     that.unitedStatesMap.legendChanged = true;
     that.unitedStatesMap.cumulative = cumulate;
 
   }
 
-  public changeGroupBy(that, groupBy) {
+  public changeStatesSelect(that, statesSelect) {
 
-    that.addElementtoITL('ChangeGroupBy', groupBy);
+    that.addElementtoITL('ChangeStatesSelect', statesSelect);
 
-    if (groupBy == "Legend") {
-      document.getElementById('GroupBy')["checked"] = false
-    }
-    else if (groupBy == "Metric") {
-      document.getElementById('GroupBy')["checked"] = true
-    }
+    document.getElementById('statesSelect')["value"] = statesSelect;
+
     that.unitedStatesMap.legendChanged = true;
-    that.unitedStatesMap.groupBy = groupBy;
-  }
-
-  public checkToggleBotton(that) {
-    if (typeof that.unitedStatesMap.legend_Values != 'undefined') {
-      if (that.unitedStatesMap.legend_Values == "Date") {
-        document.getElementById('Second Legend').innerText = "State"
-      }
-      else if (that.unitedStatesMap.legend_Values == "State") {
-        document.getElementById('Second Legend').innerText = " Date"
-      }
-
-      var groupFields = document.getElementsByClassName("groupLegend");
-
-      for (var m = 0; m < groupFields.length; m++) {
-        if (that.unitedStatesMap.legend_Values == "Date") {
-          groupFields[m]["innerHTML"] = "State"
-        }
-        else if (that.unitedStatesMap.legend_Values == "State") {
-          groupFields[m]["innerHTML"] = " Date"
-        }
-
-      }
-    }
-    else {
-      document.getElementById('Second Legend').innerText = ""
-    }
-
+    that.unitedStatesMap.groupBy = statesSelect;
   }
 
 

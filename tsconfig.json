@@ -19,7 +19,8 @@
     "lib": [
       "esnext",
       "dom",
-    ]
+    ],
+    "skipLibCheck": true
   },
   "angularCompilerOptions": {
     "fullTemplateTypeCheck": true,

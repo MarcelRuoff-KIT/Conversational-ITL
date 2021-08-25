@@ -77,61 +77,60 @@
     <div id="info" style="width: 40%; height: calc(100vh - 150px)">
       <div class="filter-container" id="FilterField" (drop)="ablegen($event)" (dragover)="ablegenErlauben($event)"
         style="border: 3px solid #877AFF;">
-        <div class="col" style="width: 100%; text-align: center; margin-top: 30px;" id="No_Filter">No active Filters.
+        <div class="col closed" style="width: 100%; text-align: center; margin-top: 30px;" id="No_Filter">No active Filters.
         </div>
-        <div class="col closed" id="Date_Filter">
+        <div class="col" id="Date_Filter">
 
           <div class="filterTitle">
             <div class="filterContent">
-              <input type="date" id="Date-From" title="Start Date" size="6" style="overflow:hidden"
+              <input type="date" id="Date-From" title="Start Date" size="6" style="display: none; overflow:hidden"
                 value="{{this.currentDateMin}}" min="{{this.dateMin}}" max="{{this.currentDateMax}}"
                 (input)="this.inputCheck($event)">
-              <p><b>Date</b></p><input type="date" id="Date-To" title="End Date" size="6" style="overflow:hidden"
+              <p><b>Dates</b></p><input type="date" id="Date-To" title="End Date" size="6" style="display: none; overflow:hidden"
                 value="{{this.currentDateMax}}" min="{{this.currentDateMin}}" max="{{this.dateMax}}"
                 (input)="this.inputCheck($event)">
 
 
-
-
-
+                <!--
               <kendo-rangeslider id="Date-Slider" [tickPlacement]="tickPlacement" [style.width]="'95%'"
                 [disabled]="disabled" [min]="minSlider['Date']" [max]="maxSlider['Date']" [smallStep]="smallStep"
                 [(ngModel)]="filterValue['Date']" (valueChange)="dateRangeChange($event)"></kendo-rangeslider>
-              <!--
-          <kendo-multiselect #scaleDropDown [style.z-index]="'3'" [filterable]="false" [data]="possibleDates"
-            [tagMapper]="tagMapper" [clearButton]="false" [autoClose]="false" [placeholder]="'Select Dates...'"
+              -->
+
+          <kendo-multiselect id="Date-Select" [style.z-index]="'3'" [filterable]="false" [data]="dates"
+            [tagMapper]="tagMapper" [clearButton]="false" [autoClose]="false" [placeholder]="'No Dates:  +'"
             (valueChange)="selectedDateChange($event)" [(ngModel)]="datesSelect" [popupSettings]="{ height: 300 }"
             listHeight="300">
             <ng-template kendoMultiSelectGroupTagTemplate let-dataItems>
               <span class="k-icon k-i-arrow-s"></span>
               {{ dataItems.length }} Date(s) selected
             </ng-template>
-          </kendo-multiselect>-->
+          </kendo-multiselect>
             </div>
 
             <div class="filterSettings">
-              <div class="dropdown">
+              <!--<div class="dropdown">
                 <div style="height: 50%; width: 100%;"><button (click)="openMenu()">&#9881;</button></div>
                 <div id="myDropdown" class="dropdown-content">
-                  <select id="Range" name="Range">
-                    <option value="D">as Range</option>
-                    <option value="W">as Selection</option>
+                  <select id="DropdownDate" name="DropdownDate">
+                    <option value="Selection">as Selection</option>
+                    <option value="Range">as Range</option>
+                    
                   </select>
                 </div>
 
-              </div>
-              <div style="height: 50%; width: 100%; margin-left: 5px;"><button
-                  (click)="closeFilter($event)">&#10006;</button></div>
+              </div>-->
+              <div style="height: 40%; width: 100%;"><button (click)="resetFilter($event)">All</button></div>
             </div>
           </div>
 
         </div>
-        <div class="col closed" id="State_Filter">
+        <div class="col" id="State_Filter">
           <div class="filterTitle">
             <div class="filterContent">
-              <b>States:</b>
+              <div><b>States</b> combined through <select id="statesSelect"><option>OR</option><option>AND</option></select></div>
               <kendo-multiselect #scaleDropDown [style.z-index]="'3'" [filterable]="false" [data]="scaleButtons"
-                [tagMapper]="tagMapper" [clearButton]="false" [autoClose]="false" [placeholder]="'Select States...'"
+                [tagMapper]="tagMapper" [clearButton]="false" [autoClose]="false" [placeholder]="'No States:  +'"
                 (valueChange)="selectedStateChange($event)" [(ngModel)]="statesSelect" [popupSettings]="{ height: 300 }"
                 listHeight="300"> Add new States
                 <ng-template kendoMultiSelectGroupTagTemplate let-dataItems>
@@ -142,7 +141,6 @@
             </div>
             <div class="filterSettings">
               <div style="height: 40%; width: 100%;"><button (click)="resetFilter($event)">All</button></div>
-              <div style="height: 50%; width: 100%;"><button (click)="closeFilter($event)">&#10006;</button></div>
             </div>
 
           </div>
@@ -267,7 +265,8 @@
       </div>
       <div class="itl-container" id="itl-container">
         <div id="utterance-container"
-          style="height: fit-content; width: 100%; padding: 20px 0px; border:2px solid black;">
+          style="height: fit-content; width: 100%; padding: 0px 0px 20px; border:2px solid black;">
+          <div id="demoModeTitle" style="background-color: black; color: white; width: fit-content;padding-right: 10px;">Demonstration Mode</div>
           <div id="trainUtterance"
             style="height: fit-content; width: calc(100% - 100px); text-align: center; font-size: 2vh; float:left; padding:14px 10px 0px">
           </div>
@@ -310,7 +309,7 @@
     </select>
   </p>
 
-  <button kendoButton [icon]="'question k-icon-30'" (click)="closeFilter($event)" style="right: 7%; "></button>
+  <!-- <button kendoButton [icon]="'question k-icon-30'" (click)="closeFilter($event)" style="right: 7%; "></button>-->
   <button kendoButton [icon]="'close k-icon-30'" (click)="closeITLElement($event)"></button>
   <div class="arrow bottom"></div>
   <div class="arrow bottom large"></div>
@@ -322,15 +321,20 @@
 
 <!-- Interactive Task Learning Building Blocks -->
 
-<div class="infoBox" id="RecommenderTemplate">
+<div class="infoBox" id="RecommenderTemplate" style="padding-top: 28px; position: relative; z-index: 100; border: 0px; box-shadow: rgba(0, 0, 0, 0.17) 0px 5px 5px 0px; top: -13px;">
   
-  <p class="textField">
+  <p class="textField" style="width: 80%;">
     Unfortunately, there has been an internal error.
   </p>
-  <div class="connector">OR</div>
+  <div style="position: relative; float: right; margin-right: 20px; width: 30%; top: -30px; right: -80px;">
+  <button style="padding: 5px;" (click)="closeRecommendationItem($event)">Confirm Selection</button>
+</div>
+  <div class="connector"> 
+    <input type="radio" name="recommendation" value="original"> <p style="padding: 7px; color: black;">OR</p> <input type="radio" name="recommendation" value="recommendation"> 
+  </div>
 
-  <button style="right: 7%; ">Yes</button>
-  <button>No</button>
+  
+  
   <div class="arrow bottom"></div>
   <div class="arrow bottom large"></div>
 </div>

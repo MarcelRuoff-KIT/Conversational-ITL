@@ -88,15 +88,13 @@
 }
 
 .connector{
-  width: 100px;
-  height: 15px;
+  width: 30px;
+  height: 30px;
   background-color: white;
-  top: -15px;
+  top: -20px;
   position: absolute;
   z-index: 100;
-  left: 10px;
-  border-left: 1px solid #dadce5;
-  border-right: 1px solid #dadce5;
+  left: 0px;
   text-align: center;
   color: #94969e;
 }
@@ -215,6 +213,11 @@
 /* Darker background on mouse-over */
 .btn.active {
   background-color: DodgerBlue;
+}
+
+.col{
+  padding-bottom: 15px;
+  border-bottom: 1px solid rgb(83, 83, 83);
 }
 
 .col.closed {

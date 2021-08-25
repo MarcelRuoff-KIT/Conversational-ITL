@@ -7,11 +7,11 @@ import { filter } from 'rxjs/operators';
 import { MetricSummaryComponent } from '../metric-summary/metric-summary.component';
 import { DrillDownService } from "../shared/drilldown.services";
 import { FunctionService } from "../shared/function.services";
+import { SimpleService } from "../shared/simple.services";
 
 import {
   formatDate
 } from '@angular/common';
-import { send } from 'process';
 
 /**
  * Declares the WebChat property on the window object.
@@ -54,13 +54,15 @@ export class UnitedStatesComponent implements OnInit, OnDestroy, AfterViewInit, 
 
   //Relevant for Training Mode
   public initialState;
+  public unusedEntities;
   public trainableEntites: any;
   public stateList;
   public metricList;
   public actionSequence = [];
   public recommendationList = [];
-  public trainingMode = false;
-  public addToSequence = false;
+  public trainingMode = false;// false
+  public addToSequence = false; //false
+  public shortcut = true;
   public initialUtterance = "";
 
   /* slider */
@@ -79,7 +81,14 @@ export class UnitedStatesComponent implements OnInit, OnDestroy, AfterViewInit, 
   public scaleButtons = ["Alabama", "Alaska", "Arizona", "Arkansas", "California", "Colorado", "Connecticut", "Delaware", "Florida", "Georgia", "Hawaii", "Idaho", "Illinois", "Indiana", "Iowa", "Kansas", "Kentucky", "Louisiana", "Maine", "Maryland", "Massachusetts", "Michigan", "Minnesota", "Mississippi", "Missouri", "Montana", "Nebraska", "Nevada", "New Hampshire", "New Jersey", "New Mexico", "New York", "North Carolina", "North Dakota", "Ohio", "Oklahoma", "Oregon", "Pennsylvania", "Puerto Rico", "Rhode Island", "South Carolina", "South Dakota", "Tennessee", "Texas", "Utah", "Vermont", "Virginia", "Washington", "West Virginia", "Wisconsin", "Wyoming"];
   public statesSelect = [];
 
-  public possibleDates = [];
+
+  public possibleDatesDay = ["2020-01-01", "2020-01-02", "2020-01-03", "2020-01-04", "2020-01-05", "2020-01-06", "2020-01-07", "2020-01-08", "2020-01-09", "2020-01-10", "2020-01-11", "2020-01-12", "2020-01-13", "2020-01-14", "2020-01-15", "2020-01-16", "2020-01-17", "2020-01-18", "2020-01-19", "2020-01-20", "2020-01-21", "2020-01-22", "2020-01-23", "2020-01-24", "2020-01-25", "2020-01-26", "2020-01-27", "2020-01-28", "2020-01-29", "2020-01-30", "2020-01-31", "2020-02-01", "2020-02-02", "2020-02-03", "2020-02-04", "2020-02-05", "2020-02-06", "2020-02-07", "2020-02-08", "2020-02-09", "2020-02-10", "2020-02-11", "2020-02-12", "2020-02-13", "2020-02-14", "2020-02-15", "2020-02-16", "2020-02-17", "2020-02-18", "2020-02-19", "2020-02-20", "2020-02-21", "2020-02-22", "2020-02-23", "2020-02-24", "2020-02-25", "2020-02-26", "2020-02-27", "2020-02-28", "2020-02-29", "2020-03-01", "2020-03-02", "2020-03-03", "2020-03-04", "2020-03-05", "2020-03-06", "2020-03-07", "2020-03-08", "2020-03-09", "2020-03-10", "2020-03-11", "2020-03-12", "2020-03-13", "2020-03-14", "2020-03-15", "2020-03-16", "2020-03-17", "2020-03-18", "2020-03-19", "2020-03-20", "2020-03-21", "2020-03-22", "2020-03-23", "2020-03-24", "2020-03-25", "2020-03-26", "2020-03-27", "2020-03-28", "2020-03-29", "2020-03-29", "2020-03-30", "2020-03-31", "2020-04-01", "2020-04-02", "2020-04-03", "2020-04-04", "2020-04-05", "2020-04-06", "2020-04-07", "2020-04-08", "2020-04-09", "2020-04-10", "2020-04-11", "2020-04-12", "2020-04-13", "2020-04-14", "2020-04-15", "2020-04-16", "2020-04-17", "2020-04-18", "2020-04-19", "2020-04-20", "2020-04-21", "2020-04-22", "2020-04-23", "2020-04-24", "2020-04-25", "2020-04-26", "2020-04-27", "2020-04-28", "2020-04-29", "2020-04-30", "2020-05-01", "2020-05-02", "2020-05-03", "2020-05-04", "2020-05-05", "2020-05-06", "2020-05-07", "2020-05-08", "2020-05-09", "2020-05-10", "2020-05-11", "2020-05-12", "2020-05-13", "2020-05-14", "2020-05-15", "2020-05-16", "2020-05-17", "2020-05-18", "2020-05-19", "2020-05-20", "2020-05-21", "2020-05-22", "2020-05-23", "2020-05-24", "2020-05-25", "2020-05-26", "2020-05-27", "2020-05-28", "2020-05-29", "2020-05-30", "2020-05-31", "2020-06-01", "2020-06-02", "2020-06-03", "2020-06-04", "2020-06-05", "2020-06-06", "2020-06-07", "2020-06-08", "2020-06-09", "2020-06-10", "2020-06-11", "2020-06-12", "2020-06-13", "2020-06-14", "2020-06-15", "2020-06-16", "2020-06-17", "2020-06-18", "2020-06-19", "2020-06-20", "2020-06-21", "2020-06-22", "2020-06-23", "2020-06-24", "2020-06-25", "2020-06-26", "2020-06-27", "2020-06-28", "2020-06-29", "2020-06-30", "2020-07-01", "2020-07-02", "2020-07-03", "2020-07-04", "2020-07-05", "2020-07-06", "2020-07-07", "2020-07-08", "2020-07-09", "2020-07-10", "2020-07-11", "2020-07-12", "2020-07-13", "2020-07-14", "2020-07-15", "2020-07-16", "2020-07-17", "2020-07-18", "2020-07-19", "2020-07-20", "2020-07-21", "2020-07-22", "2020-07-23", "2020-07-24", "2020-07-25", "2020-07-26", "2020-07-27", "2020-07-28", "2020-07-29", "2020-07-30", "2020-07-31", "2020-08-01", "2020-08-02", "2020-08-03", "2020-08-04", "2020-08-05", "2020-08-06", "2020-08-07", "2020-08-08", "2020-08-09", "2020-08-10", "2020-08-11", "2020-08-12", "2020-08-13", "2020-08-14", "2020-08-15", "2020-08-16", "2020-08-17", "2020-08-18", "2020-08-19", "2020-08-20", "2020-08-21", "2020-08-22", "2020-08-23", "2020-08-24", "2020-08-25", "2020-08-26", "2020-08-27", "2020-08-28", "2020-08-29", "2020-08-30", "2020-08-31", "2020-09-01", "2020-09-02", "2020-09-03", "2020-09-04", "2020-09-05", "2020-09-06", "2020-09-07", "2020-09-08", "2020-09-09", "2020-09-10", "2020-09-11", "2020-09-12", "2020-09-13", "2020-09-14", "2020-09-15", "2020-09-16", "2020-09-17", "2020-09-18", "2020-09-19", "2020-09-20", "2020-09-21", "2020-09-22", "2020-09-23", "2020-09-24", "2020-09-25", "2020-09-26", "2020-09-27", "2020-09-28", "2020-09-29", "2020-09-30", "2020-10-01", "2020-10-02", "2020-10-03", "2020-10-04", "2020-10-05", "2020-10-06", "2020-10-07", "2020-10-08", "2020-10-09", "2020-10-10", "2020-10-11", "2020-10-12", "2020-10-13", "2020-10-14", "2020-10-15", "2020-10-16", "2020-10-17", "2020-10-18", "2020-10-19", "2020-10-20", "2020-10-21", "2020-10-22", "2020-10-23", "2020-10-24", "2020-10-26", "2020-10-27", "2020-10-28", "2020-10-29", "2020-10-30", "2020-10-31", "2020-11-01", "2020-11-02", "2020-11-03", "2020-11-04", "2020-11-05", "2020-11-06", "2020-11-07", "2020-11-08", "2020-11-09", "2020-11-10", "2020-11-11", "2020-11-12", "2020-11-13", "2020-11-14", "2020-11-15", "2020-11-16", "2020-11-17", "2020-11-18", "2020-11-19", "2020-11-20", "2020-11-21", "2020-11-22", "2020-11-23", "2020-11-24", "2020-11-25", "2020-11-26", "2020-11-27", "2020-11-28", "2020-11-29", "2020-11-30", "2020-12-01", "2020-12-02", "2020-12-03", "2020-12-04", "2020-12-05", "2020-12-06", "2020-12-07", "2020-12-08", "2020-12-09", "2020-12-10", "2020-12-11", "2020-12-12", "2020-12-13", "2020-12-14", "2020-12-15", "2020-12-16", "2020-12-17", "2020-12-18", "2020-12-19", "2020-12-20", "2020-12-21", "2020-12-22", "2020-12-23", "2020-12-24", "2020-12-25", "2020-12-26", "2020-12-27", "2020-12-28", "2020-12-29", "2020-12-30", "2020-12-31", "2021-01-01", "2021-01-02", "2021-01-03", "2021-01-04", "2021-01-05", "2021-01-06", "2021-01-07", "2021-01-08", "2021-01-09", "2021-01-10", "2021-01-11", "2021-01-12", "2021-01-13", "2021-01-14", "2021-01-15", "2021-01-16", "2021-01-17", "2021-01-18", "2021-01-19", "2021-01-20", "2021-01-21", "2021-01-22", "2021-01-23", "2021-01-24", "2021-01-25", "2021-01-26", "2021-01-27", "2021-01-28", "2021-01-29", "2021-01-30", "2021-01-31", "2021-02-01", "2021-02-02", "2021-02-03", "2021-02-04", "2021-02-05", "2021-02-06", "2021-02-07", "2021-02-08", "2021-02-09", "2021-02-10", "2021-02-11", "2021-02-12", "2021-02-13", "2021-02-14", "2021-02-15", "2021-02-16", "2021-02-17", "2021-02-18", "2021-02-19", "2021-02-20", "2021-02-21", "2021-02-22", "2021-02-23", "2021-02-24", "2021-02-25", "2021-02-26", "2021-02-27", "2021-02-28", "2021-03-01", "2021-03-02", "2021-03-03", "2021-03-04", "2021-03-05", "2021-03-06", "2021-03-07", "2021-03-08", "2021-03-09", "2021-03-10", "2021-03-11", "2021-03-12", "2021-03-13", "2021-03-14", "2021-03-15", "2021-03-16", "2021-03-17", "2021-03-18", "2021-03-19", "2021-03-20", "2021-03-21", "2021-03-22", "2021-03-23", "2021-03-24", "2021-03-25", "2021-03-26", "2021-03-27", "2021-03-28", "2021-03-28", "2021-03-29", "2021-03-30", "2021-03-31", "2021-04-01", "2021-04-02", "2021-04-03", "2021-04-04", "2021-04-05", "2021-04-06", "2021-04-07", "2021-04-08", "2021-04-09", "2021-04-10", "2021-04-11", "2021-04-12", "2021-04-13", "2021-04-14", "2021-04-15", "2021-04-16", "2021-04-17", "2021-04-18", "2021-04-19", "2021-04-20", "2021-04-21", "2021-04-22", "2021-04-23", "2021-04-24", "2021-04-25", "2021-04-26", "2021-04-27", "2021-04-28", "2021-04-29", "2021-04-30", "2021-05-01", "2021-05-02", "2021-05-03", "2021-05-04", "2021-05-05", "2021-05-06", "2021-05-07", "2021-05-08", "2021-05-09", "2021-05-10", "2021-05-11", "2021-05-12", "2021-05-13", "2021-05-14", "2021-05-15", "2021-05-16", "2021-05-17", "2021-05-18", "2021-05-19", "2021-05-20", "2021-05-21", "2021-05-22", "2021-05-23", "2021-05-24", "2021-05-25", "2021-05-26", "2021-05-27", "2021-05-28", "2021-05-29", "2021-05-30", "2021-05-31", "2021-06-01", "2021-06-02", "2021-06-03", "2021-06-04", "2021-06-05", "2021-06-06", "2021-06-07", "2021-06-08", "2021-06-09", "2021-06-10", "2021-06-11", "2021-06-12", "2021-06-13", "2021-06-14", "2021-06-15", "2021-06-16", "2021-06-17", "2021-06-18", "2021-06-19", "2021-06-20", "2021-06-21", "2021-06-22", "2021-06-23", "2021-06-24", "2021-06-25", "2021-06-26", "2021-06-27", "2021-06-28", "2021-06-29", "2021-06-30"]
+  public possibleDatesMonth = ["2020-01-01", "2020-02-01", "2020-03-01", "2020-04-01", "2020-05-01", "2020-06-01", "2020-07-01", "2020-08-01", "2020-09-01", "2020-10-01", "2020-11-01", "2020-12-01", "2021-01-01", "2021-02-01", "2021-03-01", "2021-04-01", "2021-05-01", "2021-06-01"];
+  public possibleDatesYear = ["2020-01-01", "2021-01-01"]
+  public dates = this.possibleDatesDay;
+  public datesSelect = [];
+
+
   public legendLabel = "x-Axis"
   public metricLabel = "y-Axis"
 
@@ -97,7 +106,8 @@ export class UnitedStatesComponent implements OnInit, OnDestroy, AfterViewInit, 
     private router: Router,
     public route: ActivatedRoute,
     private drillDownService: DrillDownService,
-    private functionService: FunctionService
+    private functionService: FunctionService,
+    private simpleService: SimpleService
   ) {
 
     this._routerSub = router.events.pipe(
@@ -160,7 +170,7 @@ export class UnitedStatesComponent implements OnInit, OnDestroy, AfterViewInit, 
       const speechServicesPonyfillFactory = await window.WebChat.createCognitiveServicesSpeechServicesPonyfillFactory({
         credentials: {
           region: 'eastus',
-          subscriptionKey: '08c0fdef029e44a8a2893676f6f1035c'
+          subscriptionKey: 'ae8ac8ac8b3244d5a976a30ced9b1298'
         }
       });
 
@@ -321,10 +331,35 @@ export class UnitedStatesComponent implements OnInit, OnDestroy, AfterViewInit, 
       document.querySelectorAll('#botWin > div > div > div > div > button > svg')[0].setAttribute('height', '65');
       document.querySelectorAll('#botWin > div > div > div > div > button > svg')[0].setAttribute('width', '65');
       document.querySelectorAll('#botWin > div > div > div > div > button > svg')[0].setAttribute('style', 'padding-right: 20px');
-
-      if(this.statesSelect.length > 0){
+      document.getElementById("testSVG").style.left = '85%';
+      if (this.statesSelect.length > 0) {
+        $("input[id^='k']")[1]["placeholder"] = "  +"
+      }
+      if (this.datesSelect.length > 0) {
         $("input[id^='k']")[0]["placeholder"] = "  +"
       }
+
+      if (this.unitedStatesMap.y_Axis_Values.length > 0){
+        var placeholderText = "&nbsp; ";
+        for(var i = 0; i < this.unitedStatesMap.y_Axis_Values.length; i++){
+          placeholderText += this.unitedStatesMap.y_Axis_Values[i]
+
+          if( this.unitedStatesMap.y_Axis_Values.length > 1 && i < this.unitedStatesMap.y_Axis_Values.length - 1 && i < 2){
+            placeholderText += ", "
+          }
+          else if(i == 2 && this.unitedStatesMap.y_Axis_Values.length > 3){
+            placeholderText += "... "
+            break;
+          }
+        }
+
+        document.getElementById("cumulateText").innerHTML = placeholderText
+
+      }
+      else{
+        document.getElementById("cumulateText").innerHTML = " &nbsp; Tests, Cases, Deaths, ..."
+      }
+
     }, 1000);
 
   }
@@ -348,6 +383,12 @@ export class UnitedStatesComponent implements OnInit, OnDestroy, AfterViewInit, 
     });
 
     document.getElementById("Aggregate").addEventListener("change", this.changedAggregateMouse.bind(this));
+
+    document.getElementById("statesSelect").addEventListener("change", this.changedStatesSelectMouse.bind(this));
+
+    document.getElementById("Cumulative").addEventListener("change", this.changedCumulativeMouse.bind(this));
+
+    //document.getElementById("DropdownDate").addEventListener("change", this.changedDateSetting.bind(this));
 
 
 
@@ -384,10 +425,6 @@ export class UnitedStatesComponent implements OnInit, OnDestroy, AfterViewInit, 
         document.getElementById(key + "-From")["value"] = String(this.filterValue[key][0])
         document.getElementById(key + "-To")["value"] = String(this.filterValue[key][1])
       }
-      else if (key == "Date") {
-        document.getElementById(String(key) + "-From")["value"] = String(formatDate(new Date(this.filterValue[key][0]), 'yyyy-MM-dd', 'en'))
-        document.getElementById(String(key) + "-To")["value"] = String(formatDate(new Date(this.filterValue[key][1]), 'yyyy-MM-dd', 'en'))
-      }
     }
     this.unitedStatesMap.filterValue = this.filterValue
   }
@@ -399,20 +436,13 @@ export class UnitedStatesComponent implements OnInit, OnDestroy, AfterViewInit, 
       if (key == "Cumulative") {
         this.functionService.changeCumulative(this, data["Cumulative"])
       }
-      else if (key == "GroupBy") {
-        console.log(data["GroupBy"])
-        if (data["GroupBy"] == true) {
-          this.functionService.changeGroupBy(this, "Metric")
-        }
-        else if (data["GroupBy"] == false) {
-          this.functionService.changeGroupBy(this, "Legend")
-        }
-      }
     }
 
     this.update();
 
   }
+
+
 
 
   openInfo() {
@@ -451,7 +481,10 @@ export class UnitedStatesComponent implements OnInit, OnDestroy, AfterViewInit, 
       var data = event.path[4]["id"].split("_")[0]
 
       if (data == "State") {
-        this.functionService.removeState(this, { "State": ["All"] })
+        this.functionService.addState(this, ["All"])
+      }
+      else if (data == "Date") {
+        this.functionService.addDate(this, ["All"])
       }
       else {
         var filters = [{ [data]: [0, this.maxSlider[data]] }]
@@ -478,7 +511,7 @@ export class UnitedStatesComponent implements OnInit, OnDestroy, AfterViewInit, 
       console.log(<any>event)
       if ((<any>event).data.type == 'event') {
         $("li[class$='from-bot']").each(function (i, el) {
-          if(this["innerText"].indexOf("Bot said:Processing") !== -1){
+          if (this["innerText"].indexOf("Bot said:Processing") !== -1) {
             this["style"]["display"] = "none";
           }
         });
@@ -502,6 +535,9 @@ export class UnitedStatesComponent implements OnInit, OnDestroy, AfterViewInit, 
         }
         else if ((<any>event).data.name == "Refuse") {
           this.refuse();
+        }
+        else if ((<any>event).data.name == "RecommendSimpleAction") {
+          this.simpleService.analyzeEntities(this, (<any>event).data.value);
         }
 
 
@@ -626,28 +662,54 @@ export class UnitedStatesComponent implements OnInit, OnDestroy, AfterViewInit, 
   }
 
   selectedStateChange(value: any) {
+
     var selected = value.filter(x => !this.unitedStatesMap.statesSelect.includes(x));
     if (selected.length != 0) {
-      this.functionService.addFilter(this, [{ "State": selected }])
+      this.functionService.addState(this, selected)
     }
     else {
       selected = this.unitedStatesMap.statesSelect.filter(x => !value.includes(x));
-      this.functionService.removeFilter(this, [{ "State": selected }])
+      this.functionService.removeState(this, selected)
     }
     this.update();
   }
 
 
   selectedDateChange(value: any) {
+
     var selected = value.filter(x => !this.unitedStatesMap.datesSelect.includes(x));
     if (selected.length != 0) {
-      this.functionService.addFilter(this, [{ "Date": selected }])
+      this.functionService.addDate(this, selected)
     }
     else {
       selected = this.unitedStatesMap.datesSelect.filter(x => !value.includes(x));
-      this.functionService.removeFilter(this, [{ "Date": selected }])
+      this.functionService.removeDate(this, selected)
     }
+
     this.update();
+  }
+
+
+  changedDateSetting(value: any) {
+    console.log(value["target"][0]["selected"])
+    if (value["target"][0]["selected"] || value["target"][0]["selected"] == "true") {
+      document.getElementById("Date-From")["style"]["display"] = "none"
+      document.getElementById("Date-To")["style"]["display"] = "none"
+      document.getElementById("Date-Select")["style"]["display"] = "block"
+
+      this.functionService.changeDateSetting(this, "Selection")
+    }
+    else if (value["target"][1]["selected"] || value["target"][1]["selected"] == "true") {
+      document.getElementById("Date-From")["style"]["display"] = "block"
+      document.getElementById("Date-To")["style"]["display"] = "block"
+      document.getElementById("Date-Select")["style"]["display"] = "none"
+
+
+      this.functionService.changeDateSetting(this, "Range")
+    }
+
+    this.update();
+
   }
 
 
@@ -700,6 +762,18 @@ export class UnitedStatesComponent implements OnInit, OnDestroy, AfterViewInit, 
   changedAggregateMouse(event) {
     var element = document.getElementById('Aggregate');
     this.functionService.changeAggregate(this, element["value"])
+    this.update();
+  }
+
+  changedStatesSelectMouse(event) {
+    var element = document.getElementById('statesSelect');
+    this.functionService.changeStatesSelect(this, element["value"])
+    this.update();
+  }
+
+  changedCumulativeMouse(event) {
+    var element = document.getElementById('Cumulative');
+    this.functionService.changeCumulative(this, element["value"])
     this.update();
   }
 
@@ -793,31 +867,75 @@ export class UnitedStatesComponent implements OnInit, OnDestroy, AfterViewInit, 
 
 
 
-    console.log(previousAction["Add"]["Filter"][0]["State"])
+    console.log(previousAction["Add"]["State"])
     var states = []
 
-    if (previousAction["Add"]["Filter"][0]["State"] != "none" && typeof previousAction["Add"]["Filter"][0]["State"] !== "undefined" && previousAction["Add"]["Filter"][0]["State"][0] != "All") {
-      states = previousAction["Add"]["Filter"][0]["State"]
+    if (previousAction["Add"]["State"] != "none" && typeof previousAction["Add"]["State"] !== "undefined" && previousAction["Add"]["State"][0] != "All") {
+      states = previousAction["Add"]["State"]
     }
-    else if (previousAction["Remove"]["Filter"][0]["State"] != "none" && typeof previousAction["Remove"]["Filter"][0]["State"] !== "undefined" && previousAction["Remove"]["Filter"][0]["State"][0] != "All") {
-      states = previousAction["Remove"]["Filter"][0]["State"]
+    else if (previousAction["Remove"]["State"] != "none" && typeof previousAction["Remove"]["State"] !== "undefined" && previousAction["Remove"]["State"][0] != "All") {
+      states = previousAction["Remove"]["State"]
     }
 
     if (event["target"]["value"] == "Add") {
-      previousAction["Add"]["Filter"] = [{ "State": states }]
-      previousAction["Remove"]["Filter"] = 'none'
+      previousAction["Add"]["State"] = states
+      previousAction["Remove"]["State"] = 'none'
     }
     else if (event["target"]["value"] == "Remove all except") {
-      previousAction["Add"]["Filter"] = [{ "State": states }]
-      previousAction["Remove"]["Filter"] = [{ "State": ['All'] }]
+      previousAction["Add"]["State"] = states
+      previousAction["Remove"]["State"] = ['All']
     }
     else if (event["target"]["value"] == "Remove") {
-      previousAction["Add"]["Filter"] = 'none'
-      previousAction["Remove"]["Filter"] = [{ "State": states }]
+      previousAction["Add"]["State"] = 'none'
+      previousAction["Remove"]["State"] = states
     }
     else if (event["target"]["value"] == "Select all except") {
-      previousAction["Add"]["Filter"] = [{ "State": ['All'] }]
-      previousAction["Remove"]["Filter"] = [{ "State": states }]
+      previousAction["Add"]["State"] = ['All']
+      previousAction["Remove"]["State"] = states
+    }
+
+    this.actionSequence[id] = previousAction
+
+    this.updateDuringTraining();
+
+  }
+
+  changedDateAction(event) {
+    var id;
+
+    if (event["path"][2].id.includes("ActionTemplate")) {
+      id = event["path"][2].id.slice(14);
+    }
+
+    var previousAction = this.actionSequence[id]
+
+
+
+    console.log(previousAction["Add"]["Date"])
+    var dates = []
+
+    if (previousAction["Add"]["Date"] != "none" && typeof previousAction["Add"]["Date"] !== "undefined" && previousAction["Add"]["Date"][0] != "All") {
+      dates = previousAction["Add"]["Date"]
+    }
+    else if (previousAction["Remove"]["Date"] != "none" && typeof previousAction["Remove"]["Date"] !== "undefined" && previousAction["Remove"]["Date"][0] != "All") {
+      dates = previousAction["Remove"]["Date"]
+    }
+
+    if (event["target"]["value"] == "Add") {
+      previousAction["Add"]["Date"] = dates
+      previousAction["Remove"]["Date"] = 'none'
+    }
+    else if (event["target"]["value"] == "Remove all except") {
+      previousAction["Add"]["Date"] = dates
+      previousAction["Remove"]["Date"] = ['All']
+    }
+    else if (event["target"]["value"] == "Remove") {
+      previousAction["Add"]["Date"] = 'none'
+      previousAction["Remove"]["Date"] = dates
+    }
+    else if (event["target"]["value"] == "Select all except") {
+      previousAction["Add"]["Date"] = ['All']
+      previousAction["Remove"]["Date"] = dates
     }
 
     this.actionSequence[id] = previousAction
@@ -865,7 +983,7 @@ export class UnitedStatesComponent implements OnInit, OnDestroy, AfterViewInit, 
     this.directLine
       .postActivity({
         from: { id: "USER_ID", name: "USER_NAME" },
-        name: "problemNotification",
+        name: "chatbotNotification",
         type: "event",
         value: value
       })
@@ -878,6 +996,7 @@ export class UnitedStatesComponent implements OnInit, OnDestroy, AfterViewInit, 
         error => console.log(`Error posting activity ${error}`)
       );
   }
+
 
   tagMapper(tags: any[]): any[] {
     return tags.length < 51 ? tags : [tags];
@@ -892,12 +1011,10 @@ export class UnitedStatesComponent implements OnInit, OnDestroy, AfterViewInit, 
     var data = ev.target.id.split("-");
     var filters = []
     if (data[0] == "Date") {
-      if (data[1] == "From") {
-        filters.push({ [data[0]]: [new Date(ev.target.value).getTime(), this.filterValue['Date'][1]] })
-      }
-      else {
-        filters.push({ [data[0]]: [this.filterValue['Date'][0], new Date(ev.target.value).getTime()] })
-      }
+
+      var date = document.getElementById("Date-From")["value"] + " till " + document.getElementById("Date-To")["value"]
+
+      this.functionService.addDate(this, [date])
 
     }
     else {
@@ -924,32 +1041,29 @@ export class UnitedStatesComponent implements OnInit, OnDestroy, AfterViewInit, 
           filters.push({ [data[0]]: [this.filterValue[data[0]][0], parseInt(ev.target.value)] })
         }
       }
+      this.functionService.addFilter(this, filters)
     }
-    this.functionService.addFilter(this, filters)
+
     this.update();
   }
 
   startDemonstration(value) {
     this.trainingMode = true;
     this.addToSequence = true;
+    this.shortcut = false;
     document.getElementById("trainUtterance").innerHTML = this.initialUtterance + document.getElementById("trainUtterance").innerHTML;
 
     this.trainableEntites = value;
 
-    for (var fI in this.trainableEntites["Filter"]) {
-      var filter = this.trainableEntites["Filter"][fI]
-      if (Object.keys(filter)[Object.keys(filter).length - 1] == "State") {
-        this.stateList = []
-        for (var sI in filter["State"]) {
-          var state = filter["State"][sI]
-          var index = parseInt(state.charAt(0))
-          if (this.stateList.length < index) {
-            this.stateList[index - 1] = [state.substring(1)]
-          }
-          else {
-            this.stateList[index - 1].push(state.substring(1))
-          }
-        }
+    this.stateList = []
+    for (var sI in this.trainableEntites["State"]) {
+      var state = this.trainableEntites["State"][sI]
+      var index = parseInt(state.charAt(0))
+      if (this.stateList.length < index) {
+        this.stateList[index - 1] = [state.substring(1)]
+      }
+      else {
+        this.stateList[index - 1].push(state.substring(1))
       }
     }
 
@@ -957,13 +1071,16 @@ export class UnitedStatesComponent implements OnInit, OnDestroy, AfterViewInit, 
     for (var mI in this.trainableEntites["DataFields"]) {
       var metric = this.trainableEntites["DataFields"][mI]
       var index = parseInt(metric.charAt(0))
-      if (this.metricList.length <= index) {
-        this.metricList[index] = [metric.substring(1)]
+      if (this.metricList.length < index) {
+        this.metricList[index - 1] = [metric.substring(1)]
       }
       else {
-        this.metricList[index].push(metric.substring(1))
+        this.metricList[index -1].push(metric.substring(1))
       }
     }
+
+    console.log(this.metricList[0])
+    
 
     var possibleFilter = ["Date", "State", "Tests", "Cases", "Deaths", "Population", "PartialVaccinated", "FullyVaccinated"]
     var activeFilters = []
@@ -981,10 +1098,26 @@ export class UnitedStatesComponent implements OnInit, OnDestroy, AfterViewInit, 
       'Metric': this.unitedStatesMap.y_Axis_Values,
       'Filters': this.filterValue,
       'States': this.unitedStatesMap.statesSelect,
+      'Dates': this.datesSelect,
+      'DateSettings': this.unitedStatesMap.dateSetting,
       'OpenFilters': activeFilters,
       'Aggregate': this.unitedStatesMap.aggregate,
       'Cumulative': this.unitedStatesMap.cumulative,
       'GroupBy': this.unitedStatesMap.groupBy
+    }
+
+    this.unusedEntities = {}
+
+    for (var tIndex in this.trainableEntites){
+      if(this.trainableEntites[tIndex].length > 0 && tIndex != "State"  && tIndex != "DataFields" && tIndex != "StatesSelect"){
+        this.unusedEntities[tIndex] = JSON.parse(JSON.stringify(this.trainableEntites[tIndex]))
+      }
+      else if(this.trainableEntites[tIndex].length > 0 && tIndex == "State"){
+        this.unusedEntities[tIndex] = JSON.parse(JSON.stringify(this.stateList))
+      }
+      else if(this.trainableEntites[tIndex].length > 0 && tIndex == "DataFields"){
+        this.unusedEntities["Metric"] = JSON.parse(JSON.stringify(this.metricList))
+      }
     }
 
     console.log(this.initialState)
@@ -992,27 +1125,49 @@ export class UnitedStatesComponent implements OnInit, OnDestroy, AfterViewInit, 
 
   }
 
-
   closeRecommendationItem(event) {
-    var index = parseInt(event.path[1].id.substring(19))
-    var element = document.getElementById("RecommenderTemplate" + index);
-    element.parentNode.removeChild(element);
+    console.log(event.path[2].childNodes[2].childNodes[2]["checked"])
+    if (event.path[2].childNodes[2].childNodes[0]["checked"] || event.path[2].childNodes[2].childNodes[2]["checked"]) {
+      var index = parseInt(event.path[2].id.substring(19))
+      var element = document.getElementById("RecommenderTemplate" + index);
+      element.parentNode.removeChild(element);
 
-    for (var rIndex in this.recommendationList) {
-      var recommendation = this.recommendationList[rIndex]
-      if (recommendation["id"] == index) {
-        if (event.target.innerText == "Yes") {
-          this.actionSequence[index] = recommendation["action"]
-          document.getElementById("ActionTemplate" + index).childNodes[0]["innerHTML"] = recommendation["text"].replace("Do you want to: ", "")
+      for (var rIndex in this.recommendationList) {
+        var recommendation = this.recommendationList[rIndex]
+        if (recommendation["id"] == index) {
+          if (event.path[2].childNodes[2].childNodes[2]["checked"] == true) {
+            this.actionSequence[index] = recommendation["action"]
+            if (recommendation["value"] == "Remove all") {
+              document.getElementById("ActionTemplate" + index).childNodes[0]["innerHTML"] = recommendation["text"]
+            }
+            else {
+              var selection = document.getElementById("ActionTemplate" + index).childNodes[0].childNodes[0];
+              console.log(selection)
+              for (var i = 0; i < selection["options"].length; i++) {
+                if (selection["options"][i]["value"] == recommendation["value"]) {
+                  selection["options"][i]["selected"] = true;
+                }
+                else {
+                  selection["options"][i]["selected"] = false;
+                }
+              }
+            }
 
-        }
-        else if (event.target.innerText == "No") {
-          this.recommendationList.splice(parseInt(rIndex), 1)
+
+          }
+          else if (event.path[2].childNodes[2].childNodes[0]["checked"] == true) {
+            this.recommendationList.splice(parseInt(rIndex), 1)
+          }
         }
       }
+
+
+      this.updateDuringTraining();
+    }
+    else{
+      this.communicateToBot("Please select one of the two options.")
     }
 
-    this.updateDuringTraining();
 
 
   }
@@ -1077,6 +1232,13 @@ export class UnitedStatesComponent implements OnInit, OnDestroy, AfterViewInit, 
     var element = document.getElementById("ActionTemplate" + id);
     element.parentNode.removeChild(element);
 
+    try{
+      var RecElement = document.getElementById("RecommenderTemplate" + id);
+      RecElement.parentNode.removeChild(RecElement);
+    }
+    catch{
+    }
+
     for (var i = id; i < this.actionSequence.length; i++) {
       var oldID = parseInt(i) + 1
       document.getElementById("ActionTemplate" + oldID).id = "ActionTemplate" + i
@@ -1107,7 +1269,7 @@ export class UnitedStatesComponent implements OnInit, OnDestroy, AfterViewInit, 
 
 
 
-    var possibleFilter = ["Date", "State", "Tests", "Cases", "Deaths", "Population", "PartialVaccinated", "FullyVaccinated"]
+    var possibleFilter = ["Tests", "Cases", "Deaths", "Population", "PartialVaccinated", "FullyVaccinated"]
 
     for (var index in possibleFilter) {
       this.functionService.removeFilter(this, [{ [possibleFilter[index]]: ["close"] }])
@@ -1116,16 +1278,21 @@ export class UnitedStatesComponent implements OnInit, OnDestroy, AfterViewInit, 
     for (var index in this.initialState['OpenFilters']) {
       this.functionService.addFilter(this, [{ [this.initialState['OpenFilters'][index]]: ["open"] }])
     }
-    this.functionService.changeFilter(this, { "State": this.initialState["States"] })
+
+    this.functionService.removeState(this, ["All"])
+    this.functionService.addState(this, this.initialState['States'])
+
+    this.functionService.removeDate(this, ["All"])
+    this.functionService.changeDateSetting(this, this.initialState['DateSettings'])
+    this.functionService.addDate(this, this.initialState['Dates'])
 
     this.functionService.changeFilter(this, this.initialState["Filters"])
 
     this.functionService.changeAggregate(this, this.initialState["Aggregate"])
 
+    this.functionService.changeStatesSelect(this, this.initialState["GroupBy"])
+
     this.functionService.changeCumulative(this, this.initialState["Cumulative"])
-
-    this.functionService.changeGroupBy(this, this.initialState["GroupBy"])
-
 
 
     for (var i = 0; i < this.actionSequence.length; i++) {
@@ -1155,7 +1322,7 @@ export class UnitedStatesComponent implements OnInit, OnDestroy, AfterViewInit, 
           clone = document.getElementById('ActionTemplate').cloneNode(true);
           clone.lastChild.parentElement.id = "ActionTemplate" + returnValues[0][i]['id'];
           clone.lastChild.parentElement.style["display"] = "block";
-          clone.childNodes[2].onclick = this.closeITLElement.bind(this);
+          clone.childNodes[1].onclick = this.closeITLElement.bind(this);
         }
         clone.childNodes[0].innerHTML = returnValues[0][i]['text']
         document.getElementById('itl-pane').appendChild(clone);
@@ -1172,6 +1339,12 @@ export class UnitedStatesComponent implements OnInit, OnDestroy, AfterViewInit, 
         if (document.getElementsByClassName("filterSwitch").length > 0) {
           document.getElementsByClassName("filterSwitch")[document.getElementsByClassName("filterSwitch").length - 1].addEventListener("change", this.changedFilterAction.bind(this));
         }
+        if (document.getElementsByClassName("dateSwitch").length > 0) {
+          document.getElementsByClassName("dateSwitch")[document.getElementsByClassName("dateSwitch").length - 1].addEventListener("change", this.changedDateAction.bind(this));
+        }
+        
+
+
 
       }
       $("div[id^='RecommenderTemplate']").each(function (i, el) {
@@ -1182,6 +1355,7 @@ export class UnitedStatesComponent implements OnInit, OnDestroy, AfterViewInit, 
 
 
         this.recommendationList.push(returnValues[2][index])
+        this.communicateToBot(returnValues[2][index]['reason'])
 
         if (this.treatment == "2") {
           this.sendRecommendation(returnValues[2][index]['id'], returnValues[2][index]['text'])
@@ -1197,8 +1371,8 @@ export class UnitedStatesComponent implements OnInit, OnDestroy, AfterViewInit, 
             RecClone.lastChild.parentElement.id = "RecommenderTemplate" + returnValues[2][index]['id'];
           }
           RecClone.lastChild.parentElement.style["display"] = "block";
-          RecClone.childNodes[2].onclick = this.closeRecommendationItem.bind(this);
-          RecClone.childNodes[3].onclick = this.closeRecommendationItem.bind(this);
+          RecClone.childNodes[1].childNodes[0].onclick = this.closeRecommendationItem.bind(this);
+          //RecClone.childNodes[1].childNodes[2].onclick = this.closeRecommendationItem.bind(this);
 
           RecClone.childNodes[0].innerHTML = returnValues[2][index]['text']
           document.getElementById('itl-pane').appendChild(RecClone);
@@ -1211,6 +1385,8 @@ export class UnitedStatesComponent implements OnInit, OnDestroy, AfterViewInit, 
   }
 
   endTrainingMode(sendActivity) {
+
+    if(sendActivity == "false" ||  this.shortcut || this.simpleService.checkUnused(this, this.unusedEntities) ){
 
     this.trainingMode = false;
     this.addToSequence = false;
@@ -1266,6 +1442,10 @@ export class UnitedStatesComponent implements OnInit, OnDestroy, AfterViewInit, 
       var element = document.getElementById("itl-pane").childNodes[i];
       element.parentNode.removeChild(element);
     }
+  }
+  else{
+    this.shortcut = true;
+  }
 
   }
 
