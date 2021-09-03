@@ -1,6 +1,4 @@
 .county {
-  stroke: grey;
-  stroke-width: 0.3;
   cursor: pointer;
 }
 
@@ -43,6 +41,10 @@ div.tooltip {
 
 .k-multiselect-wrap{
   padding: 0px;
+}
+
+.highlight{
+  box-shadow: black 0px 0px 10px 6px;
 }
 
 

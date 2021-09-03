@@ -32,7 +32,7 @@
   position: relative;
   justify-content: flex-end;
   border: 1px solid #122e51;
-  padding-right: 10px;
+  padding-right: 6px;
   z-index: 101;
   float: left;
 }
@@ -41,9 +41,15 @@
   display: none;
   flex-direction: column;
   border: 3px solid #122e51;
+  border-bottom: 1px solid gray;
   overflow-x: scroll;
-  width:75%;
-  height: 66%;
+  width:70%;
+  height: 56%;
+}
+
+.itl-pane{
+  overflow-y: scroll;
+  height: -webkit-fill-available;
 }
 
 .infoBox{
@@ -87,6 +93,53 @@
   bottom: -14px;
 }
 
+/* Tooltip text */
+.tooltiptext {
+  visibility: hidden;
+  width: 100px !important;
+  background-color: white;
+  color: black;
+  text-align: center;
+  padding: 5px 3px;
+  border:1px solid #555;
+  border-radius: 6px;
+
+  /* Position the tooltip text */
+  position: relative;
+  z-index: 1;
+  bottom: -45px;
+  left: 30px;
+  margin-left: -60px;
+
+  /* Fade in tooltip */
+  opacity: 0;
+  transition: opacity 0.3s;
+}
+
+/* Tooltip arrow */
+.tooltiptext::before {
+  content: "";
+  position: absolute;
+  bottom: 100%;
+  left: 50%;
+  margin-left: -5px;
+  border-width: 5px;
+  border-style: solid;
+  border-color:  transparent transparent #555 transparent;
+}
+
+/* Show the tooltip text when you mouse over the tooltip container */
+.btn:hover .tooltiptext {
+  visibility: visible;
+  opacity: 1;
+}
+
+/* Show the tooltip text when you mouse over the tooltip container */
+span:hover .tooltiptext {
+  visibility: visible;
+  opacity: 1;
+}
+
 .connector{
   width: 30px;
   height: 30px;
@@ -99,6 +152,8 @@
   color: #94969e;
 }
 
+
+
 .draggable {
   border:1px solid #122e51;
   width: max-content;
@@ -109,6 +164,40 @@
   color: white
   //flex: 1 0 auto;
 }
+
+@keyframes append-animate-left {
+	0% {transform: translate(-400px, 0px);}
+  40% {transform: translate(-240px, 20px);}
+  50% {transform: translate(-200px, 25px);}
+  60% {transform: translate(-160px, 20px);}
+	100% { transform: translate(0px, 0px); }
+}
+
+.left .draggable.animate{
+  animation: append-animate-left .6s linear;
+  background-color: black;
+}
+
+@keyframes append-animate-right {
+	0% {transform: translate(400px, 0px);}
+  40% {transform: translate(240px, 20px);}
+  50% {transform: translate(200px, 25px);}
+  60% {transform: translate(160px, 20px);}
+	100% { transform: translate(0px, 0px); }
+}
+
+.right .draggable.animate{
+  animation: append-animate-right .6s linear;
+  background-color: black;
+}
+
+
+.col.animate{
+  box-shadow: rgb(135, 122, 255) 0px 0px 10px 6px;
+}
+
+
+
 
 .interactiveField {
   position: relative;
@@ -126,7 +215,7 @@
 }
 
 .filterContent{
-  width:90%;
+  width:85%;
   display:flex; 
   flex-wrap: wrap;
   justify-content: space-evenly;
@@ -135,7 +224,7 @@
 }
 
 .filterSettings{
-  width: 10%;
+  width: 15%;
   display:flex; 
   flex-wrap: wrap;
   justify-content: space-evenly;

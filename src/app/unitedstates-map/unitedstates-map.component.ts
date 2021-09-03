@@ -334,7 +334,7 @@ export class UnitedStatesMapComponent implements OnInit, AfterViewInit {
 
 
 
-      var interval = Math.ceil(that.newCases.length / 20)
+      
 
       this.createSVG()
 
@@ -348,16 +348,7 @@ export class UnitedStatesMapComponent implements OnInit, AfterViewInit {
       //var z = d3.scaleOrdinal()
       //  .range(color);
 
-      var formatNumber = d3.format(".2f");
 
-      var xAxis = d3.axisBottom(xScale0).ticks(10).tickSizeOuter(0);
-      var yAxis = d3.axisLeft(yScale).ticks(10).tickSizeOuter(0)
-        .tickFormat(function (d: number) {
-          var s = formatNumber(d / 1e6);
-          return this.parentNode.nextSibling
-            ? "\xa0" + s
-            : "" + s + " million";
-        });
 
       var sorted = false
 
@@ -379,105 +370,154 @@ export class UnitedStatesMapComponent implements OnInit, AfterViewInit {
       yScale.domain([0, max_Value]) //d3.max(that.newCases, d => d[dataColumns[0]] > d[dataColumns[1]] ? d[dataColumns[0]] : d[dataColumns[1]])]
 
 
-        /**
-         * Added for new UI
-         */
-        var groupByLegend;
-        if (legend == "Date") {
-          groupByLegend = "State"
-        }
-        else if (legend == "State") {
-          groupByLegend = "Date"
-        }
+      var formatSimpleNumber = d3.format(".1f");
 
+      var xAxis = d3.axisBottom(xScale0).ticks(10).tickSizeOuter(0);
+      var yAxis = d3.axisLeft(yScale).ticks(10).tickSizeOuter(0)
+        .tickFormat(function (d: number) {
 
-        this.unqiueGroupArray = []
-
-        for (var i = 0, n = this.newCases.length; i < n; i++) {
-          if (!this.unqiueGroupArray.includes(this.newCases[i][groupByLegend])) {
-            this.unqiueGroupArray.push(this.newCases[i][groupByLegend])
+          if (max_Value > 700000) {
+            var s = formatSimpleNumber(d / 1e6);
+            return this.parentNode.nextSibling
+              ? "\xa0" + s
+              : "" + s + " M";
           }
+          else if (max_Value > 700) {
+            var s = formatSimpleNumber(d / 1e3);
+            return this.parentNode.nextSibling
+              ? "\xa0" + s
+              : "" + s + " K";
+          }
+          else{
+            var s = formatSimpleNumber(d);
+            return this.parentNode.nextSibling
+              ? "\xa0" + s
+              : "" + s;
+          }
+        });
+
+      /**
+       * Added for new UI
+       */
+      var groupByLegend;
+      if (legend == "Date") {
+        groupByLegend = "State"
+      }
+      else if (legend == "State") {
+        groupByLegend = "Date"
+      }
+
+
+    var unqiueLegendArray = []
+
+      for (var i = 0, n = this.newCases.length; i < n; i++) {
+        if (!unqiueLegendArray.includes(this.newCases[i][legend])) {
+          unqiueLegendArray.push(this.newCases[i][legend])
         }
+      }
+
+      var interval = Math.ceil(unqiueLegendArray.length / 20)
+
+      this.unqiueGroupArray = []
+
+      for (var i = 0, n = this.newCases.length; i < n; i++) {
+        if (!this.unqiueGroupArray.includes(this.newCases[i][groupByLegend])) {
+          this.unqiueGroupArray.push(this.newCases[i][groupByLegend])
+        }
+      }
 
 
-        /**Ended */
+      /**Ended */
 
 
-        xScale1.domain(dataColumns).range([0, xScale0.bandwidth()])
+      xScale1.domain(dataColumns).range([0, xScale0.bandwidth()])
 
-        for (var i = 0, n = dataColumns.length; i < n; i++) {
-          for (var j = 0, m = this.unqiueGroupArray.length; j < m; j++) {
-            var width = xScale1.bandwidth() / this.unqiueGroupArray.length
-            state_name.selectAll(".bar." + dataColumns[i])
-              .data(d => [d])
-              .enter()
-              .append("rect")
-              .attr("class", "bar " + dataColumns[i] + "|" + this.unqiueGroupArray[j])
-              .attr("fill", z(dataColumns[i]))
-              .attr("x", d => xScale1(dataColumns[i]) + j * width)
-              .attr("y", d => yScale(d[dataColumns[i]]))
-              .attr("width", width)
-              .attr("height", d => {
-                if (d[groupByLegend] == this.unqiueGroupArray[j]) {
-                  return this.height - 10 - 30 - yScale(d[dataColumns[i]])
-                }
-                else {
+      for (var i = 0, n = dataColumns.length; i < n; i++) {
+        for (var j = 0, m = this.unqiueGroupArray.length; j < m; j++) {
+          var width = xScale1.bandwidth() / this.unqiueGroupArray.length
+          state_name.selectAll(".bar." + dataColumns[i])
+            .data(d => [d])
+            .enter()
+            .append("rect")
+            .attr("class", "bar " + dataColumns[i] + "|" + this.unqiueGroupArray[j])
+            .attr("fill", z(dataColumns[i]))
+            .attr("x", d => xScale1(dataColumns[i]) + j * width)
+            .attr("y", d => yScale(d[dataColumns[i]]))
+            .attr("width", width)
+            .attr("height", d => {
+              if (d[groupByLegend] == this.unqiueGroupArray[j]) {
+                if (d[dataColumns[i]] == 0) {
                   return 0
                 }
-              })
-              .on("mouseover", function (d, unknown, bar) {
-                that.tooltip
-                  .transition()
-                  .duration(200)
-                  .style("opacity", 0.9);
-                that.tooltip
-                  .html(
+                else {
+                  return this.height - 10 - 30 - yScale(d[dataColumns[i]])
+                }
 
-                    d[groupByLegend] + "<br/>" + d[legend] + "<br/><b>" + bar[0].classList[1].split("|")[0] + ":</b> " + that.formatDecimal(d[bar[0].classList[1].split("|")[0]])
-                  )
-                  .style("left", d3.event.pageX + "px")
-                  .style("top", d3.event.pageY + "px");
+              }
+              else {
+                return 0
+              }
+            })
+            .on("mouseover", function (d, unknown, bar) {
+              that.tooltip
+                .transition()
+                .duration(200)
+                .style("opacity", 0.9);
+              var dateText = d["Date"]
+              if (that.aggregate == "M") {
+                dateText = dateText.replace("-01", "");
+              }
+              else if (that.aggregate == "Y") {
+                dateText = dateText.replace("-01-01", "");
+              }
+              that.tooltip
+                .html(
 
-                that.changeDetectorRef.detectChanges();
-              })
-              .on("mouseout", function (d) {
-                that.tooltip
-                  .transition()
-                  .duration(300)
-                  .style("opacity", 0);
+                  d["State"] + "<br/>" + dateText + "<br/><b>" + bar[0].classList[1].split("|")[0] + ":</b> " + that.formatDecimal(d[bar[0].classList[1].split("|")[0]])
+                )
+                .style("left", d3.event.pageX + "px")
+                .style("top", d3.event.pageY + "px");
 
-                that.changeDetectorRef.detectChanges();
-              });
-          }
+              that.changeDetectorRef.detectChanges();
+            })
+            .on("mouseout", function (d) {
+              that.tooltip
+                .transition()
+                .duration(300)
+                .style("opacity", 0);
+
+              that.changeDetectorRef.detectChanges();
+            });
         }
+      }
 
 
-        this.legend_Container = d3
-          .select("#testSVG");
+      this.legend_Container = d3
+        .select("#testSVG");
 
-        var legend_Axis = this.legend_Container.append("svg")
-          .attr("font-family", "sans-serif")
-          .attr("font-size", 9)
-          .attr("text-anchor", "end")
-          .attr("height", 20 * dataColumns.length)
-          .selectAll("g")
-          .data(dataColumns.slice())
-          .enter().append("g")
-          .attr("transform", function (d, i) { return "translate(0," + i * 20 + ")"; });
+      var legend_Axis = this.legend_Container.append("svg")
+        .attr("font-family", "sans-serif")
+        .attr("font-size", 9)
+        .attr("text-anchor", "end")
+        .attr("height", 20 * dataColumns.length)
+        .selectAll("g")
+        .data(dataColumns.slice())
+        .enter().append("g")
+        .attr("transform", function (d, i) { return "translate(0," + i * 20 + ")"; });
 
-        legend_Axis.append("rect")
-          .attr("x", 80) //this.width - 19 - 60
-          .attr("width", 19)
-          .attr("height", 19)
-          .attr("fill", function (d) { return z(d) });
+      legend_Axis.append("rect")
+        .attr("x", 80) //this.width - 19 - 60
+        .attr("width", 19)
+        .attr("height", 19)
+        .attr("fill", function (d) { return z(d) });
 
-        legend_Axis.append("text")
-          .attr("x", 75)//this.width - 24 - 60
-          .attr("y", 9.5)
-          .attr("dy", "0.32em")
-          .text(function (d) { return d; });
+      legend_Axis.append("text")
+        .attr("x", 75)//this.width - 24 - 60
+        .attr("y", 9.5)
+        .attr("dy", "0.32em")
+        .text(function (d) { return d; });
 
-      
+
 
 
 
@@ -528,7 +568,7 @@ export class UnitedStatesMapComponent implements OnInit, AfterViewInit {
       //that.g = this.svg.append("g")
       //.attr("transform", `translate(${0},${30})`);
 
-      
+
 
 
 
@@ -546,12 +586,12 @@ export class UnitedStatesMapComponent implements OnInit, AfterViewInit {
       var legend = this.legend_Values
 
       var groupByLegend;
-        if (legend == "Date") {
-          groupByLegend = "State"
-        }
-        else if (legend == "State") {
-          groupByLegend = "Date"
-        }
+      if (legend == "Date") {
+        groupByLegend = "State"
+      }
+      else if (legend == "State") {
+        groupByLegend = "Date"
+      }
 
       if (this.legendChanged) {
         await $.post('http://127.0.0.1:5000/scatter', { x: x_Axis, y: y_Axis, legend: legend, Aggregate: this.aggregate, Cumulative: this.cumulative, GroupBy: this.groupBy, Date: formatDate(new Date(that.filterValue["Date"][1]), 'yyyy-MM-dd', 'en') }, function (data) {
@@ -649,9 +689,17 @@ export class UnitedStatesMapComponent implements OnInit, AfterViewInit {
             .duration(200)
             .style("opacity", 0.9);
 
+          var dateText = d["Date"]
+          if (that.aggregate == "M") {
+            dateText = dateText.replace("-01", "");
+          }
+          else if (that.aggregate == "Y") {
+            dateText = dateText.replace("-01-01", "");
+          }
+
           that.tooltip
             .html(
-              d[groupByLegend]  + "<br/>" + d[legend] + "<br/><b>" + x_Axis + "</b>: " + that.formatDecimal(d[x_Axis]) + "<br/><b>" + y_Axis + "</b>: " + that.formatDecimal(d[y_Axis])
+              d["State"] + "<br/>" + dateText + "<br/><b>" + x_Axis + "</b>: " + that.formatDecimal(d[x_Axis]) + "<br/><b>" + y_Axis + "</b>: " + that.formatDecimal(d[y_Axis])
             )
             .style("left", d3.event.pageX - 70 + "px")
             .style("top", d3.event.pageY + 10 + "px");
@@ -809,8 +857,23 @@ export class UnitedStatesMapComponent implements OnInit, AfterViewInit {
           //that.clicked(d, that, this);
         })
         .attr("class", "county")
-        .attr("stroke", "grey")
-        .attr("stroke-width", 0.3)
+        .attr("stroke", function (d) {
+          if (that.statesSelect.includes(d.abbrev)) {
+            return "#877AFF"//"#ffa500"
+          }
+          else {
+            return "grey";
+            //return "#f2f2f2";
+          }
+        })
+        .attr("stroke-width", function (d) {
+          if (that.statesSelect.includes(d.abbrev)) {
+            return 3
+          }
+          else {
+            return 0.3;
+          }
+        })
         .attr("cursor", "pointer")
         .attr("fill", function (d) {
           var metric = d.metric;
@@ -821,7 +884,7 @@ export class UnitedStatesMapComponent implements OnInit, AfterViewInit {
           else if (metric > 0) {
             return that.colorScaleSqrt(metric);
           } else {
-            return "#ffffff";
+            return "#d6d3d3";
             //return "#f2f2f2";
           }
         })

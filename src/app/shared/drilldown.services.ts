@@ -2,6 +2,10 @@ import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { param } from 'jquery';
 
+import {
+  formatDate
+} from '@angular/common';
+
 @Injectable()
 export class DrillDownService {
 
@@ -138,12 +142,6 @@ export class DrillDownService {
           'StatesSelect': 'none'
         }
       }
-      if (typeof that.unusedEntities["Visualizations"] != 'undefined') {
-        var unusedIndex = that.unusedEntities["Visualizations"].indexOf(target)
-        if (unusedIndex != -1) {
-          that.unusedEntities["Visualizations"].splice(unusedIndex, 1)
-        }
-      }
 
       instances.push({
         'text': "Change <span style='color:" + this.fieldToColor['Visualizations'] + "'> Visualization</span> to <b>" + target + "</b>.",
@@ -176,12 +174,7 @@ export class DrillDownService {
           'StatesSelect': 'none'
         }
       }
-      if (typeof that.unusedEntities["Legend"] != 'undefined') {
-        var unusedIndex = that.unusedEntities["Legend"].indexOf(target)
-        if (unusedIndex != -1) {
-          that.unusedEntities["Legend"].splice(unusedIndex, 1)
-        }
-      }
+
 
       instances.push({
         'text': '<select class="legendSwitch"><option value="Add" selected>Add</option><option value="Remove">Remove</option></select> <b>' + target + "</b> to <span class='trainLegend' style='color:" + this.fieldToColor['Legend'] + "'>" + that.legendLabel + "</span>.",
@@ -214,13 +207,6 @@ export class DrillDownService {
           'StatesSelect': 'none'
         }
       }
-      if (typeof that.unusedEntities["Legend"] != 'undefined') {
-
-        var unusedIndex = that.unusedEntities["Legend"].indexOf(target)
-        if (unusedIndex != -1) {
-          that.unusedEntities["Legend"].splice(unusedIndex, 1)
-        }
-      }
 
       instances.push({
         'text': '<select class="legendSwitch"><option value="Add">Add</option><option value="Remove" selected>Remove</option></select> <b>' + target + "</b> from <span class='trainLegend' style='color:" + this.fieldToColor['Legend'] + "'>" + that.legendLabel + "</span>.",
@@ -230,15 +216,9 @@ export class DrillDownService {
     }
     else if (action == "AddMetric") {
 
-      for (var mIindex in that.unusedEntities["Metric"]) {
-        var unusedIndex = that.unusedEntities["Metric"][mIindex].indexOf(target)
-        if (unusedIndex != -1) {
-          that.unusedEntities["Metric"][mIindex].splice(unusedIndex, 1)
-        }
-      }
-
       target = [target]
 
+      var metricPhrase = ""
 
       var previousSequence = "none"
 
@@ -248,142 +228,177 @@ export class DrillDownService {
         element.parentNode.removeChild(element);
       }
 
-      var metricPhrase = '<select class="metricSwitch"><option value="Add" selected>Add</option><option value="Remove all except">Remove all except</option><option value="Remove">Remove</option><option value="Select all except">Select all except</option></select> <b>' + target[0]
+      if (target.includes("All")) {
+
+        newAction = {
+          'Add': {
+            'Visualizations': 'none',
+            'DataFields': 'none',
+            'Legend': 'none',
+            'Filter': 'none',
+            'State': target,
+            'Date': 'none',
+            'Aggregate': 'none',
+            'Cumulative': 'none',
+            'StatesSelect': 'none'
+          },
+          'Remove': {
+            'Visualizations': 'none',
+            'DataFields': 'none',
+            'Legend': 'none',
+            'Filter': 'none',
+            'State': 'none',
+            'Date': 'none',
+            'Aggregate': 'none',
+            'Cumulative': 'none',
+            'StatesSelect': 'none'
+          }
+        }
+
+        metricPhrase = '<select class="metricSwitchAll"><option value="Add" selected>Add</option><option value="Remove">Remove</option></select> All '
+
+      }
+      else {
+
+        metricPhrase = '<select class="metricSwitch"><option value="Add" selected>Add</option><option value="Remove all except">Remove all except</option><option value="Remove">Remove</option><option value="Select all except">Select all except</option></select> <b>' + target[0]
 
 
 
-      if (previousSequence != "none") {
-        var previouslyAdded = previousSequence['Add']['DataFields']
+        if (previousSequence != "none") {
+          var previouslyAdded = previousSequence['Add']['DataFields']
 
-        for (var i = 0; i < previouslyAdded.length; i++) {
-          if (previouslyAdded != "open" && previouslyAdded != "close") {
+          for (var i = 0; i < previouslyAdded.length; i++) {
+            if (previouslyAdded != "open" && previouslyAdded != "close") {
 
-            if (i == previouslyAdded.length - 1) {
-              metricPhrase += " and "
+              if (i == previouslyAdded.length - 1) {
+                metricPhrase += " and "
+              }
+              else {
+                metricPhrase += ", "
+              }
+              metricPhrase += previouslyAdded[i];
+              target.push(previouslyAdded[i])
             }
-            else {
-              metricPhrase += ", "
+          }
+        }
+
+        for (var index in that.metricList) {
+          if (target.every(metric => that.metricList[index].includes(metric)) && that.metricList[index].every(metric => target.includes(metric))) {
+            var reason = "**Ambiguity** \r\n I have two different interpretations of your action. \r\n Please select the action above that best represents your intentions of the command."
+
+            var textRec = 'Remove all except <b>'
+            for (var textIndex in that.metricList[index]) {
+
+              if (parseInt(textIndex) == that.metricList[index].length - 1 && that.metricList[index].length != 1) {
+                textRec += " and "
+              }
+              else if (parseInt(textIndex) > 0) {
+                textRec += ", "
+              }
+              textRec += that.metricList[index][textIndex];
+
             }
-            metricPhrase += previouslyAdded[i];
-            target.push(previouslyAdded[i])
+            textRec += "</b> to <span class='trainMetric' style='color:" + this.fieldToColor['DataFields'] + "'>" + that.metricLabel + "</span>."
+            recommenderAction = {
+              'Add': {
+                'Visualizations': 'none',
+                'DataFields': that.metricList[index],
+                'Legend': 'none',
+                'Filter': 'none',
+                'State': 'none',
+                'Date': 'none',
+                'Aggregate': 'none',
+                'Cumulative': 'none',
+                'StatesSelect': 'none'
+              },
+              'Remove': {
+                'Visualizations': 'none',
+                'DataFields': 'All',
+                'Legend': 'none',
+                'Filter': 'none',
+                'State': 'none',
+                'Date': 'none',
+                'Aggregate': 'none',
+                'Cumulative': 'none',
+                'StatesSelect': 'none'
+              }
+            }
+            recommondation.push({ value: "Remove all except", text: textRec, action: recommenderAction, id: actionSequence.length, reason: reason })
+          }
+          else if (that.unitedStatesMap.y_Axis_Values.every(metric => that.metricList[index].includes(metric)) && that.metricList[index].every(metric => that.unitedStatesMap.y_Axis_Values.includes(metric))) {
+            var reason = "**Ambiguity** \r\n I have two different interpretations of your action. \r\n Please select the action above that best represents your intentions of the command."
+
+            var textRec = 'Remove all except <b>'
+            for (var textIndex in that.metricList[index]) {
+
+              if (parseInt(textIndex) == that.metricList[index].length - 1 && that.metricList[index].length != 1) {
+                textRec += " and "
+              }
+              else if (parseInt(textIndex) > 0) {
+                textRec += ", "
+              }
+              textRec += that.metricList[index][textIndex];
+
+            }
+            textRec += "</b> to <span class='trainMetric' style='color:" + this.fieldToColor['DataFields'] + "'>" + that.metricLabel + "</span>."
+            recommenderAction = {
+              'Add': {
+                'Visualizations': 'none',
+                'DataFields': that.metricList[index],
+                'Legend': 'none',
+                'Filter': 'none',
+                'State': 'none',
+                'Date': 'none',
+                'Aggregate': 'none',
+                'Cumulative': 'none',
+                'StatesSelect': 'none'
+              },
+              'Remove': {
+                'Visualizations': 'none',
+                'DataFields': 'All',
+                'Legend': 'none',
+                'Filter': 'none',
+                'State': 'none',
+                'Date': 'none',
+                'Aggregate': 'none',
+                'Cumulative': 'none',
+                'StatesSelect': 'none'
+              }
+            }
+            recommondation.push({ value: "Remove all except", text: textRec, action: recommenderAction, id: actionSequence.length, reason: reason })
+          }
+        }
+
+
+
+
+        newAction = {
+          'Add': {
+            'Visualizations': 'none',
+            'DataFields': target,
+            'Legend': 'none',
+            'Filter': 'none',
+            'State': 'none',
+            'Date': 'none',
+            'Aggregate': 'none',
+            'Cumulative': 'none',
+            'StatesSelect': 'none'
+          },
+          'Remove': {
+            'Visualizations': 'none',
+            'DataFields': 'none',
+            'Legend': 'none',
+            'Filter': 'none',
+            'State': 'none',
+            'Date': 'none',
+            'Aggregate': 'none',
+            'Cumulative': 'none',
+            'StatesSelect': 'none'
           }
         }
       }
-
-      for (var index in that.metricList) {
-        if (target.every(metric => that.metricList[index].includes(metric)) && that.metricList[index].every(metric => target.includes(metric))) {
-          var reason = "**Ambiguity** \r\n I have two different interpretations of your action. \r\n Please select the action above that best represents your intentions of the command."
-
-          var textRec = 'Remove all except <b>'
-          for (var textIndex in that.metricList[index]) {
-
-            if (parseInt(textIndex) == that.metricList[index].length - 1 && that.metricList[index].length != 1) {
-              textRec += " and "
-            }
-            else if (parseInt(textIndex) > 0) {
-              textRec += ", "
-            }
-            textRec += that.metricList[index][textIndex];
-
-          }
-          textRec += "</b>"
-          recommenderAction = {
-            'Add': {
-              'Visualizations': 'none',
-              'DataFields': that.metricList[index],
-              'Legend': 'none',
-              'Filter': 'none',
-              'State': 'none',
-              'Date': 'none',
-              'Aggregate': 'none',
-              'Cumulative': 'none',
-              'StatesSelect': 'none'
-            },
-            'Remove': {
-              'Visualizations': 'none',
-              'DataFields': 'All',
-              'Legend': 'none',
-              'Filter': 'none',
-              'State': 'none',
-              'Date': 'none',
-              'Aggregate': 'none',
-              'Cumulative': 'none',
-              'StatesSelect': 'none'
-            }
-          }
-          recommondation.push({ value: "Remove all except", text: textRec, action: recommenderAction, id: actionSequence.length, reason: reason })
-        }
-        else if (that.unitedStatesMap.y_Axis_Values.every(metric => that.metricList[index].includes(metric)) && that.metricList[index].every(metric => that.unitedStatesMap.y_Axis_Values.includes(metric))) {
-          var reason = "**Ambiguity** \r\n I have two different interpretations of your action. \r\n Please select the action above that best represents your intentions of the command."
-
-          var textRec = 'Remove all except <b>'
-          for (var textIndex in that.metricList[index]) {
-
-            if (parseInt(textIndex) == that.metricList[index].length - 1 && that.metricList[index].length != 1) {
-              textRec += " and "
-            }
-            else if (parseInt(textIndex) > 0) {
-              textRec += ", "
-            }
-            textRec += that.metricList[index][textIndex];
-
-          }
-          textRec += "</b>"
-          recommenderAction = {
-            'Add': {
-              'Visualizations': 'none',
-              'DataFields': that.metricList[index],
-              'Legend': 'none',
-              'Filter': 'none',
-              'State': 'none',
-              'Date': 'none',
-              'Aggregate': 'none',
-              'Cumulative': 'none',
-              'StatesSelect': 'none'
-            },
-            'Remove': {
-              'Visualizations': 'none',
-              'DataFields': 'All',
-              'Legend': 'none',
-              'Filter': 'none',
-              'State': 'none',
-              'Date': 'none',
-              'Aggregate': 'none',
-              'Cumulative': 'none',
-              'StatesSelect': 'none'
-            }
-          }
-          recommondation.push({ value: "Remove all except", text: textRec, action: recommenderAction, id: actionSequence.length, reason: reason })
-        }
-      }
-
 
       metricPhrase += "</b> to <span class='trainMetric' style='color:" + this.fieldToColor['DataFields'] + "'>" + that.metricLabel + "</span>."
-
-      newAction = {
-        'Add': {
-          'Visualizations': 'none',
-          'DataFields': target,
-          'Legend': 'none',
-          'Filter': 'none',
-          'State': 'none',
-          'Date': 'none',
-          'Aggregate': 'none',
-          'Cumulative': 'none',
-          'StatesSelect': 'none'
-        },
-        'Remove': {
-          'Visualizations': 'none',
-          'DataFields': 'none',
-          'Legend': 'none',
-          'Filter': 'none',
-          'State': 'none',
-          'Date': 'none',
-          'Aggregate': 'none',
-          'Cumulative': 'none',
-          'StatesSelect': 'none'
-        }
-      }
 
       instances.push({
         'text': metricPhrase,
@@ -392,13 +407,6 @@ export class DrillDownService {
       actionSequence.push(newAction)
     }
     else if (action == "RemoveMetric") {
-
-      for (var mIindex in that.unusedEntities["Metric"]) {
-        var unusedIndex = that.unusedEntities["Metric"][mIindex].indexOf(target)
-        if (unusedIndex != -1) {
-          that.unusedEntities["Metric"][mIindex].splice(unusedIndex, 1)
-        }
-      }
 
       target = [target]
 
@@ -412,13 +420,21 @@ export class DrillDownService {
         element.parentNode.removeChild(element);
       }
 
-      if (that.unitedStatesMap.y_Axis_Values.length == 0) {
-        var reason = "**Ambiguity** \r\n I have two different interpretations of your action. \r\n Please select the action above that best represents your intentions of the command."
+      if (target.includes("All")) {
 
-        var textRec = "Remove all Data Fields from  <span class='trainMetric' style='color:" + this.fieldToColor['DataFields'] + "'>" + that.metricLabel + "</span>"
-
-        recommenderAction = {
+        newAction = {
           'Add': {
+            'Visualizations': 'none',
+            'DataFields': 'none',
+            'Legend': 'none',
+            'Filter': 'none',
+            'State': target,
+            'Date': 'none',
+            'Aggregate': 'none',
+            'Cumulative': 'none',
+            'StatesSelect': 'none'
+          },
+          'Remove': {
             'Visualizations': 'none',
             'DataFields': 'none',
             'Legend': 'none',
@@ -428,42 +444,23 @@ export class DrillDownService {
             'Aggregate': 'none',
             'Cumulative': 'none',
             'StatesSelect': 'none'
-          },
-          'Remove': {
-            'Visualizations': 'none',
-            'DataFields': 'All',
-            'Legend': 'none',
-            'Filter': 'none',
-            'State': 'none',
-            'Date': 'none',
-            'Aggregate': 'none',
-            'Cumulative': 'none',
-            'StatesSelect': 'none'
           }
         }
-        recommondation.push({ value: "Remove all", text: textRec, action: recommenderAction, id: actionSequence.length, reason: reason })
+
+        metricPhrase = '<select class="metricSwitchAll"><option value="Add">Add</option><option value="Remove" selected>Remove</option></select> All '
+
       }
-      for (var index in that.metricList) {
-        if (that.unitedStatesMap.y_Axis_Values.every(metric => that.metricList[index].includes(metric)) && that.metricList[index].every(metric => that.unitedStatesMap.y_Axis_Values.includes(metric))) {
+      else {
+
+        if (that.unitedStatesMap.y_Axis_Values.length == 0) {
           var reason = "**Ambiguity** \r\n I have two different interpretations of your action. \r\n Please select the action above that best represents your intentions of the command."
 
-          var textRec = 'Remove all except <b>'
-          for (var textIndex in that.metricList[index]) {
+          var textRec = "Remove all Data Fields from  <span class='trainMetric' style='color:" + this.fieldToColor['DataFields'] + "'>" + that.metricLabel + "</span>"
 
-            if (parseInt(textIndex) == that.metricList[index].length - 1 && that.metricList[index].length != 1) {
-              textRec += " and "
-            }
-            else if (parseInt(textIndex) > 0) {
-              textRec += ", "
-            }
-            textRec += that.metricList[index][textIndex];
-
-          }
-          textRec += "</b>"
           recommenderAction = {
             'Add': {
               'Visualizations': 'none',
-              'DataFields': that.metricList[index],
+              'DataFields': 'none',
               'Legend': 'none',
               'Filter': 'none',
               'State': 'none',
@@ -484,58 +481,104 @@ export class DrillDownService {
               'StatesSelect': 'none'
             }
           }
-          recommondation.push({ value: "Remove all except", text: textRec, action: recommenderAction, id: actionSequence.length, reason: reason })
+          recommondation.push({ value: "Remove all", text: textRec, action: recommenderAction, id: actionSequence.length, reason: reason })
         }
-      }
+        for (var index in that.metricList) {
+          if (that.unitedStatesMap.y_Axis_Values.every(metric => that.metricList[index].includes(metric)) && that.metricList[index].every(metric => that.unitedStatesMap.y_Axis_Values.includes(metric))) {
+            var reason = "**Ambiguity** \r\n I have two different interpretations of your action. \r\n Please select the action above that best represents your intentions of the command."
 
+            var textRec = 'Remove all except <b>'
+            for (var textIndex in that.metricList[index]) {
 
-      var metricPhrase = '<select class="metricSwitch"><option value="Add">Add</option><option value="Remove all except">Remove all except</option><option value="Remove" selected>Remove</option><option value="Select all except">Select all except</option></select> <b>' + target[0]
+              if (parseInt(textIndex) == that.metricList[index].length - 1 && that.metricList[index].length != 1) {
+                textRec += " and "
+              }
+              else if (parseInt(textIndex) > 0) {
+                textRec += ", "
+              }
+              textRec += that.metricList[index][textIndex];
 
-      if (previousSequence != "none") {
-        var previouslyAdded = previousSequence['Remove']['DataFields']
-
-        for (var i = 0; i < previouslyAdded.length; i++) {
-          if (previouslyAdded != "open" && previouslyAdded != "close") {
-
-            if (i == previouslyAdded.length - 1) {
-              metricPhrase += " and "
             }
-            else {
-              metricPhrase += ", "
+            textRec += "</b> to <span class='trainMetric' style='color:" + this.fieldToColor['DataFields'] + "'>" + that.metricLabel + "</span>."
+            recommenderAction = {
+              'Add': {
+                'Visualizations': 'none',
+                'DataFields': that.metricList[index],
+                'Legend': 'none',
+                'Filter': 'none',
+                'State': 'none',
+                'Date': 'none',
+                'Aggregate': 'none',
+                'Cumulative': 'none',
+                'StatesSelect': 'none'
+              },
+              'Remove': {
+                'Visualizations': 'none',
+                'DataFields': 'All',
+                'Legend': 'none',
+                'Filter': 'none',
+                'State': 'none',
+                'Date': 'none',
+                'Aggregate': 'none',
+                'Cumulative': 'none',
+                'StatesSelect': 'none'
+              }
             }
-            metricPhrase += previouslyAdded[i];
-            target.push(previouslyAdded[i])
+            recommondation.push({ value: "Remove all except", text: textRec, action: recommenderAction, id: actionSequence.length, reason: reason })
+          }
+        }
+
+
+        var metricPhrase = '<select class="metricSwitch"><option value="Add">Add</option><option value="Remove all except">Remove all except</option><option value="Remove" selected>Remove</option><option value="Select all except">Select all except</option></select> <b>' + target[0]
+
+        if (previousSequence != "none") {
+          var previouslyAdded = previousSequence['Remove']['DataFields']
+
+          for (var i = 0; i < previouslyAdded.length; i++) {
+            if (previouslyAdded != "open" && previouslyAdded != "close") {
+
+              if (i == previouslyAdded.length - 1) {
+                metricPhrase += " and "
+              }
+              else {
+                metricPhrase += ", "
+              }
+              metricPhrase += previouslyAdded[i];
+              target.push(previouslyAdded[i])
+            }
+          }
+        }
+
+
+
+        newAction = {
+          'Add': {
+            'Visualizations': 'none',
+            'DataFields': 'none',
+            'Legend': 'none',
+            'Filter': 'none',
+            'State': 'none',
+            'Date': 'none',
+            'Aggregate': 'none',
+            'Cumulative': 'none',
+            'StatesSelect': 'none'
+          },
+          'Remove': {
+            'Visualizations': 'none',
+            'DataFields': target,
+            'Legend': 'none',
+            'Filter': 'none',
+            'State': 'none',
+            'Date': 'none',
+            'Aggregate': 'none',
+            'Cumulative': 'none',
+            'StatesSelect': 'none'
           }
         }
       }
 
-
       metricPhrase += "</b> from <span class='trainMetric' style='color:" + this.fieldToColor['DataFields'] + "'>" + that.metricLabel + "</span>."
 
-      newAction = {
-        'Add': {
-          'Visualizations': 'none',
-          'DataFields': 'none',
-          'Legend': 'none',
-          'Filter': 'none',
-          'State': 'none',
-          'Date': 'none',
-          'Aggregate': 'none',
-          'Cumulative': 'none',
-          'StatesSelect': 'none'
-        },
-        'Remove': {
-          'Visualizations': 'none',
-          'DataFields': target,
-          'Legend': 'none',
-          'Filter': 'none',
-          'State': 'none',
-          'Date': 'none',
-          'Aggregate': 'none',
-          'Cumulative': 'none',
-          'StatesSelect': 'none'
-        }
-      }
 
       instances.push({
         'text': metricPhrase,
@@ -569,11 +612,7 @@ export class DrillDownService {
         }
       }
 
-      for (var mIindex in that.unusedEntities["Filter"]) {
-        if (Object.keys(that.unusedEntities["Filter"][mIindex]).includes(target)) {
-          delete that.unusedEntities["Filter"][mIindex][target]
-        }
-      }
+
 
       instances.push({
         'text': 'Open filter for ' + target + ".",
@@ -585,11 +624,6 @@ export class DrillDownService {
 
       var key = Object.keys(target)[0]
 
-      for (var mIindex in that.unusedEntities["Filter"]) {
-        if (Object.keys(that.unusedEntities["Filter"][mIindex]).includes(key)) {
-          delete that.unusedEntities["Filter"][mIindex][key]
-        }
-      }
 
       var previousSequence = "none"
 
@@ -652,12 +686,6 @@ export class DrillDownService {
     }
     else if (action == "RemoveFilter") {
 
-      for (var mIindex in that.unusedEntities["Filter"]) {
-        if (Object.keys(that.unusedEntities["Filter"][mIindex]).includes(target)) {
-          delete that.unusedEntities["Filter"][mIindex][target]
-        }
-      }
-
       newAction = {
         'Add': {
           'Visualizations': 'none',
@@ -691,14 +719,6 @@ export class DrillDownService {
     }
     else if (action == "AddState") {
 
-      for (var tIndex in target) {
-        for (var mIindex in that.unusedEntities["State"]) {
-          var unusedIndex = that.unusedEntities["State"][mIindex].indexOf(target[tIndex])
-          if (unusedIndex != -1) {
-            that.unusedEntities["State"][mIindex].splice(unusedIndex, 1)
-          }
-        }
-      }
 
       var previousSequence = "none"
       var removeState = "none"
@@ -709,84 +729,12 @@ export class DrillDownService {
         element.parentNode.removeChild(element);
       }
 
-      if (previousSequence != "none" && previousSequence['Add']['State'] != "none") {
-        var previouslyAdded = previousSequence['Add']['State']
+      /**
+       * If all states have been selected
+       */
 
-        for (var i = 0; i < previouslyAdded.length; i++) {
-          target.push(previouslyAdded[i])
-        }
-      }
+      if (target.includes("All")) {
 
-      if (previousSequence != "none" && previousSequence['Remove']['State'] == "All") {
-        removeState = "All"
-        filterPhrase = '<select class="stateSwitch"><option value="Add">Add</option><option value="Remove all except" selected>Remove all except</option><option value="Remove">Remove</option><option value="Select all except">Select all except</option></select> ' + target[0]
-
-      }
-      else {
-        filterPhrase = '<select class="stateSwitch"><option value="Add" selected>Add</option><option value="Remove all except">Remove all except</option><option value="Remove">Remove</option><option value="Select all except">Select all except</option></select> ' + target[0]
-
-      }
-
-      for (var i = 1; i < target.length; i++) {
-        if (i == target.length - 1) {
-          filterPhrase += " and "
-        }
-        else {
-          filterPhrase += ", "
-        }
-        filterPhrase += target[i];
-
-      }
-
-
-      for (var index in that.stateList) {
-        if (removeState != "All" && target.every(state => that.stateList[index].includes(state)) && that.stateList[index].every(state => target.includes(state)) && that.unitedStatesMap.statesSelect.every(state => that.stateList[index].includes(state))) {
-          var reason = "**Ambiguity** \r\n I have two different interpretations of your action. \r\n Please select the action above that best represents your intentions of the command."
-
-          var textRec = 'Remove all except states '
-          for (var textIndex in that.stateList[index]) {
-
-            if (parseInt(textIndex) == that.stateList[index].length - 1 && that.stateList[index].length != 1) {
-              textRec += " and "
-            }
-            else if (parseInt(textIndex) > 0) {
-              textRec += ", "
-            }
-            textRec += that.stateList[index][textIndex];
-
-          }
-          recommenderAction = {
-            'Add': {
-              'Visualizations': 'none',
-              'DataFields': 'none',
-              'Legend': 'none',
-              'Filter': 'none',
-              'State': that.stateList[index],
-              'Date': 'none',
-              'Aggregate': 'none',
-              'Cumulative': 'none',
-              'StatesSelect': 'none'
-            },
-            'Remove': {
-              'Visualizations': 'none',
-              'DataFields': 'none',
-              'Legend': 'none',
-              'Filter': 'none',
-              'State': ["All"],
-              'Date': 'none',
-              'Aggregate': 'none',
-              'Cumulative': 'none',
-              'StatesSelect': 'none'
-            }
-          }
-          recommondation.push({ value: "Remove all except", text: textRec, action: recommenderAction, id: actionSequence.length, reason: reason })
-        }
-        else {
-          console.log("No")
-        }
-      }
-
-      if (removeState == "none") {
         newAction = {
           'Add': {
             'Visualizations': 'none',
@@ -811,51 +759,160 @@ export class DrillDownService {
             'StatesSelect': 'none'
           }
         }
+
+        filterPhrase = '<select class="stateSwitchAll"><option value="Add" selected>Add</option><option value="Remove">Remove</option></select> All '
+
       }
+      /**
+       * If specific states have been selected
+       */
       else {
-        newAction = {
-          'Add': {
-            'Visualizations': 'none',
-            'DataFields': 'none',
-            'Legend': 'none',
-            'Filter': 'none',
-            'State': target,
-            'Date': 'none',
-            'Aggregate': 'none',
-            'Cumulative': 'none',
-            'StatesSelect': 'none'
-          },
-          'Remove': {
-            'Visualizations': 'none',
-            'DataFields': 'none',
-            'Legend': 'none',
-            'Filter': 'none',
-            'State': ["All"],
-            'Date': 'none',
-            'Aggregate': 'none',
-            'Cumulative': 'none',
-            'StatesSelect': 'none'
+        if (previousSequence != "none" && previousSequence['Add']['State'] != "none") {
+          var previouslyAdded = previousSequence['Add']['State']
+
+          for (var i = 0; i < previouslyAdded.length; i++) {
+            target.push(previouslyAdded[i])
+          }
+        }
+
+        if (previousSequence != "none" && previousSequence['Remove']['State'] == "All") {
+          removeState = "All"
+          filterPhrase = '<select class="stateSwitch"><option value="Add">Add</option><option value="Remove all except" selected>Remove all except</option><option value="Remove">Remove</option><option value="Select all except">Select all except</option></select> ' + target[0]
+
+        }
+        else {
+          filterPhrase = '<select class="stateSwitch"><option value="Add" selected>Add</option><option value="Remove all except">Remove all except</option><option value="Remove">Remove</option><option value="Select all except">Select all except</option></select> ' + target[0]
+
+        }
+
+        for (var i = 1; i < target.length; i++) {
+          if (i == target.length - 1) {
+            filterPhrase += " and "
+          }
+          else {
+            filterPhrase += ", "
+          }
+          filterPhrase += target[i];
+
+        }
+
+
+        if (removeState == "none") {
+          newAction = {
+            'Add': {
+              'Visualizations': 'none',
+              'DataFields': 'none',
+              'Legend': 'none',
+              'Filter': 'none',
+              'State': target,
+              'Date': 'none',
+              'Aggregate': 'none',
+              'Cumulative': 'none',
+              'StatesSelect': 'none'
+            },
+            'Remove': {
+              'Visualizations': 'none',
+              'DataFields': 'none',
+              'Legend': 'none',
+              'Filter': 'none',
+              'State': 'none',
+              'Date': 'none',
+              'Aggregate': 'none',
+              'Cumulative': 'none',
+              'StatesSelect': 'none'
+            }
+          }
+        }
+        else {
+          newAction = {
+            'Add': {
+              'Visualizations': 'none',
+              'DataFields': 'none',
+              'Legend': 'none',
+              'Filter': 'none',
+              'State': target,
+              'Date': 'none',
+              'Aggregate': 'none',
+              'Cumulative': 'none',
+              'StatesSelect': 'none'
+            },
+            'Remove': {
+              'Visualizations': 'none',
+              'DataFields': 'none',
+              'Legend': 'none',
+              'Filter': 'none',
+              'State': ["All"],
+              'Date': 'none',
+              'Aggregate': 'none',
+              'Cumulative': 'none',
+              'StatesSelect': 'none'
+            }
+          }
+        }
+
+        /**
+         * 
+         * Check if possible ambiguities have to be adressed
+         */
+
+
+        for (var index in that.stateList) {
+          if (removeState != "All" && target.every(state => that.stateList[index].includes(state)) && that.stateList[index].every(state => target.includes(state)) && that.unitedStatesMap.statesSelect.every(state => that.stateList[index].includes(state))) {
+            var reason = "**Ambiguity** \r\n I have two different interpretations of your action. \r\n Please select the action above that best represents your intentions of the command."
+
+            var textRec = 'Remove all except states '
+            for (var textIndex in that.stateList[index]) {
+
+              if (parseInt(textIndex) == that.stateList[index].length - 1 && that.stateList[index].length != 1) {
+                textRec += " and "
+              }
+              else if (parseInt(textIndex) > 0) {
+                textRec += ", "
+              }
+              textRec += that.stateList[index][textIndex];
+
+            }
+            recommenderAction = {
+              'Add': {
+                'Visualizations': 'none',
+                'DataFields': 'none',
+                'Legend': 'none',
+                'Filter': 'none',
+                'State': that.stateList[index],
+                'Date': 'none',
+                'Aggregate': 'none',
+                'Cumulative': 'none',
+                'StatesSelect': 'none'
+              },
+              'Remove': {
+                'Visualizations': 'none',
+                'DataFields': 'none',
+                'Legend': 'none',
+                'Filter': 'none',
+                'State': ["All"],
+                'Date': 'none',
+                'Aggregate': 'none',
+                'Cumulative': 'none',
+                'StatesSelect': 'none'
+              }
+            }
+            recommondation.push({ value: "Remove all except", text: textRec, action: recommenderAction, id: actionSequence.length, reason: reason })
+          }
+          else {
+            console.log("No")
           }
         }
       }
 
 
       instances.push({
-        'text': filterPhrase + ".",
+        'text': filterPhrase + " to States.",
         'id': actionSequence.length
       });
       actionSequence.push(newAction)
     }
     else if (action == "RemoveState") {
 
-      for (var tIndex in target) {
-        for (var mIindex in that.unusedEntities["State"]) {
-          var unusedIndex = that.unusedEntities["State"][mIindex].indexOf(target[tIndex])
-          if (unusedIndex != -1) {
-            that.unusedEntities["State"][mIindex].splice(unusedIndex, 1)
-          }
-        }
-      }
 
       var filterPhrase = "";
 
@@ -1054,8 +1111,11 @@ export class DrillDownService {
           }
         }
 
+        filterPhrase = '<select class="stateSwitchAll"><option value="Add">Add</option><option value="Remove" selected>Remove</option></select> All from States'
+
+
         instances.push({
-          'text': "Remove all States.",
+          'text': filterPhrase + ".",
           'id': actionSequence.length
         });
         actionSequence.push(newAction)
@@ -1125,44 +1185,9 @@ export class DrillDownService {
         element.parentNode.removeChild(element);
       }
 
-      if (previousSequence != "none") {
-        var previouslyAdded = previousSequence['Add']['Date']
+      if (target.includes("All")) {
 
-        for (var i = 0; i < previouslyAdded.length; i++) {
-          target.push(previouslyAdded[i])
-        }
-      }
-
-      filterPhrase = '<select class="dateSwitch"><option value="Add" selected>Add</option><option value="Remove all except">Remove all except</option><option value="Remove">Remove</option><option value="Select all except">Select all except</option></select> ' + target[0]
-      for (var i = 1; i < target.length; i++) {
-        if (i == target.length - 1) {
-          filterPhrase += " and "
-        }
-        else {
-          filterPhrase += ", "
-        }
-        filterPhrase += target[i];
-
-      }
-
-
-
-      if (target.every(date => that.trainableEntites["Date"].includes(date))) {
-        var reason = "**Ambiguity** \r\n I have two different interpretations of your action. \r\n Please select the action above that best represents your intentions of the command."
-
-        var textRec = 'Remove all dates except '
-        for (var textIndex in target) {
-
-          if (parseInt(textIndex) == target.length - 1 && target.length != 1) {
-            textRec += " and "
-          }
-          else if (parseInt(textIndex) > 0) {
-            textRec += ", "
-          }
-          textRec += target[textIndex];
-
-        }
-        recommenderAction = {
+        newAction = {
           'Add': {
             'Visualizations': 'none',
             'DataFields': 'none',
@@ -1180,41 +1205,147 @@ export class DrillDownService {
             'Legend': 'none',
             'Filter': 'none',
             'State': 'none',
-            'Date': ["All"],
+            'Date': 'none',
             'Aggregate': 'none',
             'Cumulative': 'none',
             'StatesSelect': 'none'
           }
         }
-        recommondation.push({ value: "Remove all except", text: textRec, action: recommenderAction, id: actionSequence.length, reason: reason })
+
+        filterPhrase = '<select class="dateSwitchAll"><option value="Add" selected>Add</option><option value="Remove">Remove</option></select> All dates'
+
       }
       else {
-        console.log("No")
-      }
+
+        if (previousSequence != "none") {
+          var previouslyAdded = previousSequence['Add']['Date']
+
+          for (var i = 0; i < previouslyAdded.length; i++) {
+            target.push(previouslyAdded[i])
+          }
+        }
+
+        filterPhrase = '<select class="dateSwitch"><option value="Add" selected>Add</option><option value="Remove all except">Remove all except</option><option value="Remove">Remove</option><option value="Select all except">Select all except</option></select> ' + target[0]
+        for (var i = 1; i < target.length; i++) {
+          if (i == target.length - 1) {
+            filterPhrase += " and "
+          }
+          else {
+            filterPhrase += ", "
+          }
+          filterPhrase += target[i];
+
+        }
+
+        var maxTarget = Math.max.apply(Math, target.map(function (o) { return Date.parse(o); }))
+        console.log(formatDate(maxTarget, 'yyyy-MM-dd', 'en'))
+        var minTarget = Math.min.apply(Math, target.map(function (o) { return Date.parse(o); }))
+        console.log(formatDate(minTarget, 'yyyy-MM-dd', 'en'))
+        var difference = (maxTarget - minTarget) / (1000 * 60 * 60 * 24)
 
 
-      newAction = {
-        'Add': {
-          'Visualizations': 'none',
-          'DataFields': 'none',
-          'Legend': 'none',
-          'Filter': 'none',
-          'State': 'none',
-          'Date': target,
-          'Aggregate': 'none',
-          'Cumulative': 'none',
-          'StatesSelect': 'none'
-        },
-        'Remove': {
-          'Visualizations': 'none',
-          'DataFields': 'none',
-          'Legend': 'none',
-          'Filter': 'none',
-          'State': 'none',
-          'Date': 'none',
-          'Aggregate': 'none',
-          'Cumulative': 'none',
-          'StatesSelect': 'none'
+        if (target.every(date => that.trainableEntites["Date"].includes(date))) {
+          var reason = "**Ambiguity** \r\n I have two different interpretations of your action. \r\n Please select the action above that best represents your intentions of the command."
+
+          var textRec = 'Remove all dates except '
+          for (var textIndex in target) {
+
+            if (parseInt(textIndex) == target.length - 1 && target.length != 1) {
+              textRec += " and "
+            }
+            else if (parseInt(textIndex) > 0) {
+              textRec += ", "
+            }
+            textRec += target[textIndex];
+
+          }
+          recommenderAction = {
+            'Add': {
+              'Visualizations': 'none',
+              'DataFields': 'none',
+              'Legend': 'none',
+              'Filter': 'none',
+              'State': 'none',
+              'Date': target,
+              'Aggregate': 'none',
+              'Cumulative': 'none',
+              'StatesSelect': 'none'
+            },
+            'Remove': {
+              'Visualizations': 'none',
+              'DataFields': 'none',
+              'Legend': 'none',
+              'Filter': 'none',
+              'State': 'none',
+              'Date': ["All"],
+              'Aggregate': 'none',
+              'Cumulative': 'none',
+              'StatesSelect': 'none'
+            }
+          }
+          recommondation.push({ value: "Remove all except", text: textRec, action: recommenderAction, id: actionSequence.length, reason: reason })
+        }
+        else if (target.length >= 3 && difference == target.length - 1) {
+
+          var reason = "**Ambiguity** \r\n Since your selected dates form a Range, I have two different interpretations of your action. \r\n Please select the action above that best represents your intentions of the command."
+
+          var textRec = 'Add ' + formatDate(minTarget, 'yyyy-MM-dd', 'en') + " till " + formatDate(maxTarget, 'yyyy-MM-dd', 'en') + " to Dates"
+
+          recommenderAction = {
+            'Add': {
+              'Visualizations': 'none',
+              'DataFields': 'none',
+              'Legend': 'none',
+              'Filter': 'none',
+              'State': 'none',
+              'Date': [String(formatDate(minTarget, 'yyyy-MM-dd', 'en') + " till " + formatDate(maxTarget, 'yyyy-MM-dd', 'en'))],
+              'Aggregate': 'none',
+              'Cumulative': 'none',
+              'StatesSelect': 'none'
+            },
+            'Remove': {
+              'Visualizations': 'none',
+              'DataFields': 'none',
+              'Legend': 'none',
+              'Filter': 'none',
+              'State': 'none',
+              'Date': ["All"],
+              'Aggregate': 'none',
+              'Cumulative': 'none',
+              'StatesSelect': 'none'
+            }
+          }
+          recommondation.push({ value: "Add", text: textRec, action: recommenderAction, id: actionSequence.length, reason: reason })
+
+        }
+        else {
+          console.log("No")
+        }
+
+
+        newAction = {
+          'Add': {
+            'Visualizations': 'none',
+            'DataFields': 'none',
+            'Legend': 'none',
+            'Filter': 'none',
+            'State': 'none',
+            'Date': target,
+            'Aggregate': 'none',
+            'Cumulative': 'none',
+            'StatesSelect': 'none'
+          },
+          'Remove': {
+            'Visualizations': 'none',
+            'DataFields': 'none',
+            'Legend': 'none',
+            'Filter': 'none',
+            'State': 'none',
+            'Date': 'none',
+            'Aggregate': 'none',
+            'Cumulative': 'none',
+            'StatesSelect': 'none'
+          }
         }
       }
 
@@ -1233,7 +1364,37 @@ export class DrillDownService {
       var previouslyAdded = []
       var previousAdd = false;
 
-      if (target.length > 0 && target[0] != "All") {
+      if (target.includes("All")) {
+
+        newAction = {
+          'Add': {
+            'Visualizations': 'none',
+            'DataFields': 'none',
+            'Legend': 'none',
+            'Filter': 'none',
+            'State': 'none',
+            'Date': 'none',
+            'Aggregate': 'none',
+            'Cumulative': 'none',
+            'StatesSelect': 'none'
+          },
+          'Remove': {
+            'Visualizations': 'none',
+            'DataFields': 'none',
+            'Legend': 'none',
+            'Filter': 'none',
+            'State': 'none',
+            'Date': target,
+            'Aggregate': 'none',
+            'Cumulative': 'none',
+            'StatesSelect': 'none'
+          }
+        }
+
+        filterPhrase = '<select class="dateSwitchAll"><option value="Add">Add</option><option value="Remove" selected>Remove</option></select> All dates'
+
+      }
+      else if (target.length > 0) {
         if (actionSequence.length >= 1 && actionSequence[actionSequence.length - 1]['Add']['Date'] != "none" && actionSequence[actionSequence.length - 1]['Remove']['Date'] == "none") {
           previousAdd = true
           previousSequence = actionSequence.pop()
@@ -1245,12 +1406,12 @@ export class DrillDownService {
           var mediatedList = target
 
           for (var index in mediatedList) {
-            var Date = mediatedList[index]
+            var dates = mediatedList[index]
 
 
-            if (previouslyAdded.indexOf(Date) != -1) {
-              previouslyAdded.splice(previouslyAdded.indexOf(Date), 1)
-              target.splice(target.indexOf(Date), 1)
+            if (previouslyAdded.indexOf(dates) != -1) {
+              previouslyAdded.splice(previouslyAdded.indexOf(dates), 1)
+              target.splice(target.indexOf(dates), 1)
             }
           }
         }
@@ -1356,119 +1517,89 @@ export class DrillDownService {
             }
           }
 
-          instances.push({
-            'text': filterPhrase + ".",
-            'id': actionSequence.length
-          });
-          actionSequence.push(newAction)
-        }
-      }
-      else {
-        newAction = {
-          'Add': {
-            'Visualizations': 'none',
-            'DataFields': 'none',
-            'Legend': 'none',
-            'Filter': 'none',
-            'State': 'none',
-            'Date': 'none',
-            'Aggregate': 'none',
-            'Cumulative': 'none',
-            'StatesSelect': 'none'
-          },
-          'Remove': {
-            'Visualizations': 'none',
-            'DataFields': 'none',
-            'Legend': 'none',
-            'Filter': 'none',
-            'State': 'none',
-            'Date': target,
-            'Aggregate': 'none',
-            'Cumulative': 'none',
-            'StatesSelect': 'none'
-          }
-        }
-
-        instances.push({
-          'text': "Select all Dates.",
-          'id': actionSequence.length
-        });
-        actionSequence.push(newAction)
-      }
-
-
-
-      if (that.datesSelect.every(date => target.includes(date))) {
-        recommenderAction = {
-          'Add': {
-            'Visualizations': 'none',
-            'DataFields': 'none',
-            'Legend': 'none',
-            'Filter': 'none',
-            'State': 'none',
-            'Date': 'none',
-            'Aggregate': 'none',
-            'Cumulative': 'none',
-            'StatesSelect': 'none'
-          },
-          'Remove': {
-            'Visualizations': 'none',
-            'DataFields': 'none',
-            'Legend': 'none',
-            'Filter': 'none',
-            'State': 'none',
-            'Date': ["All"],
-            'Aggregate': 'none',
-            'Cumulative': 'none',
-            'StatesSelect': 'none'
-          }
-        }
-        recommondation.push({ value: "Remove all", text: "Remove all dates.", action: recommenderAction, id: actionSequence.length })
-      }
-      else if (target.every(date => that.trainableEntites["Date"].includes(date))) {
-        var reason = "**Ambiguity** \r\n I have two different interpretations of your action. \r\n Please select the action above that best represents your intentions of the command."
-
-        var textRec = "Add all dates except "
-        for (var textIndex in target) {
-
-          if (parseInt(textIndex) == target.length - 1 && target.length != 1) {
-            textRec += " and "
-          }
-          else if (parseInt(textIndex) > 0) {
-            textRec += ", "
-          }
-          textRec += target[textIndex];
 
         }
-        recommenderAction = {
-          'Add': {
-            'Visualizations': 'none',
-            'DataFields': 'none',
-            'Legend': 'none',
-            'Filter': 'none',
-            'State': 'none',
-            'Date': target,
-            'Aggregate': 'none',
-            'Cumulative': 'none',
-            'StatesSelect': 'none'
-          },
-          'Remove': {
-            'Visualizations': 'none',
-            'DataFields': 'none',
-            'Legend': 'none',
-            'Filter': 'none',
-            'State': 'none',
-            'Date': ["All"],
-            'Aggregate': 'none',
-            'Cumulative': 'none',
-            'StatesSelect': 'none'
+
+        if (that.datesSelect.every(date => target.includes(date))) {
+          recommenderAction = {
+            'Add': {
+              'Visualizations': 'none',
+              'DataFields': 'none',
+              'Legend': 'none',
+              'Filter': 'none',
+              'State': 'none',
+              'Date': 'none',
+              'Aggregate': 'none',
+              'Cumulative': 'none',
+              'StatesSelect': 'none'
+            },
+            'Remove': {
+              'Visualizations': 'none',
+              'DataFields': 'none',
+              'Legend': 'none',
+              'Filter': 'none',
+              'State': 'none',
+              'Date': ["All"],
+              'Aggregate': 'none',
+              'Cumulative': 'none',
+              'StatesSelect': 'none'
+            }
           }
+          recommondation.push({ value: "Remove all", text: "Remove all dates.", action: recommenderAction, id: actionSequence.length })
         }
-        recommondation.push({ value: "Remove all except", text: textRec, action: recommenderAction, id: actionSequence.length, reason: reason })
+        else if (target.every(date => that.trainableEntites["Date"].includes(date))) {
+          var reason = "**Ambiguity** \r\n I have two different interpretations of your action. \r\n Please select the action above that best represents your intentions of the command."
+  
+          var textRec = "Add all dates except "
+          for (var textIndex in target) {
+  
+            if (parseInt(textIndex) == target.length - 1 && target.length != 1) {
+              textRec += " and "
+            }
+            else if (parseInt(textIndex) > 0) {
+              textRec += ", "
+            }
+            textRec += target[textIndex];
+  
+          }
+          recommenderAction = {
+            'Add': {
+              'Visualizations': 'none',
+              'DataFields': 'none',
+              'Legend': 'none',
+              'Filter': 'none',
+              'State': 'none',
+              'Date': target,
+              'Aggregate': 'none',
+              'Cumulative': 'none',
+              'StatesSelect': 'none'
+            },
+            'Remove': {
+              'Visualizations': 'none',
+              'DataFields': 'none',
+              'Legend': 'none',
+              'Filter': 'none',
+              'State': 'none',
+              'Date': ["All"],
+              'Aggregate': 'none',
+              'Cumulative': 'none',
+              'StatesSelect': 'none'
+            }
+          }
+          recommondation.push({ value: "Remove all except", text: textRec, action: recommenderAction, id: actionSequence.length, reason: reason })
+        }
       }
-      else {
-        console.log("No")
-      }
+
+      instances.push({
+        'text': filterPhrase + ".",
+        'id': actionSequence.length
+      });
+      actionSequence.push(newAction)
+
+
+
+
+      
 
     }
     else if (action == "ChangeAggregate") {

@@ -8,6 +8,7 @@ import { MetricSummaryComponent } from '../metric-summary/metric-summary.compone
 import { DrillDownService } from "../shared/drilldown.services";
 import { FunctionService } from "../shared/function.services";
 import { SimpleService } from "../shared/simple.services";
+import { CheckUpService } from '../shared/checkup.services';
 
 import {
   formatDate
@@ -51,17 +52,21 @@ export class UnitedStatesComponent implements OnInit, OnDestroy, AfterViewInit, 
   public store;
   public componentMessage = null;
   public messengerID = null;
+  public animate = false;
 
   //Relevant for Training Mode
   public initialState;
+  public initialUnusedEntities;
   public unusedEntities;
   public trainableEntites: any;
   public stateList;
   public metricList;
   public actionSequence = [];
   public recommendationList = [];
+  public initialStateSequence = [];
   public trainingMode = false;// false
   public addToSequence = false; //false
+  public resetProzess = false;
   public shortcut = true;
   public initialUtterance = "";
 
@@ -83,10 +88,11 @@ export class UnitedStatesComponent implements OnInit, OnDestroy, AfterViewInit, 
 
 
   public possibleDatesDay = ["2020-01-01", "2020-01-02", "2020-01-03", "2020-01-04", "2020-01-05", "2020-01-06", "2020-01-07", "2020-01-08", "2020-01-09", "2020-01-10", "2020-01-11", "2020-01-12", "2020-01-13", "2020-01-14", "2020-01-15", "2020-01-16", "2020-01-17", "2020-01-18", "2020-01-19", "2020-01-20", "2020-01-21", "2020-01-22", "2020-01-23", "2020-01-24", "2020-01-25", "2020-01-26", "2020-01-27", "2020-01-28", "2020-01-29", "2020-01-30", "2020-01-31", "2020-02-01", "2020-02-02", "2020-02-03", "2020-02-04", "2020-02-05", "2020-02-06", "2020-02-07", "2020-02-08", "2020-02-09", "2020-02-10", "2020-02-11", "2020-02-12", "2020-02-13", "2020-02-14", "2020-02-15", "2020-02-16", "2020-02-17", "2020-02-18", "2020-02-19", "2020-02-20", "2020-02-21", "2020-02-22", "2020-02-23", "2020-02-24", "2020-02-25", "2020-02-26", "2020-02-27", "2020-02-28", "2020-02-29", "2020-03-01", "2020-03-02", "2020-03-03", "2020-03-04", "2020-03-05", "2020-03-06", "2020-03-07", "2020-03-08", "2020-03-09", "2020-03-10", "2020-03-11", "2020-03-12", "2020-03-13", "2020-03-14", "2020-03-15", "2020-03-16", "2020-03-17", "2020-03-18", "2020-03-19", "2020-03-20", "2020-03-21", "2020-03-22", "2020-03-23", "2020-03-24", "2020-03-25", "2020-03-26", "2020-03-27", "2020-03-28", "2020-03-29", "2020-03-29", "2020-03-30", "2020-03-31", "2020-04-01", "2020-04-02", "2020-04-03", "2020-04-04", "2020-04-05", "2020-04-06", "2020-04-07", "2020-04-08", "2020-04-09", "2020-04-10", "2020-04-11", "2020-04-12", "2020-04-13", "2020-04-14", "2020-04-15", "2020-04-16", "2020-04-17", "2020-04-18", "2020-04-19", "2020-04-20", "2020-04-21", "2020-04-22", "2020-04-23", "2020-04-24", "2020-04-25", "2020-04-26", "2020-04-27", "2020-04-28", "2020-04-29", "2020-04-30", "2020-05-01", "2020-05-02", "2020-05-03", "2020-05-04", "2020-05-05", "2020-05-06", "2020-05-07", "2020-05-08", "2020-05-09", "2020-05-10", "2020-05-11", "2020-05-12", "2020-05-13", "2020-05-14", "2020-05-15", "2020-05-16", "2020-05-17", "2020-05-18", "2020-05-19", "2020-05-20", "2020-05-21", "2020-05-22", "2020-05-23", "2020-05-24", "2020-05-25", "2020-05-26", "2020-05-27", "2020-05-28", "2020-05-29", "2020-05-30", "2020-05-31", "2020-06-01", "2020-06-02", "2020-06-03", "2020-06-04", "2020-06-05", "2020-06-06", "2020-06-07", "2020-06-08", "2020-06-09", "2020-06-10", "2020-06-11", "2020-06-12", "2020-06-13", "2020-06-14", "2020-06-15", "2020-06-16", "2020-06-17", "2020-06-18", "2020-06-19", "2020-06-20", "2020-06-21", "2020-06-22", "2020-06-23", "2020-06-24", "2020-06-25", "2020-06-26", "2020-06-27", "2020-06-28", "2020-06-29", "2020-06-30", "2020-07-01", "2020-07-02", "2020-07-03", "2020-07-04", "2020-07-05", "2020-07-06", "2020-07-07", "2020-07-08", "2020-07-09", "2020-07-10", "2020-07-11", "2020-07-12", "2020-07-13", "2020-07-14", "2020-07-15", "2020-07-16", "2020-07-17", "2020-07-18", "2020-07-19", "2020-07-20", "2020-07-21", "2020-07-22", "2020-07-23", "2020-07-24", "2020-07-25", "2020-07-26", "2020-07-27", "2020-07-28", "2020-07-29", "2020-07-30", "2020-07-31", "2020-08-01", "2020-08-02", "2020-08-03", "2020-08-04", "2020-08-05", "2020-08-06", "2020-08-07", "2020-08-08", "2020-08-09", "2020-08-10", "2020-08-11", "2020-08-12", "2020-08-13", "2020-08-14", "2020-08-15", "2020-08-16", "2020-08-17", "2020-08-18", "2020-08-19", "2020-08-20", "2020-08-21", "2020-08-22", "2020-08-23", "2020-08-24", "2020-08-25", "2020-08-26", "2020-08-27", "2020-08-28", "2020-08-29", "2020-08-30", "2020-08-31", "2020-09-01", "2020-09-02", "2020-09-03", "2020-09-04", "2020-09-05", "2020-09-06", "2020-09-07", "2020-09-08", "2020-09-09", "2020-09-10", "2020-09-11", "2020-09-12", "2020-09-13", "2020-09-14", "2020-09-15", "2020-09-16", "2020-09-17", "2020-09-18", "2020-09-19", "2020-09-20", "2020-09-21", "2020-09-22", "2020-09-23", "2020-09-24", "2020-09-25", "2020-09-26", "2020-09-27", "2020-09-28", "2020-09-29", "2020-09-30", "2020-10-01", "2020-10-02", "2020-10-03", "2020-10-04", "2020-10-05", "2020-10-06", "2020-10-07", "2020-10-08", "2020-10-09", "2020-10-10", "2020-10-11", "2020-10-12", "2020-10-13", "2020-10-14", "2020-10-15", "2020-10-16", "2020-10-17", "2020-10-18", "2020-10-19", "2020-10-20", "2020-10-21", "2020-10-22", "2020-10-23", "2020-10-24", "2020-10-26", "2020-10-27", "2020-10-28", "2020-10-29", "2020-10-30", "2020-10-31", "2020-11-01", "2020-11-02", "2020-11-03", "2020-11-04", "2020-11-05", "2020-11-06", "2020-11-07", "2020-11-08", "2020-11-09", "2020-11-10", "2020-11-11", "2020-11-12", "2020-11-13", "2020-11-14", "2020-11-15", "2020-11-16", "2020-11-17", "2020-11-18", "2020-11-19", "2020-11-20", "2020-11-21", "2020-11-22", "2020-11-23", "2020-11-24", "2020-11-25", "2020-11-26", "2020-11-27", "2020-11-28", "2020-11-29", "2020-11-30", "2020-12-01", "2020-12-02", "2020-12-03", "2020-12-04", "2020-12-05", "2020-12-06", "2020-12-07", "2020-12-08", "2020-12-09", "2020-12-10", "2020-12-11", "2020-12-12", "2020-12-13", "2020-12-14", "2020-12-15", "2020-12-16", "2020-12-17", "2020-12-18", "2020-12-19", "2020-12-20", "2020-12-21", "2020-12-22", "2020-12-23", "2020-12-24", "2020-12-25", "2020-12-26", "2020-12-27", "2020-12-28", "2020-12-29", "2020-12-30", "2020-12-31", "2021-01-01", "2021-01-02", "2021-01-03", "2021-01-04", "2021-01-05", "2021-01-06", "2021-01-07", "2021-01-08", "2021-01-09", "2021-01-10", "2021-01-11", "2021-01-12", "2021-01-13", "2021-01-14", "2021-01-15", "2021-01-16", "2021-01-17", "2021-01-18", "2021-01-19", "2021-01-20", "2021-01-21", "2021-01-22", "2021-01-23", "2021-01-24", "2021-01-25", "2021-01-26", "2021-01-27", "2021-01-28", "2021-01-29", "2021-01-30", "2021-01-31", "2021-02-01", "2021-02-02", "2021-02-03", "2021-02-04", "2021-02-05", "2021-02-06", "2021-02-07", "2021-02-08", "2021-02-09", "2021-02-10", "2021-02-11", "2021-02-12", "2021-02-13", "2021-02-14", "2021-02-15", "2021-02-16", "2021-02-17", "2021-02-18", "2021-02-19", "2021-02-20", "2021-02-21", "2021-02-22", "2021-02-23", "2021-02-24", "2021-02-25", "2021-02-26", "2021-02-27", "2021-02-28", "2021-03-01", "2021-03-02", "2021-03-03", "2021-03-04", "2021-03-05", "2021-03-06", "2021-03-07", "2021-03-08", "2021-03-09", "2021-03-10", "2021-03-11", "2021-03-12", "2021-03-13", "2021-03-14", "2021-03-15", "2021-03-16", "2021-03-17", "2021-03-18", "2021-03-19", "2021-03-20", "2021-03-21", "2021-03-22", "2021-03-23", "2021-03-24", "2021-03-25", "2021-03-26", "2021-03-27", "2021-03-28", "2021-03-28", "2021-03-29", "2021-03-30", "2021-03-31", "2021-04-01", "2021-04-02", "2021-04-03", "2021-04-04", "2021-04-05", "2021-04-06", "2021-04-07", "2021-04-08", "2021-04-09", "2021-04-10", "2021-04-11", "2021-04-12", "2021-04-13", "2021-04-14", "2021-04-15", "2021-04-16", "2021-04-17", "2021-04-18", "2021-04-19", "2021-04-20", "2021-04-21", "2021-04-22", "2021-04-23", "2021-04-24", "2021-04-25", "2021-04-26", "2021-04-27", "2021-04-28", "2021-04-29", "2021-04-30", "2021-05-01", "2021-05-02", "2021-05-03", "2021-05-04", "2021-05-05", "2021-05-06", "2021-05-07", "2021-05-08", "2021-05-09", "2021-05-10", "2021-05-11", "2021-05-12", "2021-05-13", "2021-05-14", "2021-05-15", "2021-05-16", "2021-05-17", "2021-05-18", "2021-05-19", "2021-05-20", "2021-05-21", "2021-05-22", "2021-05-23", "2021-05-24", "2021-05-25", "2021-05-26", "2021-05-27", "2021-05-28", "2021-05-29", "2021-05-30", "2021-05-31", "2021-06-01", "2021-06-02", "2021-06-03", "2021-06-04", "2021-06-05", "2021-06-06", "2021-06-07", "2021-06-08", "2021-06-09", "2021-06-10", "2021-06-11", "2021-06-12", "2021-06-13", "2021-06-14", "2021-06-15", "2021-06-16", "2021-06-17", "2021-06-18", "2021-06-19", "2021-06-20", "2021-06-21", "2021-06-22", "2021-06-23", "2021-06-24", "2021-06-25", "2021-06-26", "2021-06-27", "2021-06-28", "2021-06-29", "2021-06-30"]
-  public possibleDatesMonth = ["2020-01-01", "2020-02-01", "2020-03-01", "2020-04-01", "2020-05-01", "2020-06-01", "2020-07-01", "2020-08-01", "2020-09-01", "2020-10-01", "2020-11-01", "2020-12-01", "2021-01-01", "2021-02-01", "2021-03-01", "2021-04-01", "2021-05-01", "2021-06-01"];
-  public possibleDatesYear = ["2020-01-01", "2021-01-01"]
+  public possibleDatesMonth = ["2020-01", "2020-02", "2020-03", "2020-04", "2020-05", "2020-06", "2020-07", "2020-08", "2020-09", "2020-10", "2020-11", "2020-12", "2021-01", "2021-02", "2021-03", "2021-04", "2021-05", "2021-06"];
+  public possibleDatesYear = ["2020", "2021"]
   public dates = this.possibleDatesDay;
   public datesSelect = [];
+  public datesSelectDropDown = [];
 
 
   public legendLabel = "x-Axis"
@@ -97,7 +103,7 @@ export class UnitedStatesComponent implements OnInit, OnDestroy, AfterViewInit, 
   public maxSlider = { Date: new Date(this.dateMax).getTime(), Tests: 0, Cases: 0, Deaths: 0, Population: 0, PartialVaccinated: 0, FullyVaccinated: 0 } //.setHours(23, 59, 59, 999)
   public filterValue = { Date: [new Date(this.dateMin).getTime(), new Date(this.dateMax).getTime()], Tests: [0, false], Cases: [0, false], Deaths: [0, false], Population: [0, false], PartialVaccinated: [0, false], FullyVaccinated: [0, false] };
   public updateVisualization = false;
-  public fieldToColor = { "Visualizations": "#1F8FFF", "Legend": "#FF7738", "DataFields": "#00FFE6", "Filter": "#877AFF" };
+  public fieldToColor = { "Visualizations": "#1F8FFF", "Legend": "#FF7738", "DataFields": "#00FFE6", "Filter": "#877AFF", "Configuration": "#000000" };
 
 
 
@@ -107,7 +113,8 @@ export class UnitedStatesComponent implements OnInit, OnDestroy, AfterViewInit, 
     public route: ActivatedRoute,
     private drillDownService: DrillDownService,
     private functionService: FunctionService,
-    private simpleService: SimpleService
+    private simpleService: SimpleService,
+    private checkUpService: CheckUpService
   ) {
 
     this._routerSub = router.events.pipe(
@@ -282,11 +289,14 @@ export class UnitedStatesComponent implements OnInit, OnDestroy, AfterViewInit, 
       if (this.trainingMode) {
         document.getElementById("itl-container").style.display = 'flex';
 
-        document.getElementById("FilterField").style.width = '25%';
-        document.getElementById("botWin").style.width = '75%';
+        document.getElementById("FilterField").style.width = '30%';
+        document.getElementById("botWin").style.width = '70%';
 
         document.getElementById("FilterField").style.height = '100%';
-        document.getElementById("botWin").style.height = '34%';
+        document.getElementById("botWin").style.height = '44%';
+
+        document.getElementById("botWin").style.borderTop = '0px';
+
 
         //$('.filterTitle').css('display','block');
       }
@@ -298,6 +308,8 @@ export class UnitedStatesComponent implements OnInit, OnDestroy, AfterViewInit, 
 
         document.getElementById("FilterField").style.height = '50%';
         document.getElementById("botWin").style.height = '50%';
+
+        document.getElementById("botWin").style.borderTop = '3px solid #122e51';
       }
       switch (this.treatment) {
         case '0':
@@ -335,19 +347,19 @@ export class UnitedStatesComponent implements OnInit, OnDestroy, AfterViewInit, 
       if (this.statesSelect.length > 0) {
         $("input[id^='k']")[1]["placeholder"] = "  +"
       }
-      if (this.datesSelect.length > 0) {
+      if (this.datesSelectDropDown.length > 0) {
         $("input[id^='k']")[0]["placeholder"] = "  +"
       }
 
-      if (this.unitedStatesMap.y_Axis_Values.length > 0){
+      if (this.unitedStatesMap.y_Axis_Values.length > 0) {
         var placeholderText = "&nbsp; ";
-        for(var i = 0; i < this.unitedStatesMap.y_Axis_Values.length; i++){
+        for (var i = 0; i < this.unitedStatesMap.y_Axis_Values.length; i++) {
           placeholderText += this.unitedStatesMap.y_Axis_Values[i]
 
-          if( this.unitedStatesMap.y_Axis_Values.length > 1 && i < this.unitedStatesMap.y_Axis_Values.length - 1 && i < 2){
+          if (this.unitedStatesMap.y_Axis_Values.length > 1 && i < this.unitedStatesMap.y_Axis_Values.length - 1 && i < 2) {
             placeholderText += ", "
           }
-          else if(i == 2 && this.unitedStatesMap.y_Axis_Values.length > 3){
+          else if (i == 2 && this.unitedStatesMap.y_Axis_Values.length > 3) {
             placeholderText += "... "
             break;
           }
@@ -356,7 +368,7 @@ export class UnitedStatesComponent implements OnInit, OnDestroy, AfterViewInit, 
         document.getElementById("cumulateText").innerHTML = placeholderText
 
       }
-      else{
+      else {
         document.getElementById("cumulateText").innerHTML = " &nbsp; Tests, Cases, Deaths, ..."
       }
 
@@ -474,17 +486,28 @@ export class UnitedStatesComponent implements OnInit, OnDestroy, AfterViewInit, 
     }
   }
 
-  resetFilter(event) {
+  resetFilter(event, target) {
 
     if (event.path[4]["className"] == "col") {
 
       var data = event.path[4]["id"].split("_")[0]
 
       if (data == "State") {
-        this.functionService.addState(this, ["All"])
+        if (target == "All") {
+          this.functionService.addState(this, ["All"])
+        }
+        else if (target == "None") {
+          this.functionService.removeState(this, ["All"])
+        }
+
       }
       else if (data == "Date") {
-        this.functionService.addDate(this, ["All"])
+        if (target == "All") {
+          this.functionService.addDate(this, ["All"])
+        }
+        else if (target == "None") {
+          this.functionService.removeDate(this, ["All"])
+        }
       }
       else {
         var filters = [{ [data]: [0, this.maxSlider[data]] }]
@@ -531,13 +554,20 @@ export class UnitedStatesComponent implements OnInit, OnDestroy, AfterViewInit, 
           this.startDemonstration((<any>event).data.value);
         }
         else if ((<any>event).data.name == "ConfirmRecommendation") {
-          this.confirmRecommendation((<any>event).data.value);
+          this.endTrainingMode('true');
         }
         else if ((<any>event).data.name == "Refuse") {
-          this.refuse();
+          this.endTrainingMode('false');
         }
         else if ((<any>event).data.name == "RecommendSimpleAction") {
           this.simpleService.analyzeEntities(this, (<any>event).data.value);
+        }
+        else if ((<any>event).data.name == "StartTransition") {
+          this.animate = true;
+        }
+        else if ((<any>event).data.name == "EndTransition") {
+          this.animate = false;
+          setTimeout(element => { $('.draggable').removeClass("animate"); $('.col').removeClass("animate"); $('.highlight').removeClass("highlight"); }, 1000)
         }
 
 
@@ -596,7 +626,7 @@ export class UnitedStatesComponent implements OnInit, OnDestroy, AfterViewInit, 
   ablegen(ev) {
     ev.preventDefault();
     var data = ev.dataTransfer.getData("text");
-    if (ev.target["className"] == "interactiveField") {
+    if (ev.target["className"].includes("interactiveField")) {
       if (data != "Date" && data != "State" && ev.target["id"] == "legend") {
         this.communicateToBot(String(data) + " can not be entered as a Legend.");
 
@@ -677,12 +707,19 @@ export class UnitedStatesComponent implements OnInit, OnDestroy, AfterViewInit, 
 
   selectedDateChange(value: any) {
 
-    var selected = value.filter(x => !this.unitedStatesMap.datesSelect.includes(x));
+    if (this.unitedStatesMap.aggregate == "M") {
+      value = value.map(i => i + "-01");
+    }
+    else if (this.unitedStatesMap.aggregate == "Y") {
+      value = value.map(i => i + "-01-01");
+    }
+
+    var selected = value.filter(x => !this.datesSelect.includes(x));
     if (selected.length != 0) {
       this.functionService.addDate(this, selected)
     }
     else {
-      selected = this.unitedStatesMap.datesSelect.filter(x => !value.includes(x));
+      selected = this.datesSelect.filter(x => !value.includes(x));
       this.functionService.removeDate(this, selected)
     }
 
@@ -824,11 +861,7 @@ export class UnitedStatesComponent implements OnInit, OnDestroy, AfterViewInit, 
   }
 
   changedLegendAction(event) {
-    var id;
 
-    if (event["path"][2].id.includes("ActionTemplate")) {
-      id = event["path"][2].id.slice(14);
-    }
 
     var previousAction = this.actionSequence[id]
 
@@ -850,10 +883,17 @@ export class UnitedStatesComponent implements OnInit, OnDestroy, AfterViewInit, 
       previousAction["Remove"]["Legend"] = legend
     }
 
-    this.actionSequence[id] = previousAction
+    var id;
 
-    this.updateDuringTraining();
-
+    if (event["path"][2].id.includes("ActionTemplate")) {
+      id = event["path"][2].id.slice(14);
+      this.actionSequence[id] = previousAction
+      this.updateDuringTraining();
+    }
+    else if (event["path"][2].id.includes("InitialStateTemplate")) {
+      id = event["path"][2].id.slice(20);
+      this.initialStateSequence = previousAction
+    }
   }
 
   changedStateAction(event) {
@@ -900,6 +940,42 @@ export class UnitedStatesComponent implements OnInit, OnDestroy, AfterViewInit, 
 
   }
 
+  changedStateActionAll(event) {
+    var id;
+
+    if (event["path"][2].id.includes("ActionTemplate")) {
+      id = event["path"][2].id.slice(14);
+    }
+
+    var previousAction = this.actionSequence[id]
+
+
+
+    console.log(previousAction["Add"]["State"])
+    var states = []
+
+    if (previousAction["Add"]["State"] != "none") {
+      states = previousAction["Add"]["State"]
+    }
+    else if (previousAction["Remove"]["State"] != "none") {
+      states = previousAction["Remove"]["State"]
+    }
+
+    if (event["target"]["value"] == "Add") {
+      previousAction["Add"]["State"] = states
+      previousAction["Remove"]["State"] = 'none'
+    }
+    else if (event["target"]["value"] == "Remove") {
+      previousAction["Add"]["State"] = 'none'
+      previousAction["Remove"]["State"] = states
+    }
+
+    this.actionSequence[id] = previousAction
+
+    this.updateDuringTraining();
+
+  }
+
   changedDateAction(event) {
     var id;
 
@@ -935,6 +1011,42 @@ export class UnitedStatesComponent implements OnInit, OnDestroy, AfterViewInit, 
     }
     else if (event["target"]["value"] == "Select all except") {
       previousAction["Add"]["Date"] = ['All']
+      previousAction["Remove"]["Date"] = dates
+    }
+
+    this.actionSequence[id] = previousAction
+
+    this.updateDuringTraining();
+
+  }
+
+  changedDateActionAll(event) {
+    var id;
+
+    if (event["path"][2].id.includes("ActionTemplate")) {
+      id = event["path"][2].id.slice(14);
+    }
+
+    var previousAction = this.actionSequence[id]
+
+
+
+    console.log(previousAction["Add"]["Date"])
+    var dates = []
+
+    if (previousAction["Add"]["Date"] != "none") {
+      dates = previousAction["Add"]["Date"]
+    }
+    else if (previousAction["Remove"]["Date"] != "none") {
+      dates = previousAction["Remove"]["Date"]
+    }
+
+    if (event["target"]["value"] == "Add") {
+      previousAction["Add"]["Date"] = dates
+      previousAction["Remove"]["Date"] = 'none'
+    }
+    else if (event["target"]["value"] == "Remove") {
+      previousAction["Add"]["Date"] = 'none'
       previousAction["Remove"]["Date"] = dates
     }
 
@@ -997,9 +1109,38 @@ export class UnitedStatesComponent implements OnInit, OnDestroy, AfterViewInit, 
       );
   }
 
+  getFeedbackFromBot(value: any) {
+    this.directLine
+      .postActivity({
+        from: { id: "USER_ID", name: "USER_NAME" },
+        name: "Feedback",
+        type: "event",
+        value: value,
+        channelData: { Visualizations: this.unitedStatesMap.chartType, Legend: this.unitedStatesMap.legend_Values ? this.unitedStatesMap.legend_Values : null, DataFields: this.unitedStatesMap.y_Axis_Values }
+      })
+      .subscribe(
+        id => {
+          if (sessionStorage.getItem('conversationID') == null) {
+            sessionStorage.setItem('conversationID', this.directLine.conversationId);
+          };
+        },
+        error => console.log(`Error posting activity ${error}`)
+      );
+  }
 
-  tagMapper(tags: any[]): any[] {
+
+  tagMapperState(tags: any[]): any[] {
+    tags = tags.sort((tag1: any, tag2: any): number => {
+      return tag1["value"] - tag2["value"];
+    });
     return tags.length < 51 ? tags : [tags];
+  }
+
+  tagMapperDate(tags: any[]): any[] {
+    tags = tags.sort((tag1: any, tag2: any): number => {
+      return Date.parse(tag1) - Date.parse(tag2);
+    });
+    return tags.length < 548 ? tags : [tags];
   }
 
   update() {
@@ -1053,6 +1194,46 @@ export class UnitedStatesComponent implements OnInit, OnDestroy, AfterViewInit, 
     this.shortcut = false;
     document.getElementById("trainUtterance").innerHTML = this.initialUtterance + document.getElementById("trainUtterance").innerHTML;
 
+    document.getElementById("trainUtterance").childNodes.forEach(function (child) {
+      if (child["title"] != "") {
+        console.log(child["title"])
+        if (child["title"].includes("x-Axis") || child["title"].includes("Legend") || child["title"].includes("State :")) {
+          child.addEventListener("mouseover", function () { document.getElementById(child["title"].split(/ : | &#10; | \n /)[1])["style"]["box-shadow"] = "black 5px 5px 10px 0px" })
+          child.addEventListener("mouseout", function () { document.getElementById(child["title"].split(/ : | &#10; | \n /)[1])["style"]["box-shadow"] = "" })
+        }
+        else if (child["title"].includes("y-Axis") || child["title"].includes("Axis") || child["title"].includes("Color")) {
+          child.addEventListener("mouseover", function () { document.getElementById(child["title"].split(/ : | &#10; | \n /)[1])["style"]["box-shadow"] = "black 5px 5px 10px 0px" })
+          child.addEventListener("mouseout", function () { document.getElementById(child["title"].split(/ : | &#10; | \n /)[1])["style"]["box-shadow"] = "" })
+        }
+        else if (child["title"].includes("Visualizations")) {
+          child.addEventListener("mouseover", function () { document.getElementById(child["title"].split(/ : | &#10; | \n /)[1])["style"]["background-color"] = "RoyalBlue" })
+          child.addEventListener("mouseout", function () { document.getElementById(child["title"].split(/ : | &#10; | \n /)[1])["style"]["background-color"] = "DodgerBlue" })
+        }
+        else if (child["title"].includes("Aggregate")) {
+          child.addEventListener("mouseover", function () { document.getElementById(child["title"].split(/ : | &#10; | \n /)[0])["style"]["box-shadow"] = "black 0px 0px 10px 6px" })
+          child.addEventListener("mouseout", function () { document.getElementById(child["title"].split(/ : | &#10; | \n /)[0])["style"]["box-shadow"] = "" })
+        }
+        else if (child["title"].includes("Cumulative")) {
+          child.addEventListener("mouseover", function () { document.getElementById(child["title"].split(/ : | &#10; | \n /)[0])["style"]["box-shadow"] = "black 0px 0px 10px 6px" })
+          child.addEventListener("mouseout", function () { document.getElementById(child["title"].split(/ : | &#10; | \n /)[0])["style"]["box-shadow"] = "" })
+        }
+
+        /** TODO */
+        else if (child["title"].includes("Filter")) {
+
+          if (document.getElementById(child["title"].split(/ : | &#10; | \n /)[1] + "_Filter").classList.contains("closed")) {
+            child.addEventListener("mouseover", function () { document.getElementById("FilterField")["style"]["box-shadow"] = "black 0px 0px 10px 6px" })
+            child.addEventListener("mouseout", function () { document.getElementById("FilterField")["style"]["box-shadow"] = "" })
+          }
+          else {
+            child.addEventListener("mouseover", function () { document.getElementById(child["title"].split(/ : | &#10; | \n /)[1] + "_Filter")["style"]["box-shadow"] = "black 0px 0px 10px 6px" })
+            child.addEventListener("mouseout", function () { document.getElementById(child["title"].split(/ : | &#10; | \n /)[1] + "_Filter")["style"]["box-shadow"] = "" })
+          }
+        }
+      }
+
+    })
+
     this.trainableEntites = value;
 
     this.stateList = []
@@ -1075,12 +1256,12 @@ export class UnitedStatesComponent implements OnInit, OnDestroy, AfterViewInit, 
         this.metricList[index - 1] = [metric.substring(1)]
       }
       else {
-        this.metricList[index -1].push(metric.substring(1))
+        this.metricList[index - 1].push(metric.substring(1))
       }
     }
 
     console.log(this.metricList[0])
-    
+
 
     var possibleFilter = ["Date", "State", "Tests", "Cases", "Deaths", "Population", "PartialVaccinated", "FullyVaccinated"]
     var activeFilters = []
@@ -1108,17 +1289,19 @@ export class UnitedStatesComponent implements OnInit, OnDestroy, AfterViewInit, 
 
     this.unusedEntities = {}
 
-    for (var tIndex in this.trainableEntites){
-      if(this.trainableEntites[tIndex].length > 0 && tIndex != "State"  && tIndex != "DataFields" && tIndex != "StatesSelect"){
+    for (var tIndex in this.trainableEntites) {
+      if (this.trainableEntites[tIndex].length > 0 && tIndex != "State" && tIndex != "DataFields" && tIndex != "StatesSelect") {
         this.unusedEntities[tIndex] = JSON.parse(JSON.stringify(this.trainableEntites[tIndex]))
       }
-      else if(this.trainableEntites[tIndex].length > 0 && tIndex == "State"){
+      else if (this.trainableEntites[tIndex].length > 0 && tIndex == "State") {
         this.unusedEntities[tIndex] = JSON.parse(JSON.stringify(this.stateList))
       }
-      else if(this.trainableEntites[tIndex].length > 0 && tIndex == "DataFields"){
+      else if (this.trainableEntites[tIndex].length > 0 && tIndex == "DataFields") {
         this.unusedEntities["Metric"] = JSON.parse(JSON.stringify(this.metricList))
       }
     }
+
+    this.initialUnusedEntities = JSON.parse(JSON.stringify(this.unusedEntities))
 
     console.log(this.initialState)
 
@@ -1161,10 +1344,10 @@ export class UnitedStatesComponent implements OnInit, OnDestroy, AfterViewInit, 
         }
       }
 
-
+      this.communicateToBot("I confirmed your selection.")
       this.updateDuringTraining();
     }
-    else{
+    else {
       this.communicateToBot("Please select one of the two options.")
     }
 
@@ -1232,16 +1415,20 @@ export class UnitedStatesComponent implements OnInit, OnDestroy, AfterViewInit, 
     var element = document.getElementById("ActionTemplate" + id);
     element.parentNode.removeChild(element);
 
-    try{
+    try {
       var RecElement = document.getElementById("RecommenderTemplate" + id);
       RecElement.parentNode.removeChild(RecElement);
     }
-    catch{
+    catch {
     }
 
     for (var i = id; i < this.actionSequence.length; i++) {
       var oldID = parseInt(i) + 1
       document.getElementById("ActionTemplate" + oldID).id = "ActionTemplate" + i
+    }
+
+    if(this.actionSequence.length == 0){
+      document.getElementById("NoAction")["style"]["display"] = "inline-block";
     }
 
     this.updateDuringTraining()
@@ -1254,6 +1441,7 @@ export class UnitedStatesComponent implements OnInit, OnDestroy, AfterViewInit, 
   async updateDuringTraining() {
 
     this.addToSequence = false;
+    this.resetProzess = true;
     this.functionService.changeVisualization(this, this.initialState["Visualization"])
 
     if (typeof this.initialState["Legend"] !== 'undefined' && this.initialState["Legend"] != null) {
@@ -1294,6 +1482,7 @@ export class UnitedStatesComponent implements OnInit, OnDestroy, AfterViewInit, 
 
     this.functionService.changeCumulative(this, this.initialState["Cumulative"])
 
+    this.resetProzess = false;
 
     for (var i = 0; i < this.actionSequence.length; i++) {
       await this.functionService.processAction(this, this.actionSequence[i])
@@ -1307,13 +1496,17 @@ export class UnitedStatesComponent implements OnInit, OnDestroy, AfterViewInit, 
   addElementtoITL(action, target) {
 
     if (this.addToSequence) {
+      
+
       var returnValues = this.drillDownService.processUserInput(this, action, target, this.actionSequence)
 
       this.actionSequence = returnValues[1];
 
-
+      this.getFeedbackFromBot(this.actionSequence[this.actionSequence.length - 1])
 
       for (var i = 0; i < returnValues[0].length; i++) {
+        document.getElementById("NoAction")["style"]["display"] = "none";
+
         var clone;
 
         clone = document.getElementById('ActionTemplate' + returnValues[0][i]['id'])
@@ -1336,13 +1529,19 @@ export class UnitedStatesComponent implements OnInit, OnDestroy, AfterViewInit, 
         if (document.getElementsByClassName("stateSwitch").length > 0) {
           document.getElementsByClassName("stateSwitch")[document.getElementsByClassName("stateSwitch").length - 1].addEventListener("change", this.changedStateAction.bind(this));
         }
+        if (document.getElementsByClassName("stateSwitchAll").length > 0) {
+          document.getElementsByClassName("stateSwitchAll")[document.getElementsByClassName("stateSwitchAll").length - 1].addEventListener("change", this.changedStateActionAll.bind(this));
+        }
         if (document.getElementsByClassName("filterSwitch").length > 0) {
           document.getElementsByClassName("filterSwitch")[document.getElementsByClassName("filterSwitch").length - 1].addEventListener("change", this.changedFilterAction.bind(this));
         }
         if (document.getElementsByClassName("dateSwitch").length > 0) {
           document.getElementsByClassName("dateSwitch")[document.getElementsByClassName("dateSwitch").length - 1].addEventListener("change", this.changedDateAction.bind(this));
         }
-        
+        if (document.getElementsByClassName("dateSwitchAll").length > 0) {
+          document.getElementsByClassName("dateSwitchAll")[document.getElementsByClassName("dateSwitchAll").length - 1].addEventListener("change", this.changedDateActionAll.bind(this));
+        }
+
 
 
 
@@ -1386,69 +1585,123 @@ export class UnitedStatesComponent implements OnInit, OnDestroy, AfterViewInit, 
 
   endTrainingMode(sendActivity) {
 
-    if(sendActivity == "false" ||  this.shortcut || this.simpleService.checkUnused(this, this.unusedEntities) ){
+    if (sendActivity == "false" || this.shortcut || this.simpleService.checkUnused(this, this.unusedEntities)) {
 
-    this.trainingMode = false;
-    this.addToSequence = false;
+      this.trainingMode = false;
+      this.addToSequence = false;
 
-    if (sendActivity == "true") {
-      this.directLine
-        .postActivity({
-          from: { id: "USER_ID", name: "USER_NAME" },
-          name: "endTrainingMode",
-          type: "event",
-          value: {
-            'sequence': this.actionSequence,
-            'initialState': this.initialState
-          }
-        })
-        .subscribe(
-          id => {
-            if (sessionStorage.getItem('conversationID') == null) {
-              sessionStorage.setItem('conversationID', this.directLine.conversationId);
-            };
-          },
-          error => console.log(`Error posting activity ${error}`)
-        );
+      this.actionSequence = this.initialStateSequence.concat(this.actionSequence)
+
+      if (sendActivity == "true") {
+        this.directLine
+          .postActivity({
+            from: { id: "USER_ID", name: "USER_NAME" },
+            name: "endTrainingMode",
+            type: "event",
+            value: {
+              'sequence': this.actionSequence,
+              'initialState': this.initialState
+            }
+          })
+          .subscribe(
+            id => {
+              if (sessionStorage.getItem('conversationID') == null) {
+                sessionStorage.setItem('conversationID', this.directLine.conversationId);
+              };
+            },
+            error => console.log(`Error posting activity ${error}`)
+          );
+      }
+      else if (sendActivity == "false") {
+        this.directLine
+          .postActivity({
+            from: { id: "USER_ID", name: "USER_NAME" },
+            name: "cancelTrainingMode",
+            type: "event",
+          })
+          .subscribe(
+            id => {
+              if (sessionStorage.getItem('conversationID') == null) {
+                sessionStorage.setItem('conversationID', this.directLine.conversationId);
+              };
+            },
+            error => console.log(`Error posting activity ${error}`)
+          );
+      }
+
+      if(this.actionSequence.length == 0){
+        document.getElementById("NoAction")["style"]["display"] = "inline-block";
+      }
+
+      this.actionSequence = [];
+      this.initialState = null;
+      this.recommendationList = [];
+      this.initialStateSequence = []
+
+
+
+
+      document.getElementById("trainUtterance").innerHTML = "";
+
+      for (var i = document.getElementById("itl-pane").childNodes.length - 1; 0 <= i; i--) {
+        var element = document.getElementById("itl-pane").childNodes[i];
+        if(element["id"] != "NoAction"){
+          element.parentNode.removeChild(element);
+        }
+        
+      }
     }
-    else if (sendActivity == "false") {
-      this.directLine
-        .postActivity({
-          from: { id: "USER_ID", name: "USER_NAME" },
-          name: "cancelTrainingMode",
-          type: "event",
-        })
-        .subscribe(
-          id => {
-            if (sessionStorage.getItem('conversationID') == null) {
-              sessionStorage.setItem('conversationID', this.directLine.conversationId);
-            };
-          },
-          error => console.log(`Error posting activity ${error}`)
-        );
-    }
-    this.actionSequence = [];
+    else {
+      this.shortcut = true;
 
+      var returnValues = this.checkUpService.processInitialState(this, this.initialState, this.unusedEntities, this.initialStateSequence)
 
-    this.initialState = null;
-    this.recommendationList = [];
+      this.initialStateSequence = returnValues[1];
 
+      if(returnValues[0].length > 0){
+        document.getElementById("NoAction")["style"]["display"] = "none";
+        this.communicateToBot("I have made some suggestions based on the initial state of the tool to adress parts of your command that you have not yet used.")
+      }
 
+      for (var i = returnValues[0].length - 1 ; i >= 0; i--) {
+        
 
+        var clone;
 
-    document.getElementById("trainUtterance").innerHTML = "";
+        clone = document.getElementById('InitialStateTemplate' + returnValues[0][i]['id'])
 
-    for (var i = document.getElementById("itl-pane").childNodes.length - 1; 0 <= i; i--) {
-      var element = document.getElementById("itl-pane").childNodes[i];
-      element.parentNode.removeChild(element);
+        if (clone == null) {
+          clone = document.getElementById('InitialStateTemplate').cloneNode(true);
+          clone.lastChild.parentElement.id = "InitialStateTemplate" + returnValues[0][i]['id'];
+          clone.lastChild.parentElement.style["display"] = "block";
+          //clone.childNodes[1].onclick = this.closeITLElement.bind(this);
+        }
+        clone.childNodes[0].innerHTML = returnValues[0][i]['text']
+        document.getElementById('itl-pane').prepend(clone);
+
+        if (document.getElementsByClassName("metricSwitch").length > 0) {
+          document.getElementsByClassName("metricSwitch")[document.getElementsByClassName("metricSwitch").length - 1].addEventListener("change", this.changedMetricAction.bind(this));
+        }
+        if (document.getElementsByClassName("legendSwitch").length > 0) {
+          document.getElementsByClassName("legendSwitch")[document.getElementsByClassName("legendSwitch").length - 1].addEventListener("change", this.changedLegendAction.bind(this));
+        }
+        if (document.getElementsByClassName("stateSwitch").length > 0) {
+          document.getElementsByClassName("stateSwitch")[document.getElementsByClassName("stateSwitch").length - 1].addEventListener("change", this.changedStateAction.bind(this));
+        }
+        if (document.getElementsByClassName("stateSwitchAll").length > 0) {
+          document.getElementsByClassName("stateSwitchAll")[document.getElementsByClassName("stateSwitchAll").length - 1].addEventListener("change", this.changedStateActionAll.bind(this));
+        }
+        if (document.getElementsByClassName("filterSwitch").length > 0) {
+          document.getElementsByClassName("filterSwitch")[document.getElementsByClassName("filterSwitch").length - 1].addEventListener("change", this.changedFilterAction.bind(this));
+        }
+        if (document.getElementsByClassName("dateSwitch").length > 0) {
+          document.getElementsByClassName("dateSwitch")[document.getElementsByClassName("dateSwitch").length - 1].addEventListener("change", this.changedDateAction.bind(this));
+        }
+      }
+
+      this.simpleService.feedbackUnused(this, this.unusedEntities)
     }
   }
-  else{
-    this.shortcut = true;
-  }
-
-  }
-
 }
 
 

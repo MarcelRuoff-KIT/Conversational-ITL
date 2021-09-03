@@ -10,6 +10,7 @@ import { MetricSummaryComponent } from './metric-summary/metric-summary.componen
 import { DrillDownService } from './shared/drilldown.services';
 import { FunctionService } from './shared/function.services';
 import { SimpleService } from './shared/simple.services';
+import { CheckUpService } from './shared/checkup.services';
 
 
 import { ButtonsModule } from '@progress/kendo-angular-buttons';
@@ -52,7 +53,7 @@ declare var $: any;
     FormsModule,
     //GridModule 
   ],
-  providers: [DrillDownService, FunctionService, SimpleService],
+  providers: [DrillDownService, FunctionService, SimpleService, CheckUpService],
   bootstrap: [AppComponent]
 })
 export class AppModule { }
