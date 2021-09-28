@@ -72,12 +72,13 @@
 
   </div>
   <div class="row" style="width: 100%; height: calc(100vh - 150px)">
-    <div id="map" style="width: 60%; height: calc(100vh - 150px)">
-      <app-unitedstates-map [filterValue]="filterValue" (toggleChanged)="toggleChanged($event)"
+    <div id="leftContainer" style="width: 70%; height: calc(100vh - 150px)">
+      <div id="map" style="height: 65%">
+        <app-unitedstates-map [filterValue]="filterValue" (toggleChanged)="toggleChanged($event)"
         (dateChanged)="dateChanged($event)" id="unitedStatesMap" #unitedStatesMap></app-unitedstates-map>
-    </div>
-    <div id="info" style="width: 40%; height: calc(100vh - 150px)">
-      <div class="filter-container" id="FilterField" (drop)="ablegen($event)" (dragover)="ablegenErlauben($event)"
+      </div>
+      
+        <div class="filter-container" id="FilterField" (drop)="ablegen($event)" (dragover)="ablegenErlauben($event)"
         style="border: 3px solid #877AFF;">
         <div class="col closed" style="width: 100%; text-align: center; margin-top: 30px;" id="No_Filter">No active
           Filters.
@@ -89,7 +90,13 @@
               <input type="date" id="Date-From" title="Start Date" size="6" style="display: none; overflow:hidden"
                 value="{{this.currentDateMin}}" min="{{this.dateMin}}" max="{{this.currentDateMax}}"
                 (input)="this.inputCheck($event)">
-              <p><b>Dates</b></p><input type="date" id="Date-To" title="End Date" size="6"
+              <div><b>Dates</b> aggregated
+              <select id = "Aggregate" name="Aggregate">
+                  <option value="D">by Day</option>
+                  <option value="M">by Month</option>
+                  <option value="Y">by Year</option>
+                </select></div>
+              <input type="date" id="Date-To" title="End Date" size="6"
                 style="display: none; overflow:hidden" value="{{this.currentDateMax}}" min="{{this.currentDateMin}}"
                 max="{{this.dateMax}}" (input)="this.inputCheck($event)">
 
@@ -169,7 +176,7 @@
             </div>
 
             <div class="filterSettings">
-              <div style="height: 40%; width: 100%;"><button (click)="resetFilter($event)">All</button></div>
+              <div style="height: 40%; width: 100%;"><button (click)="resetFilter($event, 'All')">All</button></div>
               <div style="height: 50%; width: 100%;"><button (click)="closeFilter($event)">&#10006;</button></div>
             </div>
           </div>
@@ -188,7 +195,7 @@
             </div>
 
             <div class="filterSettings">
-              <div style="height: 40%; width: 100%;"><button (click)="resetFilter($event)">All</button></div>
+              <div style="height: 40%; width: 100%;"><button (click)="resetFilter($event, 'All')">All</button></div>
               <div style="height: 50%; width: 100%;"><button (click)="closeFilter($event)">&#10006;</button></div>
             </div>
           </div>
@@ -207,7 +214,7 @@
               </kendo-rangeslider>
             </div>
             <div class="filterSettings">
-              <div style="height: 40%; width: 100%;"><button (click)="resetFilter($event)">All</button></div>
+              <div style="height: 40%; width: 100%;"><button (click)="resetFilter($event, 'All')">All</button></div>
               <div style="height: 50%; width: 100%;"><button (click)="closeFilter($event)">&#10006;</button></div>
             </div>
           </div>
@@ -226,7 +233,7 @@
               </kendo-rangeslider>
             </div>
             <div class="filterSettings">
-              <div style="height: 40%; width: 100%;"><button (click)="resetFilter($event)">All</button></div>
+              <div style="height: 40%; width: 100%;"><button (click)="resetFilter($event, 'All')">All</button></div>
               <div style="height: 50%; width: 100%;"><button (click)="closeFilter($event)">&#10006;</button></div>
             </div>
           </div>
@@ -246,7 +253,7 @@
 
             </div>
             <div class="filterSettings">
-              <div style="height: 40%; width: 100%;"><button (click)="resetFilter($event)">All</button></div>
+              <div style="height: 40%; width: 100%;"><button (click)="resetFilter($event, 'All')">All</button></div>
               <div style="height: 50%; width: 100%;"><button (click)="closeFilter($event)">&#10006;</button></div>
             </div>
           </div>
@@ -265,7 +272,7 @@
                 (valueChange)="mouseFilterChange($event, 'PartialVaccinated')"></kendo-rangeslider>
             </div>
             <div class="filterSettings">
-              <div style="height: 40%; width: 100%;"><button (click)="resetFilter($event)">All</button></div>
+              <div style="height: 40%; width: 100%;"><button (click)="resetFilter($event, 'All')">All</button></div>
               <div style="height: 50%; width: 100%;"><button (click)="closeFilter($event)">&#10006;</button></div>
             </div>
           </div>
@@ -274,13 +281,16 @@
 
 
       </div>
+    </div>
+    <div id="info" style="width: 30%; height: calc(100vh - 150px)">
+      
       <div class="itl-container" id="itl-container">
         <div id="utterance-container"
           style="height: fit-content; width: 100%; padding: 0px 0px 20px; border:2px solid black;">
           <div id="demoModeTitle"
-            style="background-color: #1a2126; color: white; width: 28%;padding: 10px; position: absolute; height: 60px; top: 90px; right: 5px; display: flex;">
+            style="background-color: #1a2126; color: white; width: 30%;padding: 10px; position: absolute; height: 60px; top: 90px; right: 5px; display: flex;">
             <div style="width: 20%;"><img id="dotPic" src="../../assets/images/redDot.gif" style="width:45px"></div>
-            <div style="width: 80%;">Assistant is learning...<br> Please create the intended visualization.</div>
+            <div style="width: 80%;">Assistant is learning...<br> Please perform the actions you have intended with this command.</div>
           </div>
           <div id="trainUtterance"
             style="height: fit-content; width: calc(100% - 100px); text-align: center; font-size: 2vh; float:left; padding:24px 10px 0px">
@@ -337,7 +347,7 @@
 <!-- Interactive Task Learning Building Blocks -->
 
 <div class="infoBox" id="RecommenderTemplate"
-  style="padding-top: 28px; position: relative; z-index: 100; border: 0px; box-shadow: rgba(0, 0, 0, 0.17) 0px 5px 5px 0px; top: -13px;">
+  style="display: none; padding-top: 28px; position: relative; z-index: 100; border: 0px; box-shadow: rgba(0, 0, 0, 0.17) 0px 5px 5px 0px; top: -13px;">
 
   <p class="textField" style="width: 80%;">
     Unfortunately, there has been an internal error.
@@ -346,7 +356,7 @@
     <button style="padding: 5px;" (click)="closeRecommendationItem($event)">Confirm Selection</button>
   </div>
   <div class="connector">
-    <input type="radio" name="recommendation" value="original">
+    <input type="radio" name="recommendation" value="original" checked="checked">
     <p style="padding: 7px; color: black;">OR</p> <input type="radio" name="recommendation" value="recommendation">
   </div>
 
@@ -359,7 +369,7 @@
 <!-- END Interactive Task Learning Building Blocks display: none; -->
 
 
-<div class="infoBox" id="InitialStateTemplate" style="background-color: #c7c7c7;">
+<div class="infoBox" id="InitialStateTemplate" style="background-color: #ffffff;">
 
   <p class="textField">
     <select>

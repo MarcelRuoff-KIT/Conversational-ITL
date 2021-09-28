@@ -52,6 +52,7 @@ export class UnitedStatesMapComponent implements OnInit, AfterViewInit {
 
   @Input() filterValue = { Date: [new Date("2020-01-21").getTime(), new Date("2021-06-30").getTime()], Tests: [0, false], Cases: [0, false], Deaths: [0, false], Population: [0, false], PartialVaccinated: [0, false], FullyVaccinated: [0, false] };
 
+  baseURL = "https://interactive-analytics.org:3001/"; //"http://127.0.0.1:5000/"
   hostElement; // Native element hosting the SVG container
   svg; // Top level SVG element
   g; // SVG Group element
@@ -264,6 +265,11 @@ export class UnitedStatesMapComponent implements OnInit, AfterViewInit {
   }
 
   async updateMap() {
+    document.getElementById("loading")["style"]["display"] = "block"
+    this.childUpdateMap()
+  }
+
+  async childUpdateMap() {
 
     this.width = document.getElementById("map").clientWidth
     document.getElementById("testSVG").style.left = String(this.width - 130) + 'px'
@@ -298,7 +304,7 @@ export class UnitedStatesMapComponent implements OnInit, AfterViewInit {
 
       if (this.legendChanged) {
         this.legendChanged = false;
-        await $.post('http://127.0.0.1:5000//barChart', { y: dataColumns, legend: legend, Aggregate: this.aggregate, Cumulative: this.cumulative, GroupBy: this.groupBy, Date: formatDate(new Date(this.filterValue["Date"][1]), 'yyyy-MM-dd', 'en') }, function (dataMax) {
+        await $.post(this.baseURL + '/barChart', { y: dataColumns, legend: legend, Aggregate: this.aggregate, Cumulative: this.cumulative, GroupBy: this.groupBy, Date: formatDate(new Date(this.filterValue["Date"][1]), 'yyyy-MM-dd', 'en') }, function (dataMax) {
           var dataTransfer = {
             TestsMax: d3.max(dataMax, d => d['Tests']),
             CasesMax: d3.max(dataMax, d => d['Cases']),
@@ -325,7 +331,7 @@ export class UnitedStatesMapComponent implements OnInit, AfterViewInit {
       }
 
       console.log(filterBar)
-      await $.post('http://127.0.0.1:5000/barChart', { y: dataColumns, legend: legend, DateSetting: this.dateSetting, Aggregate: this.aggregate, Cumulative: this.cumulative, GroupBy: this.groupBy, Date: formatDate(new Date(this.filterValue["Date"][1]), 'yyyy-MM-dd', 'en'), Filter: JSON.stringify(filterBar) }, function (data) {
+      await $.post(this.baseURL + 'barChart', { y: dataColumns, legend: legend, DateSetting: this.dateSetting, Aggregate: this.aggregate, Cumulative: this.cumulative, GroupBy: this.groupBy, Date: formatDate(new Date(this.filterValue["Date"][1]), 'yyyy-MM-dd', 'en'), Filter: JSON.stringify(filterBar) }, function (data) {
         that.newCases = data
         that.removeExistingMapFromParent()
       }, "json");
@@ -334,7 +340,7 @@ export class UnitedStatesMapComponent implements OnInit, AfterViewInit {
 
 
 
-      
+
 
       this.createSVG()
 
@@ -388,7 +394,7 @@ export class UnitedStatesMapComponent implements OnInit, AfterViewInit {
               ? "\xa0" + s
               : "" + s + " K";
           }
-          else{
+          else {
             var s = formatSimpleNumber(d);
             return this.parentNode.nextSibling
               ? "\xa0" + s
@@ -408,7 +414,7 @@ export class UnitedStatesMapComponent implements OnInit, AfterViewInit {
       }
 
 
-    var unqiueLegendArray = []
+      var unqiueLegendArray = []
 
       for (var i = 0, n = this.newCases.length; i < n; i++) {
         if (!unqiueLegendArray.includes(this.newCases[i][legend])) {
@@ -433,62 +439,57 @@ export class UnitedStatesMapComponent implements OnInit, AfterViewInit {
       xScale1.domain(dataColumns).range([0, xScale0.bandwidth()])
 
       for (var i = 0, n = dataColumns.length; i < n; i++) {
-        for (var j = 0, m = this.unqiueGroupArray.length; j < m; j++) {
-          var width = xScale1.bandwidth() / this.unqiueGroupArray.length
-          state_name.selectAll(".bar." + dataColumns[i])
-            .data(d => [d])
-            .enter()
-            .append("rect")
-            .attr("class", "bar " + dataColumns[i] + "|" + this.unqiueGroupArray[j])
-            .attr("fill", z(dataColumns[i]))
-            .attr("x", d => xScale1(dataColumns[i]) + j * width)
-            .attr("y", d => yScale(d[dataColumns[i]]))
-            .attr("width", width)
-            .attr("height", d => {
-              if (d[groupByLegend] == this.unqiueGroupArray[j]) {
-                if (d[dataColumns[i]] == 0) {
-                  return 0
-                }
-                else {
-                  return this.height - 10 - 30 - yScale(d[dataColumns[i]])
-                }
+        var width = xScale1.bandwidth() / this.unqiueGroupArray.length
+        state_name.selectAll(".bar." + dataColumns[i])
+          .data(d => [d])
+          .enter()
+          .append("rect")
+          .attr("class", d => {
+            return "bar " + dataColumns[i] + "|" + d["Date"]
+          })
+          .attr("fill", z(dataColumns[i]))
+          .attr("x", d => xScale1(dataColumns[i]) + this.unqiueGroupArray.indexOf(d["Date"]) * width)
+          .attr("y", d => yScale(d[dataColumns[i]]))
+          .attr("width", width)
+          .attr("height", d => {
+            if (d[dataColumns[i]] == 0) {
+              return 0
+            }
+            else {
+              return this.height - 10 - 30 - yScale(d[dataColumns[i]])
+            }
+          })
+          .on("mouseover", function (d, unknown, bar) {
+            that.tooltip
+              .transition()
+              .duration(200)
+              .style("opacity", 0.9);
+            var dateText = d["Date"]
+            if (that.aggregate == "M") {
+              dateText = dateText.replace("-01", "");
+            }
+            else if (that.aggregate == "Y") {
+              dateText = dateText.replace("-01-01", "");
+            }
+            that.tooltip
+              .html(
 
-              }
-              else {
-                return 0
-              }
-            })
-            .on("mouseover", function (d, unknown, bar) {
-              that.tooltip
-                .transition()
-                .duration(200)
-                .style("opacity", 0.9);
-              var dateText = d["Date"]
-              if (that.aggregate == "M") {
-                dateText = dateText.replace("-01", "");
-              }
-              else if (that.aggregate == "Y") {
-                dateText = dateText.replace("-01-01", "");
-              }
-              that.tooltip
-                .html(
+                d["State"] + "<br/>" + dateText + "<br/><b>" + bar[0].classList[1].split("|")[0] + ":</b> " + that.formatDecimal(d[bar[0].classList[1].split("|")[0]])
+              )
+              .style("left", d3.event.pageX + "px")
+              .style("top", d3.event.pageY + "px");
 
-                  d["State"] + "<br/>" + dateText + "<br/><b>" + bar[0].classList[1].split("|")[0] + ":</b> " + that.formatDecimal(d[bar[0].classList[1].split("|")[0]])
-                )
-                .style("left", d3.event.pageX + "px")
-                .style("top", d3.event.pageY + "px");
+            that.changeDetectorRef.detectChanges();
+          })
+          .on("mouseout", function (d) {
+            that.tooltip
+              .transition()
+              .duration(300)
+              .style("opacity", 0);
 
-              that.changeDetectorRef.detectChanges();
-            })
-            .on("mouseout", function (d) {
-              that.tooltip
-                .transition()
-                .duration(300)
-                .style("opacity", 0);
+            that.changeDetectorRef.detectChanges();
+          });
 
-              that.changeDetectorRef.detectChanges();
-            });
-        }
       }
 
 
@@ -594,7 +595,7 @@ export class UnitedStatesMapComponent implements OnInit, AfterViewInit {
       }
 
       if (this.legendChanged) {
-        await $.post('http://127.0.0.1:5000/scatter', { x: x_Axis, y: y_Axis, legend: legend, Aggregate: this.aggregate, Cumulative: this.cumulative, GroupBy: this.groupBy, Date: formatDate(new Date(that.filterValue["Date"][1]), 'yyyy-MM-dd', 'en') }, function (data) {
+        await $.post(this.baseURL + 'scatter', { x: x_Axis, y: y_Axis, legend: legend, Aggregate: this.aggregate, Cumulative: this.cumulative, GroupBy: this.groupBy, Date: formatDate(new Date(that.filterValue["Date"][1]), 'yyyy-MM-dd', 'en') }, function (data) {
           var dataTransfer = {
             TestsMax: d3.max(data, d => d['Tests']),
             CasesMax: d3.max(data, d => d['Cases']),
@@ -619,7 +620,7 @@ export class UnitedStatesMapComponent implements OnInit, AfterViewInit {
         6: { dataField: 'PartialVaccinated', From: this.filterValue["PartialVaccinated"][0], To: this.filterValue["PartialVaccinated"][1] },
         7: { dataField: 'FullyVaccinated', From: this.filterValue["FullyVaccinated"][0], To: this.filterValue["FullyVaccinated"][1] }
       }
-      await $.post('http://127.0.0.1:5000/scatter', { x: x_Axis, y: y_Axis, legend: legend, DateSetting: this.dateSetting, Aggregate: this.aggregate, Cumulative: this.cumulative, GroupBy: this.groupBy, Date: formatDate(new Date(that.filterValue["Date"][1]), 'yyyy-MM-dd', 'en'), Filter: JSON.stringify(filterScatter) }, function (data) {
+      await $.post(this.baseURL + 'scatter', { x: x_Axis, y: y_Axis, legend: legend, DateSetting: this.dateSetting, Aggregate: this.aggregate, Cumulative: this.cumulative, GroupBy: this.groupBy, Date: formatDate(new Date(that.filterValue["Date"][1]), 'yyyy-MM-dd', 'en'), Filter: JSON.stringify(filterScatter) }, function (data) {
         that.newCases = data
         that.removeExistingMapFromParent()
       }, "json");
@@ -759,7 +760,7 @@ export class UnitedStatesMapComponent implements OnInit, AfterViewInit {
       }
 
       if (this.legendChanged) {
-        await $.post('http://127.0.0.1:5000/mapChart', { value: y_Axis, Aggregate: this.aggregate, Cumulative: this.cumulative }, function (data) {
+        await $.post(this.baseURL + 'mapChart', { value: y_Axis, Aggregate: this.aggregate, Cumulative: this.cumulative }, function (data) {
           var dataTransfer = {
             TestsMax: d3.max(data, d => d['Tests']),
             CasesMax: d3.max(data, d => d['Cases']),
@@ -785,7 +786,7 @@ export class UnitedStatesMapComponent implements OnInit, AfterViewInit {
         7: { dataField: 'FullyVaccinated', From: this.filterValue["FullyVaccinated"][0], To: this.filterValue["FullyVaccinated"][1] }
       }
 
-      await $.post('http://127.0.0.1:5000/mapChart', { value: y_Axis, DateSetting: this.dateSetting, Aggregate: this.aggregate, Cumulative: this.cumulative, Filter: JSON.stringify(filterMap) }, function (data) {
+      await $.post(this.baseURL + 'mapChart', { value: y_Axis, DateSetting: this.dateSetting, Aggregate: this.aggregate, Cumulative: this.cumulative, Filter: JSON.stringify(filterMap) }, function (data) {
         that.newCases = data
       }, "json");
 
@@ -979,7 +980,7 @@ export class UnitedStatesMapComponent implements OnInit, AfterViewInit {
 
 
     }
-
+    document.getElementById("loading")["style"]["display"] = "none"
   }
 
   getMetrics(rangeValue) {

@@ -244,8 +244,10 @@ export class FunctionService {
 
   public addMetric(that, metric) {
 
+    that.addElementtoITL('AddMetric', metric);
+
     for (var i = 0; i < metric.length; i++) {
-      that.addElementtoITL('AddMetric', metric[i]);
+      
       document.getElementById("y_Axis").appendChild(document.getElementById(metric[i]));
       /**
        * Add animation if it is provided by the assistant
@@ -295,7 +297,7 @@ export class FunctionService {
       }
       that.filterValue[metric[i]] = [that.minSlider[metric[i]], that.maxSlider[metric[i]]]
 
-      that.addElementtoITL('RemoveMetric', metric[i]);
+      
 
       if(that.trainingMode && !that.resetProzess){
         for (var mIindex in that.unusedEntities["Metric"]) {
@@ -303,6 +305,7 @@ export class FunctionService {
         }
       }
     }
+    that.addElementtoITL('RemoveMetric', metric);
 
 
     /*that.unitedStatesMap.y_Axis_Values = [];
@@ -321,13 +324,16 @@ export class FunctionService {
     that.unitedStatesMap.y_Axis_Values = [];
     for (var i = document.getElementById("y_Axis").childNodes.length - 1; 0 <= i; i--) {
 
+      if (that.animate) {
+        document.getElementById(document.getElementById("y_Axis").childNodes[i]["id"]).classList.add("animate")
+      }
+      
+      console.log(document.getElementById("y_Axis"))
       document.getElementById("data_Field").appendChild(document.getElementById("y_Axis").childNodes[i])
       /**
        * Add animation if it is provided by the assistant
        */
-      if (that.animate) {
-        document.getElementById(document.getElementById("y_Axis").childNodes[i]["id"]).classList.add("animate")
-      }
+      
     }
 
     if(that.trainingMode && !that.resetProzess){
@@ -390,12 +396,6 @@ export class FunctionService {
         }
       }
 
-      for (var mIindex in that.unusedEntities["Filter"]) {
-        if (Object.keys(that.unusedEntities["Filter"][mIindex]).includes(Object.keys(filters[index])[0])) {
-          delete that.unusedEntities["Filter"][mIindex][Object.keys(filters[index])[0]]
-        }
-      }
-
       if (filters[index][Object.keys(filters[index])[0]][0] == "close") {
         that.addElementtoITL('RemoveFilter', Object.keys(filters[index])[0]);
 
@@ -428,6 +428,7 @@ export class FunctionService {
         }
         this.changeFilter(that, newFilters)
       }
+      that.filterValue = that.filterValue
     }
 
     /*

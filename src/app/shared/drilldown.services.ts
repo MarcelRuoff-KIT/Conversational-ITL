@@ -216,7 +216,9 @@ export class DrillDownService {
     }
     else if (action == "AddMetric") {
 
-      target = [target]
+      if(!Array.isArray(target)){
+        target = [target]
+      }
 
       var metricPhrase = ""
 
@@ -284,7 +286,7 @@ export class DrillDownService {
 
         for (var index in that.metricList) {
           if (target.every(metric => that.metricList[index].includes(metric)) && that.metricList[index].every(metric => target.includes(metric))) {
-            var reason = "**Ambiguity** \r\n I have two different interpretations of your action. \r\n Please select the action above that best represents your intentions of the command."
+            var reason = "**Ambiguity** \r\n I have two different interpretations of your action. \r\n Please select the action above that best represents your intentions of the command or I will use the first option as a default."
 
             var textRec = 'Remove all except <b>'
             for (var textIndex in that.metricList[index]) {
@@ -326,7 +328,7 @@ export class DrillDownService {
             recommondation.push({ value: "Remove all except", text: textRec, action: recommenderAction, id: actionSequence.length, reason: reason })
           }
           else if (that.unitedStatesMap.y_Axis_Values.every(metric => that.metricList[index].includes(metric)) && that.metricList[index].every(metric => that.unitedStatesMap.y_Axis_Values.includes(metric))) {
-            var reason = "**Ambiguity** \r\n I have two different interpretations of your action. \r\n Please select the action above that best represents your intentions of the command."
+            var reason = "**Ambiguity** \r\n I have two different interpretations of your action. \r\n Please select the action above that best represents your intentions of the command or I will use the first option as a default."
 
             var textRec = 'Remove all except <b>'
             for (var textIndex in that.metricList[index]) {
@@ -408,7 +410,10 @@ export class DrillDownService {
     }
     else if (action == "RemoveMetric") {
 
-      target = [target]
+      if(!Array.isArray(target)){
+        target = [target]
+      }
+      
 
       var previousSequence = "none"
 
@@ -453,7 +458,7 @@ export class DrillDownService {
       else {
 
         if (that.unitedStatesMap.y_Axis_Values.length == 0) {
-          var reason = "**Ambiguity** \r\n I have two different interpretations of your action. \r\n Please select the action above that best represents your intentions of the command."
+          var reason = "**Ambiguity** \r\n I have two different interpretations of your action. \r\n Please select the action above that best represents your intentions of the command or I will use the first option as a default."
 
           var textRec = "Remove all Data Fields from  <span class='trainMetric' style='color:" + this.fieldToColor['DataFields'] + "'>" + that.metricLabel + "</span>"
 
@@ -485,7 +490,7 @@ export class DrillDownService {
         }
         for (var index in that.metricList) {
           if (that.unitedStatesMap.y_Axis_Values.every(metric => that.metricList[index].includes(metric)) && that.metricList[index].every(metric => that.unitedStatesMap.y_Axis_Values.includes(metric))) {
-            var reason = "**Ambiguity** \r\n I have two different interpretations of your action. \r\n Please select the action above that best represents your intentions of the command."
+            var reason = "**Ambiguity** \r\n I have two different interpretations of your action. \r\n Please select the action above that best represents your intentions of the command or I will use the first option as a default."
 
             var textRec = 'Remove all except <b>'
             for (var textIndex in that.metricList[index]) {
@@ -858,7 +863,7 @@ export class DrillDownService {
 
         for (var index in that.stateList) {
           if (removeState != "All" && target.every(state => that.stateList[index].includes(state)) && that.stateList[index].every(state => target.includes(state)) && that.unitedStatesMap.statesSelect.every(state => that.stateList[index].includes(state))) {
-            var reason = "**Ambiguity** \r\n I have two different interpretations of your action. \r\n Please select the action above that best represents your intentions of the command."
+            var reason = "**Ambiguity** \r\n I have two different interpretations of your action. \r\n Please select the action above that best represents your intentions of the command or I will use the first option as a default."
 
             var textRec = 'Remove all except states '
             for (var textIndex in that.stateList[index]) {
@@ -973,7 +978,7 @@ export class DrillDownService {
           }
 
           if (that.unitedStatesMap.statesSelect.every(state => previouslyAdded.includes(state))) {
-            var reason = "**Ambiguity** \r\n I have two different interpretations of your action. \r\n Please select the action above that best represents your intentions of the command."
+            var reason = "**Ambiguity** \r\n I have two different interpretations of your action. \r\n Please select the action above that best represents your intentions of the command or I will use the first option as a default."
 
             var textRec = 'Remove all states '
 
@@ -1126,7 +1131,7 @@ export class DrillDownService {
 
       for (var index in that.stateList) {
         if (target.every(state => that.stateList[index].includes(state)) && that.stateList[index].every(state => target.includes(state)) && that.unitedStatesMap.statesSelect.every(state => that.stateList[index].includes(state))) {
-          var reason = "**Ambiguity** \r\n I have two different interpretations of your action. \r\n Please select the action above that best represents your intentions of the command."
+          var reason = "**Ambiguity** \r\n I have two different interpretations of your action. \r\n Please select the action above that best represents your intentions of the command or I will use the first option as a default."
           var textRec = "Add all states except "
           for (var textIndex in that.stateList[index]) {
 
@@ -1245,7 +1250,7 @@ export class DrillDownService {
 
 
         if (target.every(date => that.trainableEntites["Date"].includes(date))) {
-          var reason = "**Ambiguity** \r\n I have two different interpretations of your action. \r\n Please select the action above that best represents your intentions of the command."
+          var reason = "**Ambiguity** \r\n I have two different interpretations of your action. \r\n Please select the action above that best represents your intentions of the command or I will use the first option as a default."
 
           var textRec = 'Remove all dates except '
           for (var textIndex in target) {
@@ -1548,7 +1553,7 @@ export class DrillDownService {
           recommondation.push({ value: "Remove all", text: "Remove all dates.", action: recommenderAction, id: actionSequence.length })
         }
         else if (target.every(date => that.trainableEntites["Date"].includes(date))) {
-          var reason = "**Ambiguity** \r\n I have two different interpretations of your action. \r\n Please select the action above that best represents your intentions of the command."
+          var reason = "**Ambiguity** \r\n I have two different interpretations of your action. \r\n Please select the action above that best represents your intentions of the command or I will use the first option as a default."
   
           var textRec = "Add all dates except "
           for (var textIndex in target) {

@@ -165,6 +165,8 @@ export class UnitedStatesComponent implements OnInit, OnDestroy, AfterViewInit, 
         conversationId: conversationID,
         webSocket: false
       });
+      this.communicateToBot("The visualization has been reset to its default.")
+
     }
     else {
       this.directLine = window.WebChat.createDirectLine({
@@ -289,10 +291,10 @@ export class UnitedStatesComponent implements OnInit, OnDestroy, AfterViewInit, 
       if (this.trainingMode) {
         document.getElementById("itl-container").style.display = 'flex';
 
-        document.getElementById("FilterField").style.width = '30%';
-        document.getElementById("botWin").style.width = '70%';
+        //document.getElementById("FilterField").style.width = '30%';
+        //document.getElementById("botWin").style.width = '70%';
 
-        document.getElementById("FilterField").style.height = '100%';
+        //document.getElementById("FilterField").style.height = '100%';
         document.getElementById("botWin").style.height = '44%';
 
         document.getElementById("botWin").style.borderTop = '0px';
@@ -303,11 +305,11 @@ export class UnitedStatesComponent implements OnInit, OnDestroy, AfterViewInit, 
       else {
         document.getElementById("itl-container").style.display = 'none';
 
-        document.getElementById("FilterField").style.width = '100%';
-        document.getElementById("botWin").style.width = '100%';
+        //document.getElementById("FilterField").style.width = '100%';
+        //document.getElementById("botWin").style.width = '100%';
 
-        document.getElementById("FilterField").style.height = '50%';
-        document.getElementById("botWin").style.height = '50%';
+        //document.getElementById("FilterField").style.height = '50%';
+        document.getElementById("botWin").style.height = '100%';
 
         document.getElementById("botWin").style.borderTop = '3px solid #122e51';
       }
@@ -538,7 +540,9 @@ export class UnitedStatesComponent implements OnInit, OnDestroy, AfterViewInit, 
             this["style"]["display"] = "none";
           }
         });
+        
         if ((<any>event).data.name == "Generic") {
+          this.animate = true;
           try {
             this.functionService.processAction(this, <any>event.data.value)
             this.update();
@@ -546,6 +550,9 @@ export class UnitedStatesComponent implements OnInit, OnDestroy, AfterViewInit, 
           catch (e) {
 
           }
+          this.animate = false;
+          setTimeout(element => { $('.draggable').removeClass("animate"); $('.col').removeClass("animate"); $('.highlight').removeClass("highlight"); }, 1000)
+        
         }
         else if ((<any>event).data.name == "Help") {
           this.functionService.visualizeUnderstanding(this, (<any>event).data.value)
@@ -561,13 +568,6 @@ export class UnitedStatesComponent implements OnInit, OnDestroy, AfterViewInit, 
         }
         else if ((<any>event).data.name == "RecommendSimpleAction") {
           this.simpleService.analyzeEntities(this, (<any>event).data.value);
-        }
-        else if ((<any>event).data.name == "StartTransition") {
-          this.animate = true;
-        }
-        else if ((<any>event).data.name == "EndTransition") {
-          this.animate = false;
-          setTimeout(element => { $('.draggable').removeClass("animate"); $('.col').removeClass("animate"); $('.highlight').removeClass("highlight"); }, 1000)
         }
 
 
@@ -585,6 +585,28 @@ export class UnitedStatesComponent implements OnInit, OnDestroy, AfterViewInit, 
             //this.drillDownService.postSpeech(this.userID, this.task, this.treatment, 0, (<any>event).data.text, "State");
           }
         }
+      }
+      else{
+        var that = this
+        $("li[class$='from-bot']").each(function (i, el) {
+          if (this["innerText"].indexOf("Bot said:Ambiguity") !== -1) {
+            this.addEventListener("mouseover",function(){ 
+              $("div[id^='RecommenderTemplate']").each(function (i, el) {
+              if(this["style"]["display"] != "none"){
+                this["style"]["background-color"] = "yellow"
+                document.getElementById("ActionTemplate" + this["id"].substring(19))["style"]["background-color"] = "yellow"
+              }
+            });})
+            this.addEventListener("mouseout",function(){ 
+              $("div[id^='RecommenderTemplate']").each(function (i, el) {
+              if(this["style"]["display"] != "none"){
+                this["style"]["background-color"] = "white"
+                document.getElementById("ActionTemplate" + this["id"].substring(19))["style"]["background-color"] = "white"
+              }
+            });})
+
+          }
+        });
       }
     }
 
@@ -1207,7 +1229,15 @@ export class UnitedStatesComponent implements OnInit, OnDestroy, AfterViewInit, 
         }
         else if (child["title"].includes("Visualizations")) {
           child.addEventListener("mouseover", function () { document.getElementById(child["title"].split(/ : | &#10; | \n /)[1])["style"]["background-color"] = "RoyalBlue" })
-          child.addEventListener("mouseout", function () { document.getElementById(child["title"].split(/ : | &#10; | \n /)[1])["style"]["background-color"] = "DodgerBlue" })
+          child.addEventListener("mouseout", function () { 
+            var element = document.getElementById(child["title"].split(/ : | &#10; | \n /)[1]);
+            if(element["className"].includes("active")){
+              element["style"]["background-color"] = "DodgerBlue"
+            }
+            else{
+              element["style"]["background-color"] = "gray"
+            }
+          })
         }
         else if (child["title"].includes("Aggregate")) {
           child.addEventListener("mouseover", function () { document.getElementById(child["title"].split(/ : | &#10; | \n /)[0])["style"]["box-shadow"] = "black 0px 0px 10px 6px" })
@@ -1312,6 +1342,7 @@ export class UnitedStatesComponent implements OnInit, OnDestroy, AfterViewInit, 
     console.log(event.path[2].childNodes[2].childNodes[2]["checked"])
     if (event.path[2].childNodes[2].childNodes[0]["checked"] || event.path[2].childNodes[2].childNodes[2]["checked"]) {
       var index = parseInt(event.path[2].id.substring(19))
+      document.getElementById('ActionTemplate' + index)["children"][0]["children"][0]["disabled"] = false
       var element = document.getElementById("RecommenderTemplate" + index);
       element.parentNode.removeChild(element);
 
@@ -1370,6 +1401,14 @@ export class UnitedStatesComponent implements OnInit, OnDestroy, AfterViewInit, 
     });
 
     this.updateDuringTraining();
+  }
+
+  highlightRecommendation(){
+    console.log()
+  }
+
+  removeHiglightRecommendation(){
+
   }
 
   refuse() {
@@ -1496,11 +1535,21 @@ export class UnitedStatesComponent implements OnInit, OnDestroy, AfterViewInit, 
   addElementtoITL(action, target) {
 
     if (this.addToSequence) {
+      var that = this
+      $("div[id^='RecommenderTemplate']").each(function (i, el) {
+        if(this["style"]["display"] != "none"){
+          this["style"]["display"] = "none"
+          that.communicateToBot("I set the default action for the ambiguity")
+        }
+        
+      });
       
 
       var returnValues = this.drillDownService.processUserInput(this, action, target, this.actionSequence)
 
       this.actionSequence = returnValues[1];
+
+      
 
       this.getFeedbackFromBot(this.actionSequence[this.actionSequence.length - 1])
 
@@ -1546,9 +1595,7 @@ export class UnitedStatesComponent implements OnInit, OnDestroy, AfterViewInit, 
 
 
       }
-      $("div[id^='RecommenderTemplate']").each(function (i, el) {
-        this["style"]["display"] = "none"
-      });
+      
 
       for (var index in returnValues[2]) {
 
@@ -1563,6 +1610,8 @@ export class UnitedStatesComponent implements OnInit, OnDestroy, AfterViewInit, 
         if (this.treatment == "0" || this.treatment == "1") {
           var RecClone;
 
+          document.getElementById('ActionTemplate' + returnValues[2][index]['id'])["children"][0]["children"][0]["disabled"] = true
+
           RecClone = document.getElementById('RecommenderTemplate' + returnValues[2][index]['id'])
 
           if (RecClone == null) {
@@ -1576,6 +1625,15 @@ export class UnitedStatesComponent implements OnInit, OnDestroy, AfterViewInit, 
           RecClone.childNodes[0].innerHTML = returnValues[2][index]['text']
           document.getElementById('itl-pane').appendChild(RecClone);
         }
+
+        /*for(var elementIndex in document.getElementsByName("recommendation")){
+          var item = document.getElementsByName("recommendation")[elementIndex]
+          if(item["value"] == "original"){
+            item["checked"] = true
+          }
+        }*/
+        console.log(document.getElementsByName("recommendation"))
+
 
       }
 
@@ -1663,7 +1721,7 @@ export class UnitedStatesComponent implements OnInit, OnDestroy, AfterViewInit, 
         this.communicateToBot("I have made some suggestions based on the initial state of the tool to adress parts of your command that you have not yet used.")
       }
 
-      for (var i = returnValues[0].length - 1 ; i >= 0; i--) {
+      for (var i = 0 ; i < returnValues[0].length; i++) {
         
 
         var clone;
@@ -1677,7 +1735,7 @@ export class UnitedStatesComponent implements OnInit, OnDestroy, AfterViewInit, 
           //clone.childNodes[1].onclick = this.closeITLElement.bind(this);
         }
         clone.childNodes[0].innerHTML = returnValues[0][i]['text']
-        document.getElementById('itl-pane').prepend(clone);
+        document.getElementById('itl-pane').append(clone);
 
         if (document.getElementsByClassName("metricSwitch").length > 0) {
           document.getElementsByClassName("metricSwitch")[document.getElementsByClassName("metricSwitch").length - 1].addEventListener("change", this.changedMetricAction.bind(this));

@@ -93,8 +93,8 @@ export class SimpleService {
       this.actionSequence = [...new Set(this.actionSequence)]
       for (var aIndex in this.actionSequence) {
         response = response + "\r\n * " + this.actionSequence[aIndex]
-        that.communicateToBot(response)
       }
+      that.communicateToBot(response)
     }
 
 
