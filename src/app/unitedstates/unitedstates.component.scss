@@ -9,9 +9,13 @@
   min-width:1400px
 }
 
+.heading {
+  font-size: 2vh;
+}
+
 
 .webchat-container {
-  height: 100%;//285px;
+  height: 50%;//285px;
   width: 100%;
   overflow: hidden;
   flex: 1;
@@ -19,33 +23,35 @@
   flex-direction: column;
   position: relative;
   justify-content: flex-end;
-  border: 3px solid #122e51;
+  border: 1px solid #122e51;
   padding-right: 10px;
   z-index: 101;
+  font-size: 2.1vh;
 
 }
 
 .filter-container {
   margin-left: 10px;
   height: 35%;
-  width: calc(100% - 15px);
-  overflow-y: scroll;
+  width: calc(100% - 10px);
+  overflow-y: hidden;
   position: relative;
   justify-content: flex-end;
-  border: 1px solid #122e51;
+  border-top: 3px solid #eeeeee;
+  box-shadow: rgb(0 0 0 / 17%) 0px 1px 10px 10px;
   padding-right: 6px;
   z-index: 101;
   float: left;
 }
 
 .itl-container {
+  //resize: vertical;
   display: none;
   flex-direction: column;
-  border: 3px solid #122e51;
-  border-bottom: 1px solid gray;
-  overflow-x: scroll;
+  //border: 3px solid #122e51;
+  overflow-x: hidden;
   width:100%;
-  height: 56%;
+  height: 50%;
 }
 
 .itl-pane{
@@ -71,6 +77,25 @@
 
 .textField{
   width: 91%;
+}
+
+
+.hedding{
+  font-family: "Proxima Nova", sans-serif;
+  font-weight: bold;
+  font-size: 20px;
+  padding-bottom: 20px;
+}
+
+
+.continueButton{
+  color: white;
+  background-color: rgb(70,100,170);
+  border-radius: 3px;
+  font-family: "Proxima Nova", sans-serif;
+  font-size: 15px;
+  margin: 10px 0px 0px;
+  text-align: center;
 }
 
 
@@ -153,15 +178,38 @@ span:hover .tooltiptext {
   color: #94969e;
 }
 
+.attention{
+  right: 10%;
+  top: 14%;
+  width: 6%;
+  position: absolute;
+  padding: 4px;
+}
+
 
 
 .draggable {
-  border:1px solid #122e51;
+  border:1px solid black;
   width: max-content;
   height: max-content; 
   margin: 3px;
   padding: 0px 2px;
-  background-color: gray;
+  background-color: #f0f0f0;
+  color: black;
+  cursor: grab;
+  //flex: 1 0 auto;
+}
+
+.draggable:hover{
+  box-shadow: rgba(0, 0, 0, 1) 0px 2px 10px 0px;
+}
+
+.invisible {
+  border:1px solid white;
+  width: 30px;
+  height: max-content; 
+  margin: 3px;
+  padding: 0px 2px;
   color: white
   //flex: 1 0 auto;
 }
@@ -176,7 +224,7 @@ span:hover .tooltiptext {
 
 .left .draggable.animate{
   animation: append-animate-left .6s linear;
-  background-color: black;
+  box-shadow: rgba(0, 0, 0, 0.17) 0px 2px 10px 0px;
 }
 
 @keyframes append-animate-right {
@@ -189,16 +237,19 @@ span:hover .tooltiptext {
 
 .right .draggable.animate{
   animation: append-animate-right .6s linear;
-  background-color: black;
+  box-shadow: rgba(0, 0, 0, 0.17) 0px 2px 10px 0px;
 }
 
 
 .col.animate{
   box-shadow: rgb(135, 122, 255) 0px 0px 10px 6px;
+  margin: 10px 0px;
 }
 
 
-
+.k-input{
+  cursor: pointer;
+}
 
 .interactiveField {
   position: relative;
@@ -208,6 +259,7 @@ span:hover .tooltiptext {
   flex-wrap: wrap;
   justify-content: space-evenly;
   z-index: 20;
+  background-color: white;
 }
 
 .filterTitle{
@@ -220,7 +272,7 @@ span:hover .tooltiptext {
   display:flex; 
   flex-wrap: wrap;
   justify-content: space-evenly;
-  margin-top: 10px;
+  margin-top: 2px;
   text-align: center;
 }
 
@@ -229,8 +281,8 @@ span:hover .tooltiptext {
   display:flex; 
   flex-wrap: wrap;
   justify-content: space-evenly;
-  margin-top: 10px;
-  text-align: center;
+  margin-top: 2px;
+  text-align: left;
 }
 .mouseBlock {
   height: 100vh; 
@@ -289,9 +341,9 @@ span:hover .tooltiptext {
   padding: 12px 16px; /* Some padding */
   font-size: 16px; /* Set a font size */
   cursor: pointer; /* Mouse pointer on hover */
-  height: 50px;
-  width: 50px;
-  background-size: 35px 35px; 
+  height: 40px;
+  width: 40px;
+  background-size: 25px 25px; 
   background-repeat: no-repeat; 
   background-position: center
 }
@@ -301,19 +353,40 @@ span:hover .tooltiptext {
   background-color: RoyalBlue;
 }
 
+.button {
+  transition-duration: 0.4s;
+}
+
+.button:hover{
+  color: white;
+  background-color: black;
+}
+
 /* Darker background on mouse-over */
 .btn.active {
   background-color: DodgerBlue;
 }
 
 .col{
-  padding-bottom: 15px;
+  padding-left: 0;
+  padding-right: 0;
+  padding-bottom: 2px;//15px;
   border-bottom: 1px solid rgb(83, 83, 83);
 }
 
 .col.closed {
   display: none;
 }
+
+.halfColumn{
+  height:100%;
+  width: 50%;
+  float: left;
+  padding-bottom: 2px;//15px;
+  border-bottom: 1px solid rgb(83, 83, 83);
+  
+}
+
 
 .k-button {
   box-shadow: none;

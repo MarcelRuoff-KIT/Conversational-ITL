@@ -29,30 +29,37 @@ export class FunctionService {
 
   }
 
-  processAction(that, globalAction) {
+  async processAction(that, globalAction) {
 
     var action = globalAction
-    console.log(action)
+    that.sendStatus = false
 
     if (action["Add"]["Visualizations"] != "none" && action["Add"]["Visualizations"].length != 0 && action["Add"]["Visualizations"] != '[]') {
+      that.drillDownService.post(that.initialCommand + "ChangeVisualization", action["Add"]["Visualizations"], that, that.userID, that.task, that.treatment, 1, that.trainingMode)
       this.changeVisualization(that, action["Add"]["Visualizations"])
     }
-    if (action["Remove"]["Legend"] != "none" && action["Remove"]["Legend"].length != 0  && action["Remove"]["Legend"] != '[]') {
+    if (action["Remove"]["Legend"] != "none" && action["Remove"]["Legend"].length != 0 && action["Remove"]["Legend"] != '[]') {
+      that.drillDownService.post(that.initialCommand + "RemoveLegend", action["Remove"]["Legend"], that, that.userID, that.task, that.treatment, 1, that.trainingMode)
       this.removeLegend(that, action["Remove"]["Legend"])
     }
     if (action["Add"]["Legend"] != "none" && action["Add"]["Legend"].length != 0 && action["Add"]["Legend"] != '[]') {
+      that.drillDownService.post(that.initialCommand + "AddLegend", action["Add"]["Legend"], that, that.userID, that.task, that.treatment, 1, that.trainingMode)
       this.addLegend(that, action["Add"]["Legend"])
     }
     if (action["Remove"]["DataFields"] == "All") {
+      that.drillDownService.post(that.initialCommand + "RemoveMetric", ["All"], that, that.userID, that.task, that.treatment, 1, that.trainingMode)
       this.removeAllMetrics(that)
     }
     if (action["Add"]["DataFields"] == "All") {
+      that.drillDownService.post(that.initialCommand + "AddMetric", ["All"], that, that.userID, that.task, that.treatment, 1, that.trainingMode)
       this.addAllMetrics(that)
     }
-    if (action["Remove"]["DataFields"] != "none" && action["Remove"]["DataFields"].length != 0 && action["Remove"]["DataFields"] != "All"  && action["Remove"]["DataFields"] != '[]') {
+    if (action["Remove"]["DataFields"] != "none" && action["Remove"]["DataFields"].length != 0 && action["Remove"]["DataFields"] != "All" && action["Remove"]["DataFields"] != '[]') {
+      that.drillDownService.post(that.initialCommand + "RemoveMetric", action["Remove"]["DataFields"], that, that.userID, that.task, that.treatment, 1, that.trainingMode)
       this.removeMetric(that, action["Remove"]["DataFields"])
     }
     if (action["Add"]["DataFields"] != "none" && action["Add"]["DataFields"].length != 0 && action["Add"]["DataFields"] != "All" && action["Add"]["DataFields"] != '[]') {
+      that.drillDownService.post(that.initialCommand + "AddMetric", action["Add"]["DataFields"], that, that.userID, that.task, that.treatment, 1, that.trainingMode)
       this.addMetric(that, action["Add"]["DataFields"])
     }
 
@@ -61,15 +68,19 @@ export class FunctionService {
      */
 
     if (action["Remove"]["State"].includes("All")) {
+      that.drillDownService.post(that.initialCommand + "RemoveState", action["Remove"]["State"], that, that.userID, that.task, that.treatment, 1, that.trainingMode)
       this.removeState(that, action["Remove"]["State"])
     }
     if (action["Add"]["State"].includes("All")) {
+      that.drillDownService.post(that.initialCommand + "AddState", action["Add"]["State"], that, that.userID, that.task, that.treatment, 1, that.trainingMode)
       this.addState(that, action["Add"]["State"])
     }
     if (action["Remove"]["State"] != "none" && action["Remove"]["State"].length != 0 && action["Remove"]["State"] != "All" && action["Remove"]["State"] != '[]') {
+      that.drillDownService.post(that.initialCommand + "RemoveState", action["Remove"]["State"], that, that.userID, that.task, that.treatment, 1, that.trainingMode)
       this.removeState(that, action["Remove"]["State"])
     }
     if (action["Add"]["State"] != "none" && action["Add"]["State"].length != 0 && action["Add"]["State"] != "All" && action["Add"]["State"] != '[]') {
+      that.drillDownService.post(that.initialCommand + "AddState", action["Add"]["State"], that, that.userID, that.task, that.treatment, 1, that.trainingMode)
       this.addState(that, action["Add"]["State"])
     }
 
@@ -79,36 +90,42 @@ export class FunctionService {
      */
 
     if (action["Remove"]["Date"].includes("All")) {
+      that.drillDownService.post(that.initialCommand + "RemoveDate", action["Remove"]["Date"], that, that.userID, that.task, that.treatment, 1, that.trainingMode)
       this.removeDate(that, action["Remove"]["Date"])
     }
     if (action["Add"]["Date"].includes("All")) {
+      that.drillDownService.post(that.initialCommand + "AddDate", action["Add"]["Date"], that, that.userID, that.task, that.treatment, 1, that.trainingMode)
       this.addDate(that, action["Add"]["Date"])
     }
     if (action["Remove"]["Date"] != "none" && action["Remove"]["Date"].length != 0 && action["Remove"]["Date"] != "All" && action["Remove"]["Date"] != '[]') {
+      that.drillDownService.post(that.initialCommand + "RemoveDate", action["Remove"]["Date"], that, that.userID, that.task, that.treatment, 1, that.trainingMode)
       this.removeDate(that, action["Remove"]["Date"])
     }
     if (action["Add"]["Date"] != "none" && action["Add"]["Date"].length != 0 && action["Add"]["Date"] != "All" && action["Remove"]["Date"] != '[]') {
+      that.drillDownService.post(that.initialCommand + "AddDate", action["Add"]["Date"], that, that.userID, that.task, that.treatment, 1, that.trainingMode)
       this.addDate(that, action["Add"]["Date"])
     }
 
     if (action["Remove"]["Filter"] != "none" && action["Remove"]["Filter"].length != 0 && action["Remove"]["Filter"] != '[]') {
+      that.drillDownService.post(that.initialCommand + "RemoveFilter", action["Remove"]["Filter"], that, that.userID, that.task, that.treatment, 1, that.trainingMode)
       this.removeFilter(that, action["Remove"]["Filter"])
     }
     if (action["Add"]["Filter"] != "none" && action["Add"]["Filter"].length != 0 && action["Add"]["Filter"] != '[]') {
+      that.drillDownService.post(that.initialCommand + "AddFilter", action["Add"]["Filter"], that, that.userID, that.task, that.treatment, 1, that.trainingMode)
       this.addFilter(that, action["Add"]["Filter"])
     }
 
-    if (action["Add"]["Aggregate"] != "none" && action["Add"]["Aggregate"].length != 0 && action["Add"]["Aggregate"] != '[]') {
-      this.changeAggregate(that, action["Add"]["Aggregate"])
-    }
-
     if (action["Add"]["Cumulative"] != "none" && action["Add"]["Cumulative"].length != 0 && action["Add"]["Cumulative"] != '[]') {
+      that.drillDownService.post(that.initialCommand + "ChangeCumulative", action["Add"]["Cumulative"], that, that.userID, that.task, that.treatment, 1, that.trainingMode)
       this.changeCumulative(that, action["Add"]["Cumulative"])
     }
 
     if (action["Add"]["StatesSelect"] != "none" && action["Add"]["StatesSelect"].length != 0 && action["Add"]["StatesSelect"] != '[]') {
+      that.drillDownService.post(that.initialCommand + "ChangeStatesSelect", action["Add"]["StatesSelect"], that, that.userID, that.task, that.treatment, 1, that.trainingMode)
       this.changeStatesSelect(that, action["Add"]["StatesSelect"])
     }
+
+    that.sendStatus = true
 
   }
 
@@ -122,7 +139,7 @@ export class FunctionService {
 */
 
   public changeVisualization(that, visualization) {
-    that.addElementtoITL('ChangeVis', visualization);
+    
 
     var current = document.getElementsByClassName("btn active");
     if (current.length > 0) {
@@ -143,17 +160,22 @@ export class FunctionService {
     if (visualization == "barChart") {
       that.legendLabel = "x-Axis"
       that.metricLabel = "y-Axis"
-      document.getElementById("scatterUnused")["style"]["display"] = " none";
+      //document.getElementById("scatterUnused")["style"]["display"] = "none";
+      //document.getElementById("invisibleField")["style"]["display"] = "none";
+
     }
     else if (visualization == "scatter") {
       that.legendLabel = "Legend"
       that.metricLabel = "Axis"
-      document.getElementById("scatterUnused")["style"]["display"] = " block";
+      //document.getElementById("scatterUnused")["style"]["display"] = " block";
+      //document.getElementById("invisibleField")["style"]["display"] = "none";
+
     }
     else if (visualization == "Map") {
       that.legendLabel = "States"
       that.metricLabel = "Color"
-      document.getElementById("scatterUnused")["style"]["display"] = " block";
+      //document.getElementById("scatterUnused")["style"]["display"] = " block";
+      //document.getElementById("invisibleField")["style"]["display"] = "block";
     }
 
     var metricFields = document.getElementsByClassName("trainMetric");
@@ -171,6 +193,9 @@ export class FunctionService {
     document.getElementById("legend_Text").innerHTML = "<b>" + that.legendLabel + "</b>"
 
     document.getElementById("metric_Text").innerHTML = "<b>" + that.metricLabel + "</b>"
+
+    that.addElementtoITL('ChangeVis', visualization);
+    
   }
 
 
@@ -201,14 +226,16 @@ export class FunctionService {
       this.removeLegend(that, oldData)
     }
     if (legend !== that.unitedStatesMap.legend_Values) {
-      that.addElementtoITL('AddLegend', legend);
       that.unitedStatesMap.legendChanged = true;
       that.unitedStatesMap.legend_Values = legend
+      that.addElementtoITL('AddLegend', legend);
     }
 
     if (that.trainingMode && !that.resetProzess && typeof that.unusedEntities["Legend"] != 'undefined') {
       that.unusedEntities["Legend"] = that.unusedEntities["Legend"].filter(element => element != legend)
     }
+
+    
   }
 
   public removeLegend(that, legend) {
@@ -223,13 +250,15 @@ export class FunctionService {
 
     document.getElementById("data_Field").appendChild(entity);
 
-    that.unitedStatesMap.legend_Values = null
+    that.unitedStatesMap.legend_Values = undefined
     that.unitedStatesMap.legendChanged = true;
     that.addElementtoITL('RemoveLegend', legend);
 
     if (that.trainingMode && !that.resetProzess && typeof that.unusedEntities["Legend"] != 'undefined') {
       that.unusedEntities["Legend"] = that.unusedEntities["Legend"].filter(element => element != legend)
     }
+
+    
   }
 
 
@@ -244,10 +273,8 @@ export class FunctionService {
 
   public addMetric(that, metric) {
 
-    that.addElementtoITL('AddMetric', metric);
-
     for (var i = 0; i < metric.length; i++) {
-      
+
       document.getElementById("y_Axis").appendChild(document.getElementById(metric[i]));
       /**
        * Add animation if it is provided by the assistant
@@ -256,27 +283,28 @@ export class FunctionService {
         document.getElementById(metric[i]).classList.add("animate")
       }
       document.getElementById(metric[i] + "_Filter").className = document.getElementById(metric[i] + "_Filter").className.replace(" closed", "")
-      if (document.getElementById("No_Filter")["className"] != "col closed") {
-        document.getElementById("No_Filter")["className"] += " closed";
-      }
 
-      if(that.trainingMode && !that.resetProzess){
+
+      if (that.trainingMode && !that.resetProzess) {
         for (var mIindex in that.unusedEntities["Metric"]) {
           that.unusedEntities["Metric"][mIindex] = that.unusedEntities["Metric"][mIindex].filter(target => target != metric[i])
         }
       }
-      
+
 
     }
 
     that.unitedStatesMap.y_Axis_Values = []
 
     for (var i = 0; i < document.getElementById("y_Axis").childNodes.length; i++) {
-      that.unitedStatesMap.y_Axis_Values.push(document.getElementById("y_Axis").childNodes[i]["id"])
+      if (document.getElementById("y_Axis").childNodes[i]["id"] != "invisibleField") {
+        that.unitedStatesMap.y_Axis_Values.push(document.getElementById("y_Axis").childNodes[i]["id"])
+      }
     }
 
-
-
+    
+    that.addElementtoITL('AddMetric', metric);
+    
   }
 
   public removeMetric(that, metric) {
@@ -292,20 +320,20 @@ export class FunctionService {
         document.getElementById(metric[i]).classList.add("animate")
       }
 
-      if (document.getElementById(metric[i] + "_Filter")["className"] != "col closed") {
-        document.getElementById(metric[i] + "_Filter").className += " closed"
+      if(that.filterValue[metric[i]][0] == 0 && that.filterValue[metric[i]][1] == that.maxSlider[metric[i]]){
+        if (document.getElementById(metric[i] + "_Filter")["className"] != "col closed") {
+          document.getElementById(metric[i] + "_Filter").className += " closed"
+        }
       }
-      that.filterValue[metric[i]] = [that.minSlider[metric[i]], that.maxSlider[metric[i]]]
 
-      
 
-      if(that.trainingMode && !that.resetProzess){
+      if (that.trainingMode && !that.resetProzess) {
         for (var mIindex in that.unusedEntities["Metric"]) {
           that.unusedEntities["Metric"][mIindex] = that.unusedEntities["Metric"][mIindex].filter(target => target != metric[i])
         }
       }
     }
-    that.addElementtoITL('RemoveMetric', metric);
+    
 
 
     /*that.unitedStatesMap.y_Axis_Values = [];
@@ -314,35 +342,41 @@ export class FunctionService {
       that.unitedStatesMap.y_Axis_Values.push(document.getElementById("y_Axis").childNodes[i]["id"])
     }
     */
+    
 
-
+    that.addElementtoITL('RemoveMetric', metric);
   }
 
   public removeAllMetrics(that) {
-    that.addElementtoITL('RemoveMetric', 'All');
+    
 
     that.unitedStatesMap.y_Axis_Values = [];
     for (var i = document.getElementById("y_Axis").childNodes.length - 1; 0 <= i; i--) {
+      if (document.getElementById("y_Axis").childNodes[i]["id"] != "invisibleField") {
 
-      if (that.animate) {
-        document.getElementById(document.getElementById("y_Axis").childNodes[i]["id"]).classList.add("animate")
+
+        if (that.animate) {
+          document.getElementById(document.getElementById("y_Axis").childNodes[i]["id"]).classList.add("animate")
+        }
+
+        document.getElementById("data_Field").appendChild(document.getElementById("y_Axis").childNodes[i])
+        /**
+         * Add animation if it is provided by the assistant
+         */
       }
-      
-      console.log(document.getElementById("y_Axis"))
-      document.getElementById("data_Field").appendChild(document.getElementById("y_Axis").childNodes[i])
-      /**
-       * Add animation if it is provided by the assistant
-       */
-      
+
     }
 
-    if(that.trainingMode && !that.resetProzess){
+    if (that.trainingMode && !that.resetProzess) {
       that.unusedEntities["Metric"] = []
     }
+
+    that.addElementtoITL('RemoveMetric', 'All');
+    
   }
 
   public addAllMetrics(that) {
-    that.addElementtoITL('AddMetric', 'All');
+    
 
     that.unitedStatesMap.y_Axis_Values = [];
     for (var i = document.getElementById("data_Field").childNodes.length - 1; 0 <= i; i--) {
@@ -358,13 +392,17 @@ export class FunctionService {
     }
 
     for (var i = 0; i < document.getElementById("y_Axis").childNodes.length; i++) {
-      that.unitedStatesMap.y_Axis_Values.push(document.getElementById("y_Axis").childNodes[i]["id"])
+      if(document.getElementById("y_Axis").childNodes[i]["id"] != "invisibleField"){
+        that.unitedStatesMap.y_Axis_Values.push(document.getElementById("y_Axis").childNodes[i]["id"])
+      }
     }
 
-    if(that.trainingMode && !that.resetProzess){
+    if (that.trainingMode && !that.resetProzess) {
       that.unusedEntities["Metric"] = []
     }
 
+    that.addElementtoITL('AddMetric', 'All');
+    
   }
 
 
@@ -383,7 +421,7 @@ export class FunctionService {
         continue;
       }
 
-      if(that.trainingMode && !that.resetProzess){
+      if (that.trainingMode && !that.resetProzess) {
 
         for (var mIindex in that.unusedEntities["Filter"]) {
           if (Object.keys(that.unusedEntities["Filter"][mIindex]).includes(Object.keys(filters[index])[0])) {
@@ -405,17 +443,19 @@ export class FunctionService {
 
         that.filterValue[Object.keys(filters[index])[0]] = [that.minSlider[Object.keys(filters[index])[0]], that.maxSlider[Object.keys(filters[index])[0]]]
         if (Object.keys(filters[index])[0] == "Date") {
-          console.log(String(formatDate(new Date(that.filterValue[Object.keys(filters[index])[0]][1]), 'yyyy-MM-dd', 'en')))
           document.getElementById("Date-To")["value"] = String(formatDate(new Date(that.filterValue[Object.keys(filters[index])[0]][1]), 'yyyy-MM-dd', 'en'))
         }
         else {
-          document.getElementById(String(Object.keys(filters[index])[0]) + "-From")["value"] = String(that.filterValue[Object.keys(filters[index])[0]][0])
-          document.getElementById(String(Object.keys(filters[index])[0]) + "-To")["value"] = String(that.filterValue[Object.keys(filters[index])[0]][1])
+          document.getElementById(String(Object.keys(filters[index])[0]) + "-From")["value"] = that.filterValue[Object.keys(filters[index])[0]][0].toLocaleString( "en-US" )
+          document.getElementById(String(Object.keys(filters[index])[0]) + "-To")["value"] = that.filterValue[Object.keys(filters[index])[0]][1].toLocaleString( "en-US" )
         }
         that.unitedStatesMap.filterValue = that.filterValue
 
       }
       else {
+        document.getElementById(Object.keys(filters[index])[0] + "_Filter").className = document.getElementById(Object.keys(filters[index])[0] + "_Filter").className.replace(" closed", "")
+
+        
         var newFilters = { [Object.keys(filters[index])[0]]: [0, "max"] }
         if (filters[index][Object.keys(filters[index])[0]][0] == 0) {
           newFilters[Object.keys(filters[index])[0]][0] = filters[index][Object.keys(filters[index])[0]][1]
@@ -442,11 +482,12 @@ export class FunctionService {
       document.getElementById("No_Filter").className = document.getElementById("No_Filter").className.replace(" closed", "")
     }
     */
+
+    
   }
 
   public changeFilter(that, filter) {
 
-    console.log(Object.keys(filter))
     var key = Object.keys(filter)[0]
     that.addElementtoITL('ChangeFilter', filter);
 
@@ -454,11 +495,11 @@ export class FunctionService {
       /**
        * Add animation if it is provided by the assistant
        */
-       if (that.animate) {
+      if (that.animate) {
         document.getElementById(key + "_Filter").classList.add("animate")
       }
 
-      if(that.trainingMode && !that.resetProzess){
+      if (that.trainingMode && !that.resetProzess) {
 
         for (var mIindex in that.unusedEntities["Filter"]) {
           if (Object.keys(that.unusedEntities["Filter"][mIindex]).includes(key)) {
@@ -470,12 +511,12 @@ export class FunctionService {
           that.unusedEntities["Metric"][mIindex] = that.unusedEntities["Metric"][mIindex].filter(target => target != key)
         }
       }
-      
+
 
       var filterValue = that.filterValue[String(key)]
 
       if (filter[key][0] !== "none") {
-        document.getElementById(String(key) + "-From")["value"] = String(filter[String(key)][0])
+        document.getElementById(String(key) + "-From")["value"] = parseInt(filter[key][0]).toLocaleString( "en-US" )
         filterValue[0] = parseInt(filter[key][0])
 
       }
@@ -484,15 +525,15 @@ export class FunctionService {
         filterValue[0] = parseInt(that.filterValue[String(key)][0])
       }
       if (filter[key][1] !== "none" && filter[key][1] !== "max") {
-        document.getElementById(String(key) + "-To")["value"] = String(filter[String(key)][1])
+        document.getElementById(String(key) + "-To")["value"] = parseInt(filter[key][1]).toLocaleString( "en-US" )
         filterValue[1] = parseInt(filter[key][1])
       }
       else if (filter[key][1] == "max") {
-        document.getElementById(String(key) + "-To")["value"] = String(that.maxSlider[key])
+        document.getElementById(String(key) + "-To")["value"] = parseInt(that.maxSlider[key]).toLocaleString( "en-US" )
         filterValue[1] = parseInt(that.maxSlider[key])
       }
       else {
-        document.getElementById(String(key) + "-To")["value"] = String(that.maxSlider[key])
+        document.getElementById(String(key) + "-To")["value"] = parseInt(that.maxSlider[key]).toLocaleString( "en-US" )
         filterValue[1] = parseInt(that.filterValue[String(key)][1])
       }
 
@@ -503,6 +544,7 @@ export class FunctionService {
 
     that.unitedStatesMap.filterValue = that.filterValue;
 
+    
   }
 
   public addFilter(that, filters) {
@@ -521,11 +563,11 @@ export class FunctionService {
       /**
        * Add animation if it is provided by the assistant
        */
-       if (that.animate) {
+      if (that.animate) {
         document.getElementById(key + "_Filter").classList.add("animate")
       }
 
-      if(that.trainingMode && !that.resetProzess){
+      if (that.trainingMode && !that.resetProzess) {
         for (var mIindex in that.unusedEntities["Filter"]) {
           if (Object.keys(that.unusedEntities["Filter"][mIindex]).includes(key)) {
             delete that.unusedEntities["Filter"][mIindex][key]
@@ -536,7 +578,7 @@ export class FunctionService {
           that.unusedEntities["Metric"][mIindex] = that.unusedEntities["Metric"][mIindex].filter(target => target != key)
         }
       }
-      
+
 
       if (filters[index][key][0] == "open") {
         that.addElementtoITL('AddFilter', key);
@@ -545,6 +587,8 @@ export class FunctionService {
         this.changeFilter(that, filters[index])
       }
     }
+
+    
   }
 
   /**
@@ -556,13 +600,14 @@ export class FunctionService {
  */
 
   public addState(that, states) {
+    that.sendWaitRequest()
 
-    that.addElementtoITL('AddState', states);
+    
 
     /**
        * Add animation if it is provided by the assistant
        */
-     if (that.animate) {
+    if (that.animate) {
       document.getElementById("State_Filter").classList.add("animate")
     }
 
@@ -572,7 +617,7 @@ export class FunctionService {
 
     for (var state in states) {
 
-      if(that.trainingMode && !that.resetProzess){
+      if (that.trainingMode && !that.resetProzess) {
         for (var mIindex in that.unusedEntities["State"]) {
           that.unusedEntities["State"][mIindex] = that.unusedEntities["State"][mIindex].filter(target => target != states[state])
         }
@@ -584,7 +629,7 @@ export class FunctionService {
             that.statesSelect.push(that.scaleButtons[index])
           }
         }
-        if(that.trainingMode && !that.resetProzess){
+        if (that.trainingMode && !that.resetProzess) {
           for (var mIindex in that.unusedEntities["State"]) {
             that.unusedEntities["State"][mIindex] = []
           }
@@ -598,8 +643,17 @@ export class FunctionService {
 
     that.unitedStatesMap.statesSelect = that.statesSelect
     if (that.statesSelect.length > 0) {
-      $("input[id^='k']")[1]["placeholder"] = "  +"
+      try{
+        $("input[id^='k']")[1]["placeholder"] = "  +"
+      }
+      catch{
+
+      }
+      
     }
+
+    that.addElementtoITL('AddState', states);
+    
   }
 
   public removeState(that, states) {
@@ -615,13 +669,11 @@ export class FunctionService {
       that.unusedEntities["Legend"] = that.unusedEntities["Legend"].filter(element => element != "State")
     }
 
-    that.addElementtoITL('RemoveState', states);
-
     if (states[0] == "All") {
       that.statesSelect = []
       that.unitedStatesMap.statesSelect = that.statesSelect
 
-      if(that.trainingMode && !that.resetProzess){
+      if (that.trainingMode && !that.resetProzess) {
         for (var mIindex in that.unusedEntities["State"]) {
           that.unusedEntities["State"][mIindex] = []
         }
@@ -631,16 +683,24 @@ export class FunctionService {
       that.statesSelect = that.statesSelect.filter(element => !states.includes(element))
       that.unitedStatesMap.statesSelect = that.statesSelect
 
-      if(that.trainingMode && !that.resetProzess){
+      if (that.trainingMode && !that.resetProzess) {
         for (var mIindex in that.unusedEntities["State"]) {
           that.unusedEntities["State"][mIindex] = that.unusedEntities["State"][mIindex].filter(target => !states.includes(target))
         }
       }
 
       if (that.statesSelect.length > 0) {
+        try{
         $("input[id^='k']")[1]["placeholder"] = "  +"
       }
+      catch{
+        
+      }
+      }
     }
+
+    that.addElementtoITL('RemoveState', states);
+    
   }
 
 
@@ -654,8 +714,6 @@ export class FunctionService {
 
   public addDate(that, dates) {
 
-    that.addElementtoITL('AddDate', dates);
-
     /**
        * Add animation if it is provided by the assistant
        */
@@ -663,17 +721,17 @@ export class FunctionService {
       document.getElementById("Date_Filter").classList.add("animate")
     }
 
-    if (that.trainingMode && !that.resetProzess && typeof that.unusedEntities["Legend"] != 'undefined' ) {
+    if (that.trainingMode && !that.resetProzess && typeof that.unusedEntities["Legend"] != 'undefined') {
       that.unusedEntities["Legend"] = that.unusedEntities["Legend"].filter(element => element != "Date")
     }
-    if (that.trainingMode && !that.resetProzess && typeof that.unusedEntities["Date"] != 'undefined' ) {
+    if (that.trainingMode && !that.resetProzess && typeof that.unusedEntities["Date"] != 'undefined') {
       that.unusedEntities["Date"] = that.unusedEntities["Date"].filter(target => !dates.includes(target))
     }
 
 
     for (var date in dates) {
       if (dates[date] == "All") {
-        if (that.trainingMode && !that.resetProzess && typeof that.unusedEntities["Date"] != 'undefined' ) {
+        if (that.trainingMode && !that.resetProzess && typeof that.unusedEntities["Date"] != 'undefined') {
           that.unusedEntities["Date"] = []
         }
 
@@ -718,25 +776,31 @@ export class FunctionService {
     that.unitedStatesMap.datesSelect = that.datesSelect
 
     if (that.datesSelect.length > 0) {
-      $("input[id^='k']")[0]["placeholder"] = "  +"
+      try{
+        $("input[id^='k']")[0]["placeholder"] = "  +"
+      }
+      catch{
+        
+      }
     }
+
+    that.addElementtoITL('AddDate', dates);
+    
   }
 
   public removeDate(that, dates) {
 
-    that.addElementtoITL('RemoveDate', dates);
-
     /**
        * Add animation if it is provided by the assistant
        */
-     if (that.animate) {
+    if (that.animate) {
       document.getElementById("Date_Filter").classList.add("animate")
     }
 
-    if (that.trainingMode && !that.resetProzess && typeof that.unusedEntities["Legend"] != 'undefined' ) {
+    if (that.trainingMode && !that.resetProzess && typeof that.unusedEntities["Legend"] != 'undefined') {
       that.unusedEntities["Legend"] = that.unusedEntities["Legend"].filter(element => element != "Date")
     }
-    if (that.trainingMode && !that.resetProzess && typeof that.unusedEntities["Date"] != 'undefined' ) {
+    if (that.trainingMode && !that.resetProzess && typeof that.unusedEntities["Date"] != 'undefined') {
       that.unusedEntities["Date"] = that.unusedEntities["Date"].filter(target => !dates.includes(target))
     }
 
@@ -744,7 +808,7 @@ export class FunctionService {
       if (dates[date] == "All") {
         that.datesSelect = []
 
-        if (that.trainingMode && !that.resetProzess && typeof that.unusedEntities["Date"] != 'undefined' ) {
+        if (that.trainingMode && !that.resetProzess && typeof that.unusedEntities["Date"] != 'undefined') {
           that.unusedEntities["Date"] = []
         }
 
@@ -774,14 +838,22 @@ export class FunctionService {
       }
     }
     if (that.datesSelect.length > 0) {
-      $("input[id^='k']")[0]["placeholder"] = "  +"
+      try{
+        $("input[id^='k']")[0]["placeholder"] = "  +"
+      }
+      catch{
+        
+      }
     }
+
+    that.addElementtoITL('RemoveDate', dates);
+    
   }
 
   public changeDateSetting(that, setting) {
 
     if (that.unitedStatesMap.dateSetting != setting) {
-      that.addElementtoITL('ChangeDateSetting', setting);
+      
       that.unitedStatesMap.dateSetting = setting;
 
 
@@ -800,22 +872,21 @@ export class FunctionService {
         this.addDate(that, [date])
 
       }
+      that.addElementtoITL('ChangeDateSetting', setting);
     }
 
-
+    
   }
 
 
   public changeAggregate(that, aggregate) {
-
-    that.addElementtoITL('ChangeAggregate', aggregate);
 
     document.getElementById('Aggregate')["value"] = aggregate;
 
     /**
        * Add animation if it is provided by the assistant
        */
-     if (that.animate) {
+    if (that.animate) {
       document.getElementById("Aggregate").classList.add("highlight")
     }
 
@@ -862,6 +933,8 @@ export class FunctionService {
     that.unitedStatesMap.legendChanged = true;
     that.unitedStatesMap.aggregate = aggregate;
 
+    that.addElementtoITL('ChangeAggregate', aggregate);
+    
   }
 
   public changeCumulative(that, cumulate) {
@@ -869,7 +942,7 @@ export class FunctionService {
     /**
        * Add animation if it is provided by the assistant
        */
-     if (that.animate) {
+    if (that.animate) {
       document.getElementById("Cumulative").classList.add("highlight")
     }
 
@@ -877,13 +950,14 @@ export class FunctionService {
       that.unusedEntities["Cumulative"] = that.unusedEntities["Cumulative"].filter(element => element != cumulate)
     }
 
-    that.addElementtoITL('ChangeCumulative', cumulate);
 
     document.getElementById('Cumulative')["value"] = cumulate;
 
     that.unitedStatesMap.legendChanged = true;
     that.unitedStatesMap.cumulative = cumulate;
 
+    that.addElementtoITL('ChangeCumulative', cumulate);
+    
   }
 
   public changeStatesSelect(that, statesSelect) {
@@ -891,16 +965,19 @@ export class FunctionService {
     /**
        * Add animation if it is provided by the assistant
        */
-     if (that.animate) {
-      document.getElementById("statesSelect").classList.add("highlight")
+    if (that.animate) {
+      document.getElementById("StatesSelect").classList.add("highlight")
     }
 
-    that.addElementtoITL('ChangeStatesSelect', statesSelect);
+    
 
-    document.getElementById('statesSelect')["value"] = statesSelect;
+    document.getElementById('StatesSelect')["value"] = statesSelect;
 
     that.unitedStatesMap.legendChanged = true;
     that.unitedStatesMap.groupBy = statesSelect;
+
+    that.addElementtoITL('ChangeStatesSelect', statesSelect);
+    
   }
 
 
@@ -909,127 +986,127 @@ export class FunctionService {
 
 
   public visualizeUnderstanding(that, eventValue) {
+    var local = this;
     $('.plain').eq(-1).each(function (index) {
 
       var characters = $(this).text();
-      console.log(characters)
-      var start = 0;
 
-
-
-      var htmltext = "";
-
-
-
-      $.each(eventValue, function (i, element) {
-        console.log(element)
-        if (element["Feature"][0] == "Visualizations") {
-          var startOfElement = parseInt(element["Start"])
-          var endOfElement = parseInt(element["End"])
-          if (startOfElement == start) {
-            htmltext += "<span title='Visualizations : " + element["Text"] + that.simpleService.analyzeEntity(that ,{[element["Feature"][0]] : element["Text"]}) + "'  style='border-bottom: 4px solid " + that.fieldToColor[element["Feature"][0]] + "; margin-top: 60px;'>" + characters.substring(startOfElement, endOfElement) + ' ' + "</span>"
-          }
-          else if (startOfElement > start) {
-            var inbet = element["ID"] - 1
-            htmltext += "<span id='" + inbet + "' >" + characters.substring(start, startOfElement) + ' ' + "</span>"
-            htmltext += "<span title='Visualizations : " + element["Text"] + that.simpleService.analyzeEntity(that ,{[element["Feature"][0]] : element["Text"]}) + "'  style='border-bottom: 4px solid " + that.fieldToColor[element["Feature"][0]] + "'>" + characters.substring(startOfElement, endOfElement) + ' ' + "</span>"
-          }
-          start = endOfElement + 1
-
-        }
-        else if (element["Feature"][0] == "DataFields") {
-          var startOfElement = parseInt(element["Start"])
-          var endOfElement = parseInt(element["End"])
-          if (startOfElement == start) {
-            htmltext += "<span title='" + that.metricLabel + " : " + element["Text"] + that.simpleService.analyzeEntity(that ,{[element["Feature"][0]] : element["Text"]})  + "'  style='border-bottom: 4px solid " + that.fieldToColor[element["Feature"][0]] + "'>" + characters.substring(startOfElement, endOfElement) + ' ' + "</span>"
-          }
-          else if (startOfElement > start) {
-            var inbet = element["ID"] - 1
-            htmltext += "<span id='" + inbet + "'>" + characters.substring(start, startOfElement) + ' ' + "</span>"
-            htmltext += "<span title='" + that.metricLabel + " : " + element["Text"] + that.simpleService.analyzeEntity(that ,{[element["Feature"][0]] : element["Text"]})  + "'  style='border-bottom: 4px solid " + that.fieldToColor[element["Feature"][0]] + "'>" + characters.substring(startOfElement, endOfElement) + ' ' + "</span>"
-          }
-          start = endOfElement + 1
-        }
-        else if (element["Feature"][0] == "Legend") {
-          var startOfElement = parseInt(element["Start"])
-          var endOfElement = parseInt(element["End"])
-          if (startOfElement == start) {
-            htmltext += "<span title='" + that.legendLabel + " : " + element["Text"] + that.simpleService.analyzeEntity(that ,{[element["Feature"][0]] : element["Text"]})  + "'  style='border-bottom: 4px solid " + that.fieldToColor[element["Feature"][0]] + "'>" + characters.substring(startOfElement, endOfElement) + ' ' + "</span>"
-          }
-          else if (startOfElement > start) {
-            var inbet = element["ID"] - 1
-            htmltext += "<span id='" + inbet + "' >" + characters.substring(start, startOfElement) + ' ' + "</span>"
-            htmltext += "<span title='" + that.legendLabel + " : " + element["Text"] + that.simpleService.analyzeEntity(that ,{[element["Feature"][0]] : element["Text"]})  + "'  style='border-bottom: 4px solid " + that.fieldToColor[element["Feature"][0]] + "'>" + characters.substring(startOfElement, endOfElement) + ' ' + "</span>"
-          }
-          start = endOfElement + 1
-        }
-        else if (element["Feature"][0] == "NumFilter" || element["Feature"][0] == "Range") {
-          var startOfElement = parseInt(element["Start"])
-          var endOfElement = parseInt(element["End"])
-          var targetText = "Numeric"
-          element["Subfeature"].forEach(function (instance) {
-            if (instance["Key"] == "DataFields") {
-              targetText = instance["Value"]
-            }
-          })
-
-          if (startOfElement == start) {
-            htmltext += "<span title='Filter : " + targetText + that.simpleService.analyzeEntity(that ,{Filter : targetText})  + "'  style='border-bottom: 4px solid " + that.fieldToColor["Filter"] + "'>" + characters.substring(startOfElement, endOfElement) + ' ' + "</span>"
-          }
-          else if (startOfElement > start) {
-            var inbet = element["ID"] - 1
-            htmltext += "<span id='" + inbet + "' >" + characters.substring(start, startOfElement) + ' ' + "</span>"
-            htmltext += "<span title='Filter : " + targetText + that.simpleService.analyzeEntity(that ,{Filter : targetText})  + "'  style='border-bottom: 4px solid " + that.fieldToColor["Filter"] + "'>" + characters.substring(startOfElement, endOfElement) + ' ' + "</span>"
-          }
-          start = endOfElement + 1
-        }
-        else if (element["Feature"][0] == "datetime" || element["Feature"][0] == "State") {
-          if(element["Feature"][0] == "datetime"){
-            element["Feature"][0] = "Date"
-          }
-          var startOfElement = parseInt(element["Start"])
-          var endOfElement = parseInt(element["End"])
-          if (startOfElement == start) {
-            htmltext += "<span title='Filter : " + element["Feature"][0] + that.simpleService.analyzeEntity(that ,{[element["Feature"][0]] : element["Text"]})  + "'  style='border-bottom: 4px solid " + that.fieldToColor["Filter"] + "'>" + characters.substring(startOfElement, endOfElement) + ' ' + "</span>"
-          }
-          else if (startOfElement > start) {
-            var inbet = element["ID"] - 1
-            htmltext += "<span id='" + inbet + "' >" + characters.substring(start, startOfElement) + ' ' + "</span>"
-            htmltext += "<span title='Filter : " + element["Feature"][0] + that.simpleService.analyzeEntity(that ,{[element["Feature"][0]] : element["Text"]})  + "'  style='border-bottom: 4px solid " + that.fieldToColor["Filter"] + "'>" + characters.substring(startOfElement, endOfElement) + ' ' + "</span>"
-          }
-          start = endOfElement + 1
-        }
-        else if (element["Feature"][0] == "Aggregate" || element["Feature"][0] == "Cumulative") {
-          var startOfElement = parseInt(element["Start"])
-          var endOfElement = parseInt(element["End"])
-          if (startOfElement == start) {
-            htmltext += "<span title='" + element["Feature"][0] + " : " + element["Text"] + that.simpleService.analyzeEntity(that ,{[element["Feature"][0]] : element["Text"]})  + "'  style='border-bottom: 4px solid " + that.fieldToColor["Configuration"] + "'>" + characters.substring(startOfElement, endOfElement) + ' ' + "</span>"
-          }
-          else if (startOfElement > start) {
-            var inbet = element["ID"] - 1
-            htmltext += "<span id='" + inbet + "' >" + characters.substring(start, startOfElement) + ' ' + "</span>"
-            htmltext += "<span title='" + element["Feature"][0] + " : " + element["Text"] + that.simpleService.analyzeEntity(that ,{[element["Feature"][0]] : element["Text"]})  + "'  style='border-bottom: 4px solid " + that.fieldToColor["Configuration"] + "'>" + characters.substring(startOfElement, endOfElement) + ' ' + "</span>"
-          }
-          start = endOfElement + 1
-        }
-
-
-
-      });
-      if (characters.length > start) {
-        htmltext += "<span>" + characters.substring(start) + ' ' + "</span>"
-      }
-
-      if (htmltext != "") {
-        that.initialUtterance = htmltext;
-        var chatfield = $(this);
-        chatfield.empty();
-        chatfield.append(htmltext)
-      }
+      local.visualizationHelper(that, eventValue, characters)
+      
 
       //$('.markdown').eq(-1).each(function (index, element) {$(this).html($(this).html().split("Visualizations").join("<span id='Visualizations' style='border-bottom: 4px solid rgba(0, 255, 0, 0.3)'> Visualizations </span>").split("Legend").join("<span id='Legend' style='border-bottom: 4px solid rgba(0, 255, 255, 0.3)'> Legend </span>").split("DataFields").join("<span id='DataFields' style='border-bottom: 4px solid rgba(0, 0, 255, 0.3)'> Metric </span>").split("Filter").join("<span id='Filter' style='border-bottom: 4px solid rgba(255, 255, 0, 0.3)'> Filter </span>"))})
 
     });
+  }
+
+  visualizationHelper(that, eventValue, characters){
+    var start = 0;
+    var htmltext = "";
+
+    $.each(eventValue, function (i, element) {
+      if (element["Feature"][0] == "Visualizations") {
+        var startOfElement = parseInt(element["Start"])
+        var endOfElement = parseInt(element["End"])
+        if (startOfElement == start) {
+          htmltext += "<span title='Visualizations : " + element["Text"] + that.simpleService.analyzeEntity(that, { [element["Feature"][0]]: element["Text"] }) + "'  style='border-bottom: 4px solid " + that.fieldToColor[element["Feature"][0]] + "; margin-top: 60px;'>" + characters.substring(startOfElement, endOfElement) + ' ' + "</span>"
+        }
+        else if (startOfElement > start) {
+          var inbet = element["ID"] - 1
+          htmltext += "<span id='" + inbet + "' >" + characters.substring(start, startOfElement) + ' ' + "</span>"
+          htmltext += "<span title='Visualizations : " + element["Text"] + that.simpleService.analyzeEntity(that, { [element["Feature"][0]]: element["Text"] }) + "'  style='border-bottom: 4px solid " + that.fieldToColor[element["Feature"][0]] + "'>" + characters.substring(startOfElement, endOfElement) + ' ' + "</span>"
+        }
+        start = endOfElement + 1
+
+      }
+      else if (element["Feature"][0] == "DataFields") {
+        var startOfElement = parseInt(element["Start"])
+        var endOfElement = parseInt(element["End"])
+        if (startOfElement == start) {
+          htmltext += "<span title='" + that.metricLabel + " : " + element["Text"] + that.simpleService.analyzeEntity(that, { [element["Feature"][0]]: element["Text"] }) + "'  style='border-bottom: 4px solid " + that.fieldToColor[element["Feature"][0]] + "'>" + characters.substring(startOfElement, endOfElement) + ' ' + "</span>"
+        }
+        else if (startOfElement > start) {
+          var inbet = element["ID"] - 1
+          htmltext += "<span id='" + inbet + "'>" + characters.substring(start, startOfElement) + ' ' + "</span>"
+          htmltext += "<span title='" + that.metricLabel + " : " + element["Text"] + that.simpleService.analyzeEntity(that, { [element["Feature"][0]]: element["Text"] }) + "'  style='border-bottom: 4px solid " + that.fieldToColor[element["Feature"][0]] + "'>" + characters.substring(startOfElement, endOfElement) + ' ' + "</span>"
+        }
+        start = endOfElement + 1
+      }
+      else if (element["Feature"][0] == "Legend") {
+        var startOfElement = parseInt(element["Start"])
+        var endOfElement = parseInt(element["End"])
+        if (startOfElement == start) {
+          htmltext += "<span title='" + that.legendLabel + " : " + element["Text"] + that.simpleService.analyzeEntity(that, { [element["Feature"][0]]: element["Text"] }) + "'  style='border-bottom: 4px solid " + that.fieldToColor[element["Feature"][0]] + "'>" + characters.substring(startOfElement, endOfElement) + ' ' + "</span>"
+        }
+        else if (startOfElement > start) {
+          var inbet = element["ID"] - 1
+          htmltext += "<span id='" + inbet + "' >" + characters.substring(start, startOfElement) + ' ' + "</span>"
+          htmltext += "<span title='" + that.legendLabel + " : " + element["Text"] + that.simpleService.analyzeEntity(that, { [element["Feature"][0]]: element["Text"] }) + "'  style='border-bottom: 4px solid " + that.fieldToColor[element["Feature"][0]] + "'>" + characters.substring(startOfElement, endOfElement) + ' ' + "</span>"
+        }
+        start = endOfElement + 1
+      }
+      else if (element["Feature"][0] == "NumFilter" || element["Feature"][0] == "Range") {
+        var startOfElement = parseInt(element["Start"])
+        var endOfElement = parseInt(element["End"])
+        var targetText = "Numeric"
+        element["Subfeature"].forEach(function (instance) {
+          if (instance["Key"] == "DataFields") {
+            targetText = instance["Value"]
+          }
+        })
+
+        if (startOfElement == start) {
+          htmltext += "<span title='Filter : " + targetText + that.simpleService.analyzeEntity(that, { Filter: targetText }) + "'  style='border-bottom: 4px solid " + that.fieldToColor["Filter"] + "'>" + characters.substring(startOfElement, endOfElement) + ' ' + "</span>"
+        }
+        else if (startOfElement > start) {
+          var inbet = element["ID"] - 1
+          htmltext += "<span id='" + inbet + "' >" + characters.substring(start, startOfElement) + ' ' + "</span>"
+          htmltext += "<span title='Filter : " + targetText + that.simpleService.analyzeEntity(that, { Filter: targetText }) + "'  style='border-bottom: 4px solid " + that.fieldToColor["Filter"] + "'>" + characters.substring(startOfElement, endOfElement) + ' ' + "</span>"
+        }
+        start = endOfElement + 1
+      }
+      else if (element["Feature"][0] == "datetime" || element["Feature"][0] == "State") {
+        if (element["Feature"][0] == "datetime") {
+          element["Feature"][0] = "Date"
+        }
+        var startOfElement = parseInt(element["Start"])
+        var endOfElement = parseInt(element["End"])
+        if (startOfElement == start) {
+          htmltext += "<span title='Filter : " + element["Feature"][0] + that.simpleService.analyzeEntity(that, { [element["Feature"][0]]: element["Text"] }) + "'  style='border-bottom: 4px solid " + that.fieldToColor["Filter"] + "'>" + characters.substring(startOfElement, endOfElement) + ' ' + "</span>"
+        }
+        else if (startOfElement > start) {
+          var inbet = element["ID"] - 1
+          htmltext += "<span id='" + inbet + "' >" + characters.substring(start, startOfElement) + ' ' + "</span>"
+          htmltext += "<span title='Filter : " + element["Feature"][0] + that.simpleService.analyzeEntity(that, { [element["Feature"][0]]: element["Text"] }) + "'  style='border-bottom: 4px solid " + that.fieldToColor["Filter"] + "'>" + characters.substring(startOfElement, endOfElement) + ' ' + "</span>"
+        }
+        start = endOfElement + 1
+      }
+      else if (element["Feature"][0] == "Aggregate" || element["Feature"][0] == "Cumulative" || element["Feature"][0] == "StatesSelect") {
+        var startOfElement = parseInt(element["Start"])
+        var endOfElement = parseInt(element["End"])
+        if (startOfElement == start) {
+          htmltext += "<span title='" + element["Feature"][0] + " : " + element["Text"] + that.simpleService.analyzeEntity(that, { [element["Feature"][0]]: element["Text"] }) + "'  style='border-bottom: 4px solid " + that.fieldToColor["Configuration"] + "'>" + characters.substring(startOfElement, endOfElement) + ' ' + "</span>"
+        }
+        else if (startOfElement > start) {
+          var inbet = element["ID"] - 1
+          htmltext += "<span id='" + inbet + "' >" + characters.substring(start, startOfElement) + ' ' + "</span>"
+          htmltext += "<span title='" + element["Feature"][0] + " : " + element["Text"] + that.simpleService.analyzeEntity(that, { [element["Feature"][0]]: element["Text"] }) + "'  style='border-bottom: 4px solid " + that.fieldToColor["Configuration"] + "'>" + characters.substring(startOfElement, endOfElement) + ' ' + "</span>"
+        }
+        start = endOfElement + 1
+      }
+
+
+
+    });
+    if (characters.length > start) {
+      htmltext += "<span>" + characters.substring(start) + ' ' + "</span>"
+    }
+
+    if (htmltext != "") {
+      that.initialUtterance = htmltext;
+      var chatfield = $("#trainUtterance");
+      chatfield.empty();
+      chatfield.append(htmltext)
+    }
   }
 
 

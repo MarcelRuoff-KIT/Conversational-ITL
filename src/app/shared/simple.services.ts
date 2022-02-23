@@ -58,13 +58,11 @@ export class SimpleService {
       this.analyzeLegend(that, entities["Legend"])
     }
 
+    /*
     if (entities["Aggregate"].length > 0) {
       this.analyzeAggregate(that, entities["Aggregate"])
     }
-
-    if (entities["Cumulative"].length > 0) {
-      this.analyzeCumulative(that, entities["Cumulative"])
-    }
+    */
 
     if (entities["Visualizations"].length > 0) {
       this.analyzeVisualizations(that, entities["Visualizations"])
@@ -86,8 +84,6 @@ export class SimpleService {
       this.analyzeFilter(that, entities["Filter"])
     }
 
-    console.log(this.actionSequence)
-
     if (this.actionSequence.length > 0) {
       var response = "For example, you could use commands, such as: "
       this.actionSequence = [...new Set(this.actionSequence)]
@@ -106,20 +102,16 @@ export class SimpleService {
   analyzeEntity(that, entities) {
     this.actionSequence = [];
 
-    console.log(Object.keys(entities))
-
     for (var key in entities) {
       if (key == "Legend") {
         this.analyzeLegend(that, entities["Legend"])
       }
 
+      /*
       if (key == "Aggregate") {
         this.analyzeAggregate(that, entities["Aggregate"])
       }
-
-      if (key == "Cumulative") {
-        this.analyzeCumulative(that, entities["Cumulative"])
-      }
+      */
 
       if (key == "Visualizations") {
         this.analyzeVisualizations(that, entities["Visualizations"])
@@ -144,9 +136,6 @@ export class SimpleService {
     }
 
 
-
-    console.log(this.actionSequence)
-
     this.actionSequence = [...new Set(this.actionSequence)]
 
     var response = ""
@@ -164,21 +153,19 @@ export class SimpleService {
 
 
   analyzeLegend(that, legends) {
-    console.log(legends)
     for (var index in legends) {
-      if (that.unitedStatesMap.legend_Values == legends[index]) {
-        this.actionSequence.push("Remove " + legends[index] + " from " + that.legendLabel)
+      if (that.initialState["Legend"] == legends[index]) {
+        this.actionSequence.push("Remove " + legends[index] + " at " + that.legendLabel)
       }
       else {
-        this.actionSequence.push("Add " + legends[index] + " to " + that.legendLabel)
+        this.actionSequence.push("Add " + legends[index] + " at " + that.legendLabel)
       }
     }
   }
 
   analyzeAggregate(that, aggregate) {
-    console.log(aggregate)
     for (var index in aggregate) {
-      if (that.unitedStatesMap.aggregate != aggregate[index]) {
+      if (that.initialState["Aggregate"] != aggregate[index]) {
         var text = ""
         if (aggregate[index] == "D") {
           text = "day"
@@ -194,20 +181,16 @@ export class SimpleService {
     }
   }
 
-  analyzeCumulative(that, cumulative) {
-    console.log(cumulative)
-  }
 
   analyzeVisualizations(that, visualization) {
     for (var index in visualization) {
-      if (that.unitedStatesMap.chartType != visualization[index]) {
+      if (that.initialState["Visualization"] != visualization[index]) {
         this.actionSequence.push("Change to " + visualization[index])
       }
     }
   }
 
   analyzeStateList(that, stateList) {
-    console.log(stateList)
     for (var index in stateList) {
       var textRec = ""
       for (var textIndex in stateList[index]) {
@@ -221,17 +204,16 @@ export class SimpleService {
         textRec += stateList[index][textIndex];
       }
 
-      if (!stateList[index].every(state => that.unitedStatesMap.statesSelect.includes(state))) {
-        this.actionSequence.push("Add " + textRec + " to States")
+      if (!stateList[index].every(state => that.initialState["States"].includes(state))) {
+        this.actionSequence.push("Add " + textRec + " to selected States")
       }
-      else if (stateList[index].every(state => that.unitedStatesMap.statesSelect.includes(state))) {
-        this.actionSequence.push("Remove " + textRec + " from States")
+      else if (stateList[index].every(state => that.initialState["States"].includes(state))) {
+        this.actionSequence.push("Remove " + textRec + " from selected States")
       }
     }
   }
 
   analyzeMetricList(that, metricList) {
-    console.log(metricList)
     for (var index in metricList) {
       var textRec = ""
       for (var textIndex in metricList[index]) {
@@ -245,10 +227,10 @@ export class SimpleService {
         textRec += metricList[index][textIndex];
       }
 
-      if (!metricList[index].every(state => that.unitedStatesMap.y_Axis_Values.includes(state))) {
+      if (!metricList[index].every(state => that.initialState["Metric"].includes(state))) {
         this.actionSequence.push("Add " + textRec + " to " + that.metricLabel)
       }
-      else if (metricList[index].every(state => that.unitedStatesMap.y_Axis_Values.includes(state))) {
+      else if (metricList[index].every(state => that.initialState["Metric"].includes(state))) {
         this.actionSequence.push("Remove " + textRec + " from " + that.metricLabel)
       }
     }
@@ -256,7 +238,6 @@ export class SimpleService {
 
 
   analyzeDateList(that, dateList) {
-    console.log(dateList)
     var textRec = ""
     for (var index in dateList) {
 
@@ -269,11 +250,11 @@ export class SimpleService {
       textRec += dateList[index];
     }
 
-    if (!dateList.every(date => that.unitedStatesMap.datesSelect.includes(date))) {
-      this.actionSequence.push("Add " + textRec + " to Dates")
+    if (!dateList.every(date => that.initialState["Dates"].includes(date))) {
+      this.actionSequence.push("Add " + textRec + " to selected Dates")
     }
-    else if (dateList.every(date => that.unitedStatesMap.datesSelect.includes(date))) {
-      this.actionSequence.push("Remove " + textRec + " from Dates")
+    else if (dateList.every(date => that.initialState["Dates"].includes(date))) {
+      this.actionSequence.push("Remove " + textRec + " from selected Dates")
     }
   }
 
@@ -281,15 +262,14 @@ export class SimpleService {
 
 
   analyzeFilter(that, filter) {
-    console.log(filter)
     for (var fIndex in filter[0]) {
-      if (filter[0][fIndex][0] != 'none' && filter[0][fIndex][1] != 'none' && filter[0][fIndex] != that.filterValue[fIndex]) {
+      if (filter[0][fIndex][0] != 'none' && filter[0][fIndex][1] != 'none' && filter[0][fIndex] != that.initialState["Filters"][fIndex]) {
         this.actionSequence.push("Select  " + fIndex + " between " + filter[0][fIndex][0] + " and " + filter[0][fIndex][1])
       }
-      else if (filter[0][fIndex][0] != 'none' && filter[0][fIndex][0] != that.filterValue[fIndex][0] && filter[0][fIndex][0] != that.filterValue[fIndex][1]) {
+      else if (filter[0][fIndex][0] != 'none' && filter[0][fIndex][0] != that.initialState["Filters"][fIndex][0] && filter[0][fIndex][0] != that.initialState["Filters"][fIndex][1]) {
         this.actionSequence.push("Select with more than " + filter[0][fIndex][0] + " " + fIndex)
       }
-      else if (filter[0][fIndex][1] != 'none' && filter[0][fIndex][1] != that.filterValue[fIndex][0] && filter[0][fIndex][1] != that.filterValue[fIndex][1]) {
+      else if (filter[0][fIndex][1] != 'none' && filter[0][fIndex][1] != that.initialState["Filters"][fIndex][0] && filter[0][fIndex][1] != that.initialState["Filters"][fIndex][1]) {
         this.actionSequence.push("Select with less than " + filter[0][fIndex][1] + " " + fIndex)
       }
     }
@@ -297,7 +277,6 @@ export class SimpleService {
 
 
   checkUnused(that, unusedEntities) {
-    console.log(unusedEntities)
 
     var allUsed = true
     for (var uIndex in unusedEntities) {
@@ -328,7 +307,6 @@ export class SimpleService {
   }
 
   feedbackUnused(that, unusedEntities) {
-    console.log(unusedEntities)
 
     var text = "You have not used the following parts of your command in your sequence of actions:"
 

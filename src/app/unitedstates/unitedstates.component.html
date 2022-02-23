@@ -1,16 +1,10 @@
-<div class="popup-overlay" id="overlay">
-  <!--Creates the popup content-->
-  <div class="popup-content" id="content">
-    <img id="infoPic" src="../../assets/images/info.jpg" style="width:70%;">
-    <button kendoButton [icon]="'close k-icon-30'" (click)="closeInfo()"
-      style="position: absolute; bottom: 0; right: 0;height: 10%; width:15%;"> Close </button>
-  </div>
-</div>
 <!--Main Part-->
 <div style="width: 100vw; height: 100vh">
-  <div class="row" style="width: 100vw; height: 150px; margin: 0px 30px">
-    <div style="height: 100px; width:100px;">
-      <p><b>Visualizations</b></p>
+  <div id="header" class="row"
+    style="width: 100vw; height: 110px; padding: 10px 30px; background-color: #eeeeee; box-shadow: rgba(0, 0, 0, 0.17) 0px 2px 10px 0px;">
+    <div id="Visualizations" style="height: 100px; width: 10%;" (mouseover)="checkforHover('Vis', $event)">
+      <div class="heading"><b>Visualizations</b></div>
+
       <button id="barChart" class="btn active" style="background-image: url(../../assets/images/bar-graph.png)"
         (click)="changeVisualizationMouse($event)"><span class="tooltiptext">Bar</span></button>
       <button id="scatter" class="btn" style="background-image: url(../../assets/images/dot-plot.png)"
@@ -22,258 +16,313 @@
 
     </div>
 
-    <div style="height: 100px; width:100px; margin: 0px 30px">
-      <p id="legend_Text"><b>x-Axis</b></p>
-      <div class="interactiveField right" id="legend" (drop)="ablegen($event)" (dragover)="ablegenErlauben($event)"
-        style="height: 100px; width:100px; border: 3px solid #FF7738; margin-right: 30px;">
+    <div style="height: 100px; width:10%; margin: 0px 30px">
+      <div style="display: table-row;">
+        <div style="display:table-cell; border-right: 10px solid transparent;" class="heading" id="legend_Text">
+          <b>x-Axis</b>
+        </div>
+        <div style="display:table-cell; background-color:#FF7738; margin-left: 15px; width:1.3vh; height: 1.3vh; ">
+        </div>
+      </div>
+
+      <div class="interactiveField right" id="legend" (drop)="ablegen($event)" (dragover)="ablegenErlauben($event)" (mouseover)="checkforHover('legend', $event)"
+        style="height: 60px; width:100%; margin-right: 30px;overflow-y: scroll;">
 
       </div>
     </div>
-    <div style="min-height: 100px; height: fit-content; width:250px; margin: 0px 30px; z-index: 1000;">
-      <p id="metric_Text"><b>y-Axis</b> </p>
+    <div style="min-height: 100px; height: fit-content; width:25%; margin: 0px 30px; z-index: 1000;">
+      <div style="display: table-row;">
+        <div style="display:table-cell; border-right: 10px solid transparent;" class="heading" id="metric_Text">
+          <b>y-Axis</b>
+        </div>
+        <div style="display:table-cell; background-color:#00FFE6; margin-left: 15px; width:1.3vh; height: 1.3vh; ">
+        </div>
+      </div>
 
-      <div class="interactiveField right" id="y_Axis" (drop)="ablegen($event)" (dragover)="ablegenErlauben($event)"
-        style="min-height: 100px; height: fit-content; width:275px; border: 3px solid #00FFE6; margin-right: 30px;">
+      <div class="interactiveField right" id="y_Axis" (drop)="ablegen($event)" (dragover)="ablegenErlauben($event)" (mouseover)="checkforHover('y_Axis', $event)"
+        style="min-height: 60px; height: fit-content; width:100%;  margin-right: 30px;overflow-y: scroll;">
+        <div class="invisible" id="invisibleField" style="background-color: white; display: none;">&nbsp;</div>
+      </div>
 
+      <div style="width: 350px; display: none;" >
+        <select id="Cumulative" name="Cumulative" (mouseover)="checkforHover(this, $event)">
+          <option value="Total">Total</option>
+          <option value="New">New</option>
+        </select>
+        <p id="cumulateText" style="width: 280px; display: inline-block;"> &nbsp; Tests, Cases, Deaths, ...</p>
       </div>
       <div id="scatterUnused"
-        style="height: 67px; width:275px; position: relative;top: -67px; z-index: 1; background-color: gray; text-align: center; display: none;">
+        style="height: 67px; width:100%; position: relative;top: -87px; z-index: 100; background-color: gray; text-align: center; display: none;">
         unused Data Fields</div>
     </div>
-    <div style="height: 100px; width:350px; margin: 0px 30px">
-      <p id="data_Field_Text"><b>Data Field</b></p>
+    <div style="height: 100px; width:30%; margin: 0px 30px">
+      <p id="data_Field_Text" class="heading" ><b>Data Field</b></p>
       <div class="interactiveField left" id="data_Field" (drop)="ablegen($event)" (dragover)="ablegenErlauben($event)"
-        style="height: 100px; width:350px;">
+        style="height: 60px; width:100%; overflow-y: scroll;">
         <div class="draggable" draggable="true" (dragstart)="ziehen($event)" (dblclick)="backToDataField($event)"
-          id="State" style="background-color: #FF7738;">State</div>
-        <div class="draggable" draggable="true" (dragstart)="ziehen($event)" (dblclick)="backToDataField($event)"
-          id="Date" style="background-color: #FF7738;">Date
+          id="State">
+          <div style="display: table-row;">
+            <div style="display:table-cell; width: 85%; border-right: 5px solid transparent">State </div>
+            <div style="display:table-cell; background-color:#FF7738; margin-left: 15px; width:1.3vh; height: 1.3vh; ">
+            </div>
+          </div>
         </div>
         <div class="draggable" draggable="true" (dragstart)="ziehen($event)" (dblclick)="backToDataField($event)"
-          id="Tests" style="background-color: #00FFE6; color: black; width:120px; text-align: center;">Tests</div>
-        <div class="draggable" draggable="true" (dragstart)="ziehen($event)" (dblclick)="backToDataField($event)"
-          id="Cases" style="background-color: #00FFE6; color: black; width:120px; text-align: center;">Cases</div>
-        <div class="draggable" draggable="true" (dragstart)="ziehen($event)" (dblclick)="backToDataField($event)"
-          id="Deaths" style="background-color: #00FFE6; color: black; width:120px; text-align: center;">Deaths</div>
-        <div class="draggable" draggable="true" (dragstart)="ziehen($event)" (dblclick)="backToDataField($event)"
-          id="Population" style="background-color: #00FFE6; color: black; width:120px; text-align: center;">Population
+          id="Date">
+          <div style="display: table-row;">
+            <div style="display:table-cell; width: 85%; border-right: 5px solid transparent">Date </div>
+            <div style="display:table-cell; background-color:#FF7738; margin-left: 15px; width:1.3vh; height: 1.3vh; ">
+            </div>
+          </div>
         </div>
         <div class="draggable" draggable="true" (dragstart)="ziehen($event)" (dblclick)="backToDataField($event)"
-          id="PartialVaccinated" style="background-color: #00FFE6; color: black; width:120px; text-align: center;">
-          PartialVaccinated</div>
+          id="Tests">
+          <div style="display: table-row;">
+            <div style="display:table-cell; width: 85%; border-right: 5px solid transparent">Tests </div>
+            <div style="display:table-cell; background-color:#00FFE6; margin-left: 15px; width:1.3vh; height: 1.3vh; ">
+            </div>
+          </div>
+        </div>
         <div class="draggable" draggable="true" (dragstart)="ziehen($event)" (dblclick)="backToDataField($event)"
-          id="FullyVaccinated" style="background-color: #00FFE6; color: black; width:120px; text-align: center;">
-          FullyVaccinated</div>
-
+          id="Cases">
+          <div style="display: table-row;">
+            <div style="display:table-cell; width: 85%; border-right: 5px solid transparent">Cases </div>
+            <div style="display:table-cell; background-color:#00FFE6; margin-left: 15px; width:1.3vh; height: 1.3vh; ">
+            </div>
+          </div>
+        </div>
+        <div class="draggable" draggable="true" (dragstart)="ziehen($event)" (dblclick)="backToDataField($event)"
+          id="Deaths">
+          <div style="display: table-row;">
+            <div style="display:table-cell; width: 85%; border-right: 5px solid transparent">Deaths </div>
+            <div style="display:table-cell; background-color:#00FFE6; margin-left: 15px; width:1.3vh; height: 1.3vh; ">
+            </div>
+          </div>
+        </div>
+        <div class="draggable" draggable="true" (dragstart)="ziehen($event)" (dblclick)="backToDataField($event)"
+          id="PartialVaccinated">
+          <div style="display: table-row;">
+            <div style="display:table-cell; width: 85%; border-right: 5px solid transparent">PartialVaccinated </div>
+            <div style="display:table-cell; background-color:#00FFE6; margin-left: 15px; width:1.3vh; height: 1.3vh; ">
+            </div>
+          </div>
+        </div>
+        <div class="draggable" draggable="true" (dragstart)="ziehen($event)" (dblclick)="backToDataField($event)"
+          id="FullyVaccinated">
+          <div style="display: table-row;">
+            <div style="display:table-cell; width: 85%; border-right: 5px solid transparent">FullyVaccinated </div>
+            <div style="display:table-cell; background-color:#00FFE6; margin-left: 15px; width:1.3vh; height: 1.3vh; ">
+            </div>
+          </div>
+        </div>
+        <div class="draggable" draggable="true" (dragstart)="ziehen($event)" (dblclick)="backToDataField($event)"
+          id="Population">
+          <div style="display: table-row;">
+            <div style="display:table-cell; width: 85%; border-right: 5px solid transparent;">Population </div>
+            <div style="display:table-cell; background-color:#00FFE6; margin-left: 15px; width:1.3vh; height: 1.3vh; ">
+            </div>
+          </div>
+        </div>
 
       </div>
     </div>
     <!--<button (click) = "sendActivityEventtoBot($event)"></button>-->
 
   </div>
-  <div class="row" style="width: 100%; height: calc(100vh - 150px)">
-    <div id="leftContainer" style="width: 70%; height: calc(100vh - 150px)">
+  <div class="row" style="width: 100%; height: calc(100vh - 110px)">
+    <div id="leftContainer" style="width: 60%; height: calc(100vh - 110px)">
       <div id="map" style="height: 65%">
         <app-unitedstates-map [filterValue]="filterValue" (toggleChanged)="toggleChanged($event)"
-        (dateChanged)="dateChanged($event)" id="unitedStatesMap" #unitedStatesMap></app-unitedstates-map>
+          (dateChanged)="dateChanged($event)" id="unitedStatesMap" #unitedStatesMap></app-unitedstates-map>
       </div>
-      
-        <div class="filter-container" id="FilterField" (drop)="ablegen($event)" (dragover)="ablegenErlauben($event)"
-        style="border: 3px solid #877AFF;">
-        <div class="col closed" style="width: 100%; text-align: center; margin-top: 30px;" id="No_Filter">No active
-          Filters.
-        </div>
-        <div class="col" id="Date_Filter">
-
-          <div class="filterTitle">
-            <div class="filterContent">
-              <input type="date" id="Date-From" title="Start Date" size="6" style="display: none; overflow:hidden"
-                value="{{this.currentDateMin}}" min="{{this.dateMin}}" max="{{this.currentDateMax}}"
-                (input)="this.inputCheck($event)">
-              <div><b>Dates</b> aggregated
-              <select id = "Aggregate" name="Aggregate">
-                  <option value="D">by Day</option>
-                  <option value="M">by Month</option>
-                  <option value="Y">by Year</option>
-                </select></div>
-              <input type="date" id="Date-To" title="End Date" size="6"
-                style="display: none; overflow:hidden" value="{{this.currentDateMax}}" min="{{this.currentDateMin}}"
-                max="{{this.dateMax}}" (input)="this.inputCheck($event)">
-
-
-              <!--
-              <kendo-rangeslider id="Date-Slider" [tickPlacement]="tickPlacement" [style.width]="'95%'"
-                [disabled]="disabled" [min]="minSlider['Date']" [max]="maxSlider['Date']" [smallStep]="smallStep"
-                [(ngModel)]="filterValue['Date']" (valueChange)="dateRangeChange($event)"></kendo-rangeslider>
-              -->
-
-              <kendo-multiselect id="Date-Select" [style.z-index]="'3'" [filterable]="false" [data]="dates"
-                [tagMapper]="tagMapperDate" [clearButton]="false" [autoClose]="false" [placeholder]="'No Dates:  +'"
-                (valueChange)="selectedDateChange($event)" [(ngModel)]="datesSelectDropDown"
-                [popupSettings]="{ height: 300 }" listHeight="300">
-                <ng-template kendoMultiSelectGroupTagTemplate let-dataItems>
-                  <span class="k-icon k-i-arrow-s"></span>
-                  All Dates selected
-                </ng-template>
-              </kendo-multiselect>
+      <div class="filter-container" id="FilterField" (drop)="ablegen($event)" (dragover)="ablegenErlauben($event)"
+        style="position: relative;  z-index:1200;">
+        <div class="col" style="width: 100%; text-align: left; margin-top: 3px; font-size: 2vh;" id="No_Filter">
+          <div style="display: table-row;">
+            <div style="display:table-cell; border-right: 10px solid transparent; padding-left: 10px;"><b>Filter</b></div>
+            <div style="display:table-cell; background-color:#877AFF; margin-left: 15px; width:1.7vh; height: 1.7vh; ">
             </div>
+          </div>
 
-            <div class="filterSettings">
-              <!--
-                {{ dataItems[0]}}
-                <div class="dropdown">
-                <div style="height: 50%; width: 100%;"><button (click)="openMenu()">&#9881;</button></div>
-                <div id="myDropdown" class="dropdown-content">
-                  <select id="DropdownDate" name="DropdownDate">
-                    <option value="Selection">as Selection</option>
-                    <option value="Range">as Range</option>
-                    
-                  </select>
+        </div>
+        <div class="halfColumn" style="overflow-y: scroll;">
+          <div class="col" id="Date_Filter" style="border-right: 1px solid #535353; padding-bottom: 13px"  (mouseover)="checkforHover('Dates', $event)">
+
+            <div class="filterTitle">
+              <div class="filterContent">
+                <input type="date" id="Date-From" title="Start Date" size="6" style="display: none; overflow:hidden"
+                  value="{{this.currentDateMin}}" min="{{this.dateMin}}" max="{{this.currentDateMax}}"
+                  (change)="this.inputCheck($event)">
+                <div><b>Selected Dates</b>
+
                 </div>
+                <input type="date" id="Date-To" title="End Date" size="6" style="display: none; overflow:hidden"
+                  value="{{this.currentDateMax}}" min="{{this.currentDateMin}}" max="{{this.dateMax}}"
+                  (change)="this.inputCheck($event)">
 
-              </div>-->
-              <div style="height: 40%; width: 100%;"><button (click)="resetFilter($event, 'All')">All</button></div>
-              <div style="height: 40%; width: 100%;"><button (click)="resetFilter($event, 'None')">None</button></div>
+                <kendo-multiselect id="Date-Select" [style.z-index]="'3'" [style.font-size]="'14px'" [style.cursor]="'pointer'"
+                  [filterable]="false" [data]="dates" [tagMapper]="tagMapperDate" [clearButton]="false"
+                  [autoClose]="false" [placeholder]="'Add Dates here:  +'" [checkboxes]="true" (valueChange)="selectedDateChange($event)"
+                  [(ngModel)]="datesSelectDropDown" [popupSettings]="{ height: 300 }" listHeight="300">
+                  <ng-template kendoMultiSelectGroupTagTemplate let-dataItems>
+                    <span class="k-icon k-i-arrow-s"></span>
+                    All Dates selected
+                  </ng-template>
+                </kendo-multiselect>
+              </div>
+              <div class="filterSettings">
+                <div style="height: 40%; width: 100%;"><button (click)="resetFilter($event, 'All')">All</button></div>
+                <div style="height: 40%; width: 100%;"><button (click)="resetFilter($event, 'None')">None</button></div>
 
-            </div>
-          </div>
-
-        </div>
-        <div class="col" id="State_Filter">
-          <div class="filterTitle">
-            <div class="filterContent">
-              <div><b>States</b> combined through <select id="statesSelect">
-                  <option>OR</option>
-                  <option>AND</option>
-                </select></div>
-              <kendo-multiselect #scaleDropDown [style.z-index]="'3'" [filterable]="false" [data]="scaleButtons"
-                [tagMapper]="tagMapperState" [clearButton]="false" [autoClose]="false" [placeholder]="'No States:  +'"
-                (valueChange)="selectedStateChange($event)" [(ngModel)]="statesSelect" [popupSettings]="{ height: 300 }"
-                listHeight="300"> Add new States
-                <ng-template kendoMultiSelectGroupTagTemplate let-dataItems>
-                  <span class="k-icon k-i-arrow-s"></span>
-                  All States selected
-                </ng-template>
-              </kendo-multiselect>
-            </div>
-            <div class="filterSettings">
-              <div style="height: 40%; width: 100%;"><button (click)="resetFilter($event, 'All')">All</button></div>
-              <div style="height: 40%; width: 100%;"><button (click)="resetFilter($event, 'None')">None</button></div>
+              </div>
             </div>
 
           </div>
-        </div>
-        <div class="col closed" id="Cases_Filter">
-          <div class="filterTitle">
-            <div class="filterContent">
-              <input type="text" id="Cases-From" size="6" (change)="this.inputCheck($event)" title="From">
-              <p><b>Cases</b></p><input type="text" id="Cases-To" size="6" (change)="this.inputCheck($event)"
-                title="To">
-              <kendo-rangeslider id="Cases-Slider" [tickPlacement]="tickPlacement" [style.width]="'95%'"
-                [min]="minSlider['Cases']" [max]="maxSlider['Cases']" [smallStep]="1000"
-                [(ngModel)]="filterValue['Cases']" (valueChange)="mouseFilterChange($event, 'Cases')">
-              </kendo-rangeslider>
-            </div>
+          <div class="col" id="State_Filter" style="border-right: 1px solid #535353; padding-bottom: 13px" (mouseover)="checkforHover('States', $event)">
+            <div class="filterTitle">
+              <div class="filterContent">
+                <div><b>Selected States</b> shown &nbsp;<select id="StatesSelect">
+                    <option>Distinct</option>
+                    <option>Combined</option>
+                  </select></div>
+                <kendo-multiselect #scaleDropDown id="State-Select" [style.z-index]="'3'" [style.font-size]="'14px'"
+                  [filterable]="false" [data]="scaleButtons" [tagMapper]="tagMapperState" [clearButton]="false"
+                  [autoClose]="false" [placeholder]="'Add States here:  +'" [checkboxes]="true" (valueChange)="selectedStateChange($event)"
+                  [(ngModel)]="statesSelect" [popupSettings]="{ height: 300 }" listHeight="300"> Add new States
+                  <ng-template kendoMultiSelectGroupTagTemplate let-dataItems>
+                    <span class="k-icon k-i-arrow-s"></span>
+                    All States selected
+                  </ng-template>
+                </kendo-multiselect>
+              </div>
+              <div class="filterSettings">
+                <div style="height: 40%; width: 100%;"><button (click)="resetFilter($event, 'All')">All</button></div>
+                <div style="height: 40%; width: 100%;"><button (click)="resetFilter($event, 'None')">None</button></div>
+              </div>
 
-            <div class="filterSettings">
-              <div style="height: 40%; width: 100%;"><button (click)="resetFilter($event, 'All')">All</button></div>
-              <div style="height: 50%; width: 100%;"><button (click)="closeFilter($event)">&#10006;</button></div>
             </div>
           </div>
         </div>
+        <div id="NumFilter" class="halfColumn" style="overflow-y: scroll;"  (mouseover)="checkforHover('NumFilter', $event)">
+          <div class="col closed" id="Cases_Filter">
+            <div class="filterTitle">
+              <div class="filterContent">
+                <input type="text" id="Cases-From" size="6" (change)="this.inputCheck($event)" title="From">
+                <p><b>Cases</b></p><input type="text" id="Cases-To" size="6" (change)="this.inputCheck($event)"
+                  title="To">
+                <kendo-rangeslider id="Cases-Slider" [tickPlacement]="tickPlacement" [style.width]="'85%'"
+                  [min]="minSlider['Cases']" [max]="maxSlider['Cases']" [smallStep]="1"
+                  [(ngModel)]="filterValue['Cases']" (valueChange)="mouseFilterChange($event, 'Cases')">
+                </kendo-rangeslider>
+              </div>
 
-        <div class="col closed" id="Population_Filter">
-          <div class="filterTitle">
-            <div class="filterContent">
-              <input type="text" id="Population-From" size="6" (input)="this.inputCheck($event)" title="From">
-              <p><b>Population</b></p><input type="text" id="Population-To" size="6" (input)="this.inputCheck($event)"
-                title="To">
-              <kendo-rangeslider id="Population-Slider" [tickPlacement]="tickPlacement" [style.width]="'95%'"
-                [min]="minSlider['Population']" [max]="maxSlider['Population']" [smallStep]="1000"
-                [(ngModel)]="filterValue['Population']" (valueChange)="mouseFilterChange($event, 'Population')">
-              </kendo-rangeslider>
-            </div>
-
-            <div class="filterSettings">
-              <div style="height: 40%; width: 100%;"><button (click)="resetFilter($event, 'All')">All</button></div>
-              <div style="height: 50%; width: 100%;"><button (click)="closeFilter($event)">&#10006;</button></div>
-            </div>
-          </div>
-
-        </div>
-
-        <div class="col closed" id="Tests_Filter">
-          <div class="filterTitle">
-            <div class="filterContent">
-
-              <input type="text" id="Tests-From" size="6" (input)="this.inputCheck($event)" title="From">
-              <p><b>Tests</b></p><input type="text" id="Tests-To" size="6" (input)="this.inputCheck($event)" title="To">
-              <kendo-rangeslider id="Tests-Slider" [tickPlacement]="tickPlacement" [style.width]="'95%'"
-                [min]="minSlider['Tests']" [max]="maxSlider['Tests']" [smallStep]="1000"
-                [(ngModel)]="filterValue['Tests']" (valueChange)="mouseFilterChange($event, 'Tests')">
-              </kendo-rangeslider>
-            </div>
-            <div class="filterSettings">
-              <div style="height: 40%; width: 100%;"><button (click)="resetFilter($event, 'All')">All</button></div>
-              <div style="height: 50%; width: 100%;"><button (click)="closeFilter($event)">&#10006;</button></div>
+              <div class="filterSettings">
+                <div style="height: 40%; width: 100%;"><button (click)="resetFilter($event, 'All')">All</button></div>
+                <div style="height: 50%; width: 100%;"><button (click)="closeFilter($event)">&#10006;</button></div>
+              </div>
             </div>
           </div>
+          <div class="col closed" id="Population_Filter">
+            <div class="filterTitle">
+              <div class="filterContent">
+                <input type="text" id="Population-From" size="6" (change)="this.inputCheck($event)" title="From">
+                <p><b>Population</b></p><input type="text" id="Population-To" size="6" (change)="this.inputCheck($event)"
+                  title="To">
+                <kendo-rangeslider id="Population-Slider" [tickPlacement]="tickPlacement" [style.width]="'85%'"
+                  [min]="minSlider['Population']" [max]="maxSlider['Population']" [smallStep]="1"
+                  [(ngModel)]="filterValue['Population']" (valueChange)="mouseFilterChange($event, 'Population')">
+                </kendo-rangeslider>
+              </div>
 
-        </div>
-        <div class="col closed" id="Deaths_Filter">
-          <div class="filterTitle">
-            <div class="filterContent">
+              <div class="filterSettings">
+                <div style="height: 40%; width: 100%;"><button (click)="resetFilter($event, 'All')">All</button></div>
+                <div style="height: 50%; width: 100%;"><button (click)="closeFilter($event)">&#10006;</button></div>
+              </div>
+            </div>
 
-              <input type="text" id="Deaths-From" size="6" (input)="this.inputCheck($event)" title="From">
-              <p><b>Deaths</b></p><input type="text" id="Deaths-To" size="6" (input)="this.inputCheck($event)"
-                title="To">
-              <kendo-rangeslider id="Deaths-Slider" [tickPlacement]="tickPlacement" [style.width]="'95%'"
-                [min]="minSlider['Deaths']" [max]="maxSlider['Deaths']" [smallStep]="1000"
-                [(ngModel)]="filterValue['Deaths']" (valueChange)="mouseFilterChange($event, 'Deaths')">
-              </kendo-rangeslider>
-            </div>
-            <div class="filterSettings">
-              <div style="height: 40%; width: 100%;"><button (click)="resetFilter($event, 'All')">All</button></div>
-              <div style="height: 50%; width: 100%;"><button (click)="closeFilter($event)">&#10006;</button></div>
-            </div>
           </div>
+          <div class="col closed" id="Tests_Filter">
+            <div class="filterTitle">
+              <div class="filterContent">
 
-        </div>
-        <div class="col closed" id="FullyVaccinated_Filter">
-          <div class="filterTitle">
-            <div class="filterContent">
-
-              <input type="text" id="FullyVaccinated-From" size="6" (input)="this.inputCheck($event)" title="From">
-              <p><b>FullyVaccinated</b></p><input type="text" id="FullyVaccinated-To" size="6"
-                (input)="this.inputCheck($event)" title="To">
-              <kendo-rangeslider id="FullyVaccinated-Slider" [tickPlacement]="tickPlacement" [style.width]="'95%'"
-                [min]="minSlider['FullyVaccinated']" [max]="maxSlider['FullyVaccinated']" [smallStep]="1000"
-                [(ngModel)]="filterValue['FullyVaccinated']"
-                (valueChange)="mouseFilterChange($event, 'FullyVaccinated')"></kendo-rangeslider>
-
+                <input type="text" id="Tests-From" size="6" (change)="this.inputCheck($event)" title="From">
+                <p><b>Tests</b></p><input type="text" id="Tests-To" size="6" (change)="this.inputCheck($event)"
+                  title="To">
+                <kendo-rangeslider id="Tests-Slider" [tickPlacement]="tickPlacement" [style.width]="'85%'"
+                  [min]="minSlider['Tests']" [max]="maxSlider['Tests']" [smallStep]="1"
+                  [(ngModel)]="filterValue['Tests']" (valueChange)="mouseFilterChange($event, 'Tests')">
+                </kendo-rangeslider>
+              </div>
+              <div class="filterSettings">
+                <div style="height: 40%; width: 100%;"><button (click)="resetFilter($event, 'All')">All</button></div>
+                <div style="height: 50%; width: 100%;"><button (click)="closeFilter($event)">&#10006;</button></div>
+              </div>
             </div>
-            <div class="filterSettings">
-              <div style="height: 40%; width: 100%;"><button (click)="resetFilter($event, 'All')">All</button></div>
-              <div style="height: 50%; width: 100%;"><button (click)="closeFilter($event)">&#10006;</button></div>
-            </div>
+
           </div>
+          <div class="col closed" id="Deaths_Filter">
+            <div class="filterTitle">
+              <div class="filterContent">
 
-        </div>
-        <div class="col closed" id="PartialVaccinated_Filter">
-          <div class="filterTitle">
-            <div class="filterContent">
-
-              <input type="text" id="PartialVaccinated-From" size="6" (input)="this.inputCheck($event)" title="From">
-              <p><b>PartialVaccinated</b></p><input type="text" id="PartialVaccinated-To" size="6"
-                (input)="this.inputCheck($event)" title="To">
-              <kendo-rangeslider id="PartialVaccinated-Slider" [tickPlacement]="tickPlacement" [style.width]="'95%'"
-                [min]="minSlider['PartialVaccinated']" [max]="maxSlider['PartialVaccinated']" [smallStep]="1000"
-                [(ngModel)]="filterValue['PartialVaccinated']"
-                (valueChange)="mouseFilterChange($event, 'PartialVaccinated')"></kendo-rangeslider>
+                <input type="text" id="Deaths-From" size="6" (change)="this.inputCheck($event)" title="From">
+                <p><b>Deaths</b></p><input type="text" id="Deaths-To" size="6" (change)="this.inputCheck($event)"
+                  title="To">
+                <kendo-rangeslider id="Deaths-Slider" [tickPlacement]="tickPlacement" [style.width]="'85%'"
+                  [min]="minSlider['Deaths']" [max]="maxSlider['Deaths']" [smallStep]="1"
+                  [(ngModel)]="filterValue['Deaths']" (valueChange)="mouseFilterChange($event, 'Deaths')">
+                </kendo-rangeslider>
+              </div>
+              <div class="filterSettings">
+                <div style="height: 40%; width: 100%;"><button (click)="resetFilter($event, 'All')">All</button></div>
+                <div style="height: 50%; width: 100%;"><button (click)="closeFilter($event)">&#10006;</button></div>
+              </div>
             </div>
-            <div class="filterSettings">
-              <div style="height: 40%; width: 100%;"><button (click)="resetFilter($event, 'All')">All</button></div>
-              <div style="height: 50%; width: 100%;"><button (click)="closeFilter($event)">&#10006;</button></div>
+
+          </div>
+          <div class="col closed" id="FullyVaccinated_Filter">
+            <div class="filterTitle">
+              <div class="filterContent">
+
+                <input type="text" id="FullyVaccinated-From" size="6" (change)="this.inputCheck($event)" title="From">
+                <p><b>FullyVaccinated</b></p><input type="text" id="FullyVaccinated-To" size="6"
+                  (change)="this.inputCheck($event)" title="To">
+                <kendo-rangeslider id="FullyVaccinated-Slider" [tickPlacement]="tickPlacement" [style.width]="'85%'"
+                  [min]="minSlider['FullyVaccinated']" [max]="maxSlider['FullyVaccinated']" [smallStep]="1"
+                  [(ngModel)]="filterValue['FullyVaccinated']"
+                  (valueChange)="mouseFilterChange($event, 'FullyVaccinated')"></kendo-rangeslider>
+
+              </div>
+              <div class="filterSettings">
+                <div style="height: 40%; width: 100%;"><button (click)="resetFilter($event, 'All')">All</button></div>
+                <div style="height: 50%; width: 100%;"><button (click)="closeFilter($event)">&#10006;</button></div>
+              </div>
+            </div>
+
+          </div>
+          <div class="col closed" id="PartialVaccinated_Filter">
+            <div class="filterTitle">
+              <div class="filterContent">
+
+                <input type="text" id="PartialVaccinated-From" size="6" (change)="this.inputCheck($event)" title="From">
+                <p><b>PartialVaccinated</b></p><input type="text" id="PartialVaccinated-To" size="6"
+                  (change)="this.inputCheck($event)" title="To">
+                <kendo-rangeslider id="PartialVaccinated-Slider" [tickPlacement]="tickPlacement" [style.width]="'85%'"
+                  [min]="minSlider['PartialVaccinated']" [max]="maxSlider['PartialVaccinated']" [smallStep]="1"
+                  [(ngModel)]="filterValue['PartialVaccinated']"
+                  (valueChange)="mouseFilterChange($event, 'PartialVaccinated')"></kendo-rangeslider>
+              </div>
+              <div class="filterSettings">
+                <div style="height: 40%; width: 100%;"><button (click)="resetFilter($event, 'All')">All</button></div>
+                <div style="height: 50%; width: 100%;"><button (click)="closeFilter($event)">&#10006;</button></div>
+              </div>
+            </div>
+
+          </div>
+          <div class="col" id="Blank_Pane" style="padding-bottom: 26px;">
+            <div class="filterTitle">
+              <div class="filterContent" title="Add Data Field here" style="height: 100px;font-size: 50px">
+                +
+              </div>
             </div>
           </div>
 
@@ -282,34 +331,42 @@
 
       </div>
     </div>
-    <div id="info" style="width: 30%; height: calc(100vh - 150px)">
-      
+    <div id="info"
+      style="width: 40%; height: calc(100vh - 110px); border-left: 5px solid #eeeeee; box-shadow: rgb(0 0 0 / 17%) 0px 10px 10px 10px; z-index: 30000">
+      <div class="webchat-container" id="botWin" #botWindow></div>
+      <div id="Partitioning" style="height: 55%; background-color: #eeeeee;"></div>
+
       <div class="itl-container" id="itl-container">
+        <div id="demoModeTitle" style="background-color: #1a2126; color: white; position: relative; display: flex;">
+          <div style="width: 10%;"><img id="dotPic" src="../../assets/images/redDot.gif" style="width:35px"></div>
+          <div style="width: 30%; margin: auto;">Training Interface</div>
+          <div id="DemonstrationButtons" style="position: relative; float: right; margin: auto; width: 60%; text-align: right; display:none">
+            Demonstration Mode:
+            <button style="padding: 5px 8px;" (click)="endTrainingMode('true')">Done</button>
+            <button style="background-color: #bbbbbb; padding: 5px;" (click)="endTrainingMode('false')">Cancel</button>
+          </div>
+        </div>
         <div id="utterance-container"
-          style="height: fit-content; width: 100%; padding: 0px 0px 20px; border:2px solid black;">
-          <div id="demoModeTitle"
-            style="background-color: #1a2126; color: white; width: 30%;padding: 10px; position: absolute; height: 60px; top: 90px; right: 5px; display: flex;">
-            <div style="width: 20%;"><img id="dotPic" src="../../assets/images/redDot.gif" style="width:45px"></div>
-            <div style="width: 80%;">Assistant is learning...<br> Please perform the actions you have intended with this command.</div>
-          </div>
+          style="height: fit-content; width: 100%; padding: 0px 0px 10px; border-bottom:2px solid black;">
+          <!--<div style="text-align: center; padding: 3px; background-color: #bbbbbb;">Your Utterance</div>-->
           <div id="trainUtterance"
-            style="height: fit-content; width: calc(100% - 100px); text-align: center; font-size: 2vh; float:left; padding:24px 10px 0px">
+            style="height: fit-content; width: calc(100%); text-align: center; font-size: 2vh; float:left; margin: 5px 0px 0px;padding: 5px 0px;">
           </div>
-          <div style="position: relative; float: right; margin-right: 20px; margin-top: 10px; width: 70px; ">
-            <button style="background-color: darkgreen; color: white; padding: 5px 8px;"
-              (click)="endTrainingMode('true')">Finish</button>
-            <div style="height: 20px;"></div>
-            <button style="padding: 5px;" (click)="endTrainingMode('false')">Cancel</button>
-          </div>
+
           <!--"endTrainingMode($event)" -->
         </div>
         <div class="itl-pane" id="itl-pane" #itlWindow>
-          <span id="NoAction" style= "margin: 30% 35%;display: inline-block;">No actions yet performed.</span>
+          <div id="titleUnderstanding" style="text-align: center; padding: 3px; background-color: #bbbbbb;">Current
+            Understanding of Actions Performed</div>
+          <span id="NoAction" style="margin: 10% 35%;display: inline-block;">No actions yet performed.</span>
         </div>
       </div>
-      <div class="webchat-container" id="botWin" #botWindow></div>
+      
     </div>
   </div>
+  <div id="trainingModeInter"style=" width: 100%;height: 100%; background-color: #eeeeeecc; position: absolute;top: 0px;left: 0px; z-index: 2000; display: none; cursor:not-allowed" ></div>
+  <div id="interactionBlocker"style="display:none; width: 100%;height: 100%; background-color: #eeeeeecc; opacity: 0; position: absolute;top: 0px;left: 0px; z-index: 2000; cursor:not-allowed;" ></div>
+
 </div>
 <div class="row">
   <!--
@@ -328,12 +385,13 @@
     <select>
       <option value="Add">Add</option>
       <option value="Select">Select</option>
-      <option value="Remove all except">Remove all except</option>
+      <option value="Remove all except">Remove all and Add</option>
       <option value="Remove">Remove</option>
-      <option value="Select all except">Select all except</option>
+      <option value="Select all except">Add all and Remove</option>
     </select>
   </p>
 
+  <img class="attention" src="../../assets/images/attention.png" style="display: none; ">
   <!-- <button kendoButton [icon]="'question k-icon-30'" (click)="closeFilter($event)" style="right: 7%; "></button>-->
   <button kendoButton [icon]="'close k-icon-30'" (click)="closeITLElement($event)"></button>
   <div class="arrow bottom"></div>
@@ -344,40 +402,15 @@
 
 
 
-<!-- Interactive Task Learning Building Blocks -->
-
-<div class="infoBox" id="RecommenderTemplate"
-  style="display: none; padding-top: 28px; position: relative; z-index: 100; border: 0px; box-shadow: rgba(0, 0, 0, 0.17) 0px 5px 5px 0px; top: -13px;">
-
-  <p class="textField" style="width: 80%;">
-    Unfortunately, there has been an internal error.
-  </p>
-  <div style="position: relative; float: right; margin-right: 20px; width: 30%; top: -30px; right: -60px;">
-    <button style="padding: 5px;" (click)="closeRecommendationItem($event)">Confirm Selection</button>
-  </div>
-  <div class="connector">
-    <input type="radio" name="recommendation" value="original" checked="checked">
-    <p style="padding: 7px; color: black;">OR</p> <input type="radio" name="recommendation" value="recommendation">
-  </div>
-
-
-
-  <div class="arrow bottom"></div>
-  <div class="arrow bottom large"></div>
-</div>
-
-<!-- END Interactive Task Learning Building Blocks display: none; -->
-
-
 <div class="infoBox" id="InitialStateTemplate" style="background-color: #ffffff;">
 
   <p class="textField">
     <select>
       <option value="Add">Add</option>
       <option value="Select">Select</option>
-      <option value="Remove all except">Remove all except</option>
+      <option value="Remove all except">Remove all and Add</option>
       <option value="Remove">Remove</option>
-      <option value="Select all except">Select all except</option>
+      <option value="Select all except">Add all and Remove</option>
     </select>
   </p>
 
@@ -399,3 +432,31 @@
 </div>
 
 <!-- END Progress Bar -->
+
+<div class="infoBox" id="blockerBox" style="width: 400px; left: 250px; position:absolute; top: 170px; z-index: 200000; display: none; box-shadow: black 10px 10px 20px 5px;">
+  <div class="textBox">
+    <p class="textField" style="font-size: 15px">To start the task please type the command <br /></p>
+
+    <p class="hedding" id="blockMessage" style="font-size: 15px"></p>
+
+    <p class="textField" style="font-size: 15px"> into the chat interface on the right! </p>
+
+    <button kendoButton class="continueButton" style="background-color: #4664aa; margin-right: auto; margin-left: auto; position: relative "
+      (click)="removeBlockerBox()">Let me try again!</button>
+  </div>
+</div>
+
+<div class="infoBox" id="finishBox" style="width: 400px; left: 250px; position:absolute; top: 170px; z-index: 200000; display: none; box-shadow: black 10px 10px 20px 5px;">
+  <div class="textBox">
+    <p class="textField" style="font-size: 15px">You've achieved on this task an accuracy of <br /></p>
+
+    <p class="hedding" id="accuracyMessage" style="font-size: 15px"></p>
+
+    <p class="textField" style="font-size: 15px"> <br /><br />You can now continue by clicking the Next button on the bottom of the page! </p>
+
+  </div>
+</div>
+
+
+<svg style="width: 100vw; height: 100vh;position: absolute; pointer-events: none; z-index: 10000"><line id="line1" style="stroke: black; stroke-width: 10; stroke-linejoin: round"/><line id="line2" style="stroke: black; stroke-width: 10; stroke-linejoin: round"/><rect id="rect" width="10" height="10"
+  style="fill:black;" /></svg>

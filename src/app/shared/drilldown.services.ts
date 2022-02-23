@@ -5,6 +5,7 @@ import { param } from 'jquery';
 import {
   formatDate
 } from '@angular/common';
+import { ActionSequence } from 'protractor';
 
 @Injectable()
 export class DrillDownService {
@@ -28,22 +29,40 @@ export class DrillDownService {
 
   }
 
-  public post(limeID, task, treatment, interactionType, parameters, state, nl) {
+  public post(interactionType, parameters, that, limeID, task, treatment, modality, mode) {
+
+    var possibleFilter = ["Date", "State", "Tests", "Cases", "Deaths", "Population", "PartialVaccinated", "FullyVaccinated"]
+    var activeFilters = []
+    for (var filterIndex in possibleFilter) {
+      if (document.getElementById(possibleFilter[filterIndex] + "_Filter")["className"] != "col closed") {
+        activeFilters.push(possibleFilter[filterIndex])
+      }
+    }
+    var configuration = {
+      'Visualization': that.unitedStatesMap.chartType,
+      'Legend': that.unitedStatesMap.legend_Values,
+      'Metric': that.unitedStatesMap.y_Axis_Values,
+      'Filters': that.filterValue,
+      'States': that.unitedStatesMap.statesSelect,
+      'Dates': that.datesSelect,
+      'DateSettings': that.unitedStatesMap.dateSetting,
+      'OpenFilters': activeFilters,
+      'Aggregate': that.unitedStatesMap.aggregate,
+      'Cumulative': that.unitedStatesMap.cumulative,
+      'GroupBy': that.unitedStatesMap.groupBy
+    }
 
     var datetime = new Date().toISOString().slice(0, 23).replace('T', ' ');
-    /*
-    console.log({ limeID: limeID, task: task, treatment: treatment, interaction: interactionType , parameters: JSON.stringify(parameters), state: JSON.stringify(state),  date: datetime, naturalLanguage: nl })
-      this.http.post<any>('https://interactive-analytics.org:8443/interactions', { limeID: limeID, task: task, treatment: treatment, interaction: interactionType , parameters: JSON.stringify(parameters), state: JSON.stringify(state),  date: datetime, naturalLanguage: nl }).subscribe({
-          next: data => {
-              console.log(data);
-          },
-          error: error => {
-              console.log( error.message);
-              console.error('There was an error!', error);
-          }
-      })
-      /**/
 
+    this.http.post<any>('https://interactive-analytics.org:8443/interactionLog', { sessionID: limeID, interaction: interactionType, parameters: JSON.stringify(parameters), date: datetime, modality: modality, task: task, treatment: treatment, mode: mode, configuration: JSON.stringify({ Visualization: configuration, Training: that.actionSequence, Recommendation: that.recommendationList }) }).subscribe({
+      next: data => {
+        console.log(data);
+      },
+      error: error => {
+        console.log(error.message);
+        console.error('There was an error!', error);
+      }
+    })
   }
 
   public postSpeech(limeID, task, treatment, speech, text, state) {
@@ -66,6 +85,9 @@ export class DrillDownService {
 
   public processUserInput(that, action, target, actionSequence) {
     var recommondation = []
+    var recommendationPerformed = false;
+    var lineSpecification
+    var ambiguityPosition
     var newAction = {
       'Add': {
         'Visualizations': target,
@@ -177,7 +199,7 @@ export class DrillDownService {
 
 
       instances.push({
-        'text': '<select class="legendSwitch"><option value="Add" selected>Add</option><option value="Remove">Remove</option></select> <b>' + target + "</b> to <span class='trainLegend' style='color:" + this.fieldToColor['Legend'] + "'>" + that.legendLabel + "</span>.",
+        'text': '<select class="legendSwitch"><option value="Add" selected>Add</option><option value="Remove">Remove</option></select> <b>' + target + "</b> at <span class='trainLegend' style='color:" + this.fieldToColor['Legend'] + "'>" + that.legendLabel + "</span>.",
         'id': actionSequence.length
       });
       actionSequence.push(newAction)
@@ -216,7 +238,7 @@ export class DrillDownService {
     }
     else if (action == "AddMetric") {
 
-      if(!Array.isArray(target)){
+      if (!Array.isArray(target)) {
         target = [target]
       }
 
@@ -262,7 +284,7 @@ export class DrillDownService {
       }
       else {
 
-        metricPhrase = '<select class="metricSwitch"><option value="Add" selected>Add</option><option value="Remove all except">Remove all except</option><option value="Remove">Remove</option><option value="Select all except">Select all except</option></select> <b>' + target[0]
+        metricPhrase = '<select class="metricSwitch"><option value="Add" selected>Add</option><option value="Remove all except">Remove all and Add</option><option value="Remove">Remove</option><option value="Select all except">Add all and Remove</option></select> <b>' + target[0]
 
 
 
@@ -270,7 +292,7 @@ export class DrillDownService {
           var previouslyAdded = previousSequence['Add']['DataFields']
 
           for (var i = 0; i < previouslyAdded.length; i++) {
-            if (previouslyAdded != "open" && previouslyAdded != "close") {
+            if (previouslyAdded != "open" && previouslyAdded != "close" && !target.includes(previouslyAdded[i])) {
 
               if (i == previouslyAdded.length - 1) {
                 metricPhrase += " and "
@@ -285,26 +307,40 @@ export class DrillDownService {
         }
 
         for (var index in that.metricList) {
-          if (target.every(metric => that.metricList[index].includes(metric)) && that.metricList[index].every(metric => target.includes(metric))) {
-            var reason = "**Ambiguity** \r\n I have two different interpretations of your action. \r\n Please select the action above that best represents your intentions of the command or I will use the first option as a default."
+          if (!recommendationPerformed &&
+            !that.alreadyProposed["RemoveAllMetric"] &&
+            (//(that.unitedStatesMap.y_Axis_Values.every(metric => target.includes(metric)) && target.every(metric => that.unitedStatesMap.y_Axis_Values.includes(metric))) ||
+              (that.unitedStatesMap.y_Axis_Values.every(metric => that.metricList[index].includes(metric)) && that.metricList[index].every(metric => that.unitedStatesMap.y_Axis_Values.includes(metric))))) {
 
-            var textRec = 'Remove all except <b>'
-            for (var textIndex in that.metricList[index]) {
 
-              if (parseInt(textIndex) == that.metricList[index].length - 1 && that.metricList[index].length != 1) {
+            //that.alreadyProposed["RemoveAllMetric"] = true;
+
+
+            // Get Position of Ambiguity End
+            var pos1 = $('#y_Axis').offset();
+            ambiguityPosition = { x: pos1.left + $('#y_Axis').width() / 2, y: pos1.top + $('#y_Axis').height() }
+            lineSpecification = "y_Axis"
+
+            var textRec = ''
+            for (var textIndex in that.unitedStatesMap.y_Axis_Values) {
+
+              if (parseInt(textIndex) == that.unitedStatesMap.y_Axis_Values.length - 1 && that.unitedStatesMap.y_Axis_Values.length != 1) {
                 textRec += " and "
               }
               else if (parseInt(textIndex) > 0) {
                 textRec += ", "
               }
-              textRec += that.metricList[index][textIndex];
+              textRec += that.unitedStatesMap.y_Axis_Values[textIndex];
 
             }
-            textRec += "</b> to <span class='trainMetric' style='color:" + this.fieldToColor['DataFields'] + "'>" + that.metricLabel + "</span>."
+
+            var reason = "If there were already other data fields in the " + that.metricLabel + ", would you have needed to remove them first?"
+
+
             recommenderAction = {
               'Add': {
                 'Visualizations': 'none',
-                'DataFields': that.metricList[index],
+                'DataFields': that.unitedStatesMap.y_Axis_Values,
                 'Legend': 'none',
                 'Filter': 'none',
                 'State': 'none',
@@ -325,54 +361,10 @@ export class DrillDownService {
                 'StatesSelect': 'none'
               }
             }
-            recommondation.push({ value: "Remove all except", text: textRec, action: recommenderAction, id: actionSequence.length, reason: reason })
-          }
-          else if (that.unitedStatesMap.y_Axis_Values.every(metric => that.metricList[index].includes(metric)) && that.metricList[index].every(metric => that.unitedStatesMap.y_Axis_Values.includes(metric))) {
-            var reason = "**Ambiguity** \r\n I have two different interpretations of your action. \r\n Please select the action above that best represents your intentions of the command or I will use the first option as a default."
-
-            var textRec = 'Remove all except <b>'
-            for (var textIndex in that.metricList[index]) {
-
-              if (parseInt(textIndex) == that.metricList[index].length - 1 && that.metricList[index].length != 1) {
-                textRec += " and "
-              }
-              else if (parseInt(textIndex) > 0) {
-                textRec += ", "
-              }
-              textRec += that.metricList[index][textIndex];
-
-            }
-            textRec += "</b> to <span class='trainMetric' style='color:" + this.fieldToColor['DataFields'] + "'>" + that.metricLabel + "</span>."
-            recommenderAction = {
-              'Add': {
-                'Visualizations': 'none',
-                'DataFields': that.metricList[index],
-                'Legend': 'none',
-                'Filter': 'none',
-                'State': 'none',
-                'Date': 'none',
-                'Aggregate': 'none',
-                'Cumulative': 'none',
-                'StatesSelect': 'none'
-              },
-              'Remove': {
-                'Visualizations': 'none',
-                'DataFields': 'All',
-                'Legend': 'none',
-                'Filter': 'none',
-                'State': 'none',
-                'Date': 'none',
-                'Aggregate': 'none',
-                'Cumulative': 'none',
-                'StatesSelect': 'none'
-              }
-            }
-            recommondation.push({ value: "Remove all except", text: textRec, action: recommenderAction, id: actionSequence.length, reason: reason })
+            recommendationPerformed = true;
+            recommondation.push({ value: "Remove all except", text: textRec, action: recommenderAction, id: actionSequence.length, reason: reason, posted: false, specification: lineSpecification, position: ambiguityPosition })
           }
         }
-
-
-
 
         newAction = {
           'Add': {
@@ -400,7 +392,7 @@ export class DrillDownService {
         }
       }
 
-      metricPhrase += "</b> to <span class='trainMetric' style='color:" + this.fieldToColor['DataFields'] + "'>" + that.metricLabel + "</span>."
+      metricPhrase += "</b> at <span class='trainMetric' style='color:" + this.fieldToColor['DataFields'] + "'>" + that.metricLabel + "</span>."
 
       instances.push({
         'text': metricPhrase,
@@ -410,19 +402,99 @@ export class DrillDownService {
     }
     else if (action == "RemoveMetric") {
 
-      if(!Array.isArray(target)){
+      if (!Array.isArray(target)) {
         target = [target]
       }
-      
 
+      var previousAdd = false;
       var previousSequence = "none"
+      var previouslyAdded = []
 
 
 
-      if (actionSequence.length >= 1 && actionSequence[actionSequence.length - 1]['Remove']['DataFields'] != "none") {
+      if (actionSequence.length >= 1 && actionSequence[actionSequence.length - 1]['Add']['DataFields'] != "none" && actionSequence[actionSequence.length - 1]['Remove']['DataFields'] == "none") {
+        previousAdd = true
         previousSequence = actionSequence.pop()
         var element = document.getElementById("ActionTemplate" + actionSequence.length);
         element.parentNode.removeChild(element);
+
+        previouslyAdded = previousSequence['Add']['DataFields']
+
+        var mediatedList = []
+
+        for (var index in target) {
+          var datafield = target[index]
+
+
+          if (previouslyAdded.indexOf(datafield) != -1) {
+            previouslyAdded.splice(previouslyAdded.indexOf(datafield), 1)
+          }
+          else {
+            mediatedList.push(datafield);
+          }
+        }
+        target = mediatedList
+      }
+      else if (actionSequence.length >= 1 && actionSequence[actionSequence.length - 1]['Remove']['DataFields'] != "none" && actionSequence[actionSequence.length - 1]['Remove']['DataFields'] == "none") {
+        previousSequence = actionSequence.pop()
+        var element = document.getElementById("ActionTemplate" + actionSequence.length);
+        element.parentNode.removeChild(element);
+
+        var mediatedList = previousSequence['Remove']['State']
+
+
+        for (var index in mediatedList) {
+          if (!target.includes(mediatedList[index])) {
+            target.push(mediatedList[index])
+          }
+
+        }
+      }
+
+      if (previouslyAdded.length > 0 && previousAdd) {
+        filterPhrase = '<select class="metricSwitch"><option value="Add" selected>Add</option><option value="Remove all except">Remove all and Add</option><option value="Remove">Remove</option><option value="Select all except">Add all and Remove</option></select>  ' + previouslyAdded[0] + " at " + that.metricLabel
+        for (var i = 1; i < previouslyAdded.length; i++) {
+          if (i == previouslyAdded.length - 1) {
+            filterPhrase += " and "
+          }
+          else {
+            filterPhrase += ", "
+          }
+          filterPhrase += previouslyAdded[i];
+
+        }
+
+        newAction = {
+          'Add': {
+            'Visualizations': 'none',
+            'DataFields': previouslyAdded,
+            'Legend': 'none',
+            'Filter': 'none',
+            'State': 'none',
+            'Date': 'none',
+            'Aggregate': 'none',
+            'Cumulative': 'none',
+            'StatesSelect': 'none'
+          },
+          'Remove': {
+            'Visualizations': 'none',
+            'DataFields': 'none',
+            'Legend': 'none',
+            'Filter': 'none',
+            'State': 'none',
+            'Date': 'none',
+            'Aggregate': 'none',
+            'Cumulative': 'none',
+            'StatesSelect': 'none'
+          }
+        }
+
+        instances.push({
+          'text': filterPhrase + ".",
+          'id': actionSequence.length
+        });
+        actionSequence.push(newAction)
+
       }
 
       if (target.includes("All")) {
@@ -452,15 +524,25 @@ export class DrillDownService {
           }
         }
 
-        metricPhrase = '<select class="metricSwitchAll"><option value="Add">Add</option><option value="Remove" selected>Remove</option></select> All '
+        metricPhrase = '<select class="metricSwitchAll"><option value="Add">Add</option><option value="Remove" selected>Remove</option></select> All data fields from ' + that.metricLabel
 
+        instances.push({
+          'text': metricPhrase,
+          'id': actionSequence.length
+        });
+        actionSequence.push(newAction)
       }
       else {
 
-        if (that.unitedStatesMap.y_Axis_Values.length == 0) {
-          var reason = "**Ambiguity** \r\n I have two different interpretations of your action. \r\n Please select the action above that best represents your intentions of the command or I will use the first option as a default."
+        if (that.unitedStatesMap.y_Axis_Values.length == 0 && (that.metricList.length == 0 || !that.metricList.some(list => target.every(metric => list.includes(metric))))) {
+          var reason = "Did you mean to remove all data fields from the " + that.metricLabel + "?"
+          textRec = '<select class="metricSwitchAll"><option value="Add">Add</option><option value="Remove" selected>Remove</option></select> All data fields from ' + that.metricLabel
 
-          var textRec = "Remove all Data Fields from  <span class='trainMetric' style='color:" + this.fieldToColor['DataFields'] + "'>" + that.metricLabel + "</span>"
+
+          // Get Position of Ambiguity End
+          var pos1 = $('#y_Axis').offset();
+          ambiguityPosition = { x: pos1.left + $('#y_Axis').width() / 2, y: pos1.top + $('#y_Axis').height() }
+          lineSpecification = "y_Axis"
 
           recommenderAction = {
             'Add': {
@@ -486,13 +568,16 @@ export class DrillDownService {
               'StatesSelect': 'none'
             }
           }
-          recommondation.push({ value: "Remove all", text: textRec, action: recommenderAction, id: actionSequence.length, reason: reason })
+          recommondation.push({ value: "Remove all", text: textRec, action: recommenderAction, id: actionSequence.length, reason: reason, posted: false, specification: lineSpecification, position: ambiguityPosition })
         }
         for (var index in that.metricList) {
-          if (that.unitedStatesMap.y_Axis_Values.every(metric => that.metricList[index].includes(metric)) && that.metricList[index].every(metric => that.unitedStatesMap.y_Axis_Values.includes(metric))) {
-            var reason = "**Ambiguity** \r\n I have two different interpretations of your action. \r\n Please select the action above that best represents your intentions of the command or I will use the first option as a default."
+          if (!recommendationPerformed &&
+            !that.alreadyProposed["RemoveAllMetric"] &&
+            (that.unitedStatesMap.y_Axis_Values.every(metric => that.metricList[index].includes(metric)) && that.metricList[index].every(metric => that.unitedStatesMap.y_Axis_Values.includes(metric)))) {
 
-            var textRec = 'Remove all except <b>'
+            //that.alreadyProposed["RemoveAllMetric"] = true;
+
+            var textRec = ''
             for (var textIndex in that.metricList[index]) {
 
               if (parseInt(textIndex) == that.metricList[index].length - 1 && that.metricList[index].length != 1) {
@@ -502,9 +587,14 @@ export class DrillDownService {
                 textRec += ", "
               }
               textRec += that.metricList[index][textIndex];
-
             }
-            textRec += "</b> to <span class='trainMetric' style='color:" + this.fieldToColor['DataFields'] + "'>" + that.metricLabel + "</span>."
+
+            // Get Position of Ambiguity End
+            var pos1 = $('#y_Axis').offset();
+            ambiguityPosition = { x: pos1.left + $('#y_Axis').width() / 2, y: pos1.top + $('#y_Axis').height() }
+            lineSpecification = "y_Axis"
+
+            var reason = "Did you mean to remove all data fields from the " + that.metricLabel + " instead of specifically removing***" + textRec.trim() + "***?"
             recommenderAction = {
               'Add': {
                 'Visualizations': 'none',
@@ -529,67 +619,65 @@ export class DrillDownService {
                 'StatesSelect': 'none'
               }
             }
-            recommondation.push({ value: "Remove all except", text: textRec, action: recommenderAction, id: actionSequence.length, reason: reason })
+            recommondation.push({ value: "Remove all except", text: textRec, action: recommenderAction, id: actionSequence.length, reason: reason, posted: false, specification: lineSpecification, position: ambiguityPosition })
           }
         }
 
 
-        var metricPhrase = '<select class="metricSwitch"><option value="Add">Add</option><option value="Remove all except">Remove all except</option><option value="Remove" selected>Remove</option><option value="Select all except">Select all except</option></select> <b>' + target[0]
+        var metricPhrase = '<select class="metricSwitch"><option value="Add">Add</option><option value="Remove all except">Remove all and Add</option><option value="Remove" selected>Remove</option><option value="Select all except">Add all and Remove</option></select> <b>' + target[0]
 
-        if (previousSequence != "none") {
-          var previouslyAdded = previousSequence['Remove']['DataFields']
+        if (target.length != 0) {
 
-          for (var i = 0; i < previouslyAdded.length; i++) {
-            if (previouslyAdded != "open" && previouslyAdded != "close") {
+          for (var i = 1; i < target.length; i++) {
+            if (target != "open" && target != "close") {
 
-              if (i == previouslyAdded.length - 1) {
+              if (i == target.length - 1) {
                 metricPhrase += " and "
               }
-              else {
+              else if (i != 0) {
                 metricPhrase += ", "
               }
-              metricPhrase += previouslyAdded[i];
-              target.push(previouslyAdded[i])
+              metricPhrase += target[i];
             }
           }
-        }
 
 
-
-        newAction = {
-          'Add': {
-            'Visualizations': 'none',
-            'DataFields': 'none',
-            'Legend': 'none',
-            'Filter': 'none',
-            'State': 'none',
-            'Date': 'none',
-            'Aggregate': 'none',
-            'Cumulative': 'none',
-            'StatesSelect': 'none'
-          },
-          'Remove': {
-            'Visualizations': 'none',
-            'DataFields': target,
-            'Legend': 'none',
-            'Filter': 'none',
-            'State': 'none',
-            'Date': 'none',
-            'Aggregate': 'none',
-            'Cumulative': 'none',
-            'StatesSelect': 'none'
+          newAction = {
+            'Add': {
+              'Visualizations': 'none',
+              'DataFields': 'none',
+              'Legend': 'none',
+              'Filter': 'none',
+              'State': 'none',
+              'Date': 'none',
+              'Aggregate': 'none',
+              'Cumulative': 'none',
+              'StatesSelect': 'none'
+            },
+            'Remove': {
+              'Visualizations': 'none',
+              'DataFields': target,
+              'Legend': 'none',
+              'Filter': 'none',
+              'State': 'none',
+              'Date': 'none',
+              'Aggregate': 'none',
+              'Cumulative': 'none',
+              'StatesSelect': 'none'
+            }
           }
+
+
+          metricPhrase += "</b> from <span class='trainMetric' style='color:" + this.fieldToColor['DataFields'] + "'>" + that.metricLabel + "</span>."
+
+
+          instances.push({
+            'text': metricPhrase,
+            'id': actionSequence.length
+          });
+          actionSequence.push(newAction)
         }
       }
-
-      metricPhrase += "</b> from <span class='trainMetric' style='color:" + this.fieldToColor['DataFields'] + "'>" + that.metricLabel + "</span>."
-
-
-      instances.push({
-        'text': metricPhrase,
-        'id': actionSequence.length
-      });
-      actionSequence.push(newAction)
     }
     else if (action == "AddFilter") {
       newAction = {
@@ -632,7 +720,7 @@ export class DrillDownService {
 
       var previousSequence = "none"
 
-      if (actionSequence.length >= 1 && actionSequence[actionSequence.length - 1]['Add']['Filter'] != "none" && actionSequence[actionSequence.length - 1]['Add']['Filter'].some((element) => Object.keys(element)[0] == key)) {
+      if (actionSequence.length >= 1 && ((actionSequence[actionSequence.length - 1]['Add']['Filter'] != "none" && actionSequence[actionSequence.length - 1]['Add']['Filter'].some((element) => Object.keys(element)[0] == key)) || (actionSequence[actionSequence.length - 1]['Remove']['Filter'] != "none" && actionSequence[actionSequence.length - 1]['Remove']['Filter'].some((element) => Object.keys(element)[0] == key)))) {
         previousSequence = actionSequence.pop()
         var element = document.getElementById("ActionTemplate" + actionSequence.length);
         element.parentNode.removeChild(element);
@@ -641,20 +729,59 @@ export class DrillDownService {
 
       var filterPhrase = "";
 
-
+      var legendSelect = that.unitedStatesMap.legend_Values ? that.unitedStatesMap.legend_Values + "(s)" : "";
 
       if (target[key][0] != "none" && target[key][0] != that.minSlider[key] && target[key][1] != "none" && target[key][1] != "max" && target[key][1] != that.maxSlider[key]) {
-        filterPhrase = 'Remove all ' + that.unitedStatesMap.legend_Values + '(s) with ' + key
-        filterPhrase += " less than " + target[key][0] + " and more than " + target[key][1]
+        filterPhrase = 'Select thoes ' + legendSelect + ' with ' + key
+        filterPhrase += " more than " + target[key][0].toLocaleString( "en-US" ) + " and less than " + target[key][1].toLocaleString( "en-US" )
       }
       else if (target[key][0] != "none" && target[key][0] != that.minSlider[key]) {
-        filterPhrase = '<select class="filterSwitch"><option value="Add">Add</option><option value="Remove" selected>Remove</option></select> all ' + that.unitedStatesMap.legend_Values + '(s) with ' + key
-        filterPhrase += " less than " + target[key][0]
+        filterPhrase = '<select class="filterSwitch"><option value="Add" selected>Select</option><option value="Remove">Remove</option></select> those ' + legendSelect + ' with ' + key
+        filterPhrase += " more than " + target[key][0].toLocaleString( "en-US" )
         target = { [key]: [target[key][0], "max"] }
       }
       else if (target[key][1] != "none" && target[key][1] != that.maxSlider[key]) {
-        filterPhrase = '<select class="filterSwitch"><option value="Add">Add</option><option value="Remove" selected>Remove</option></select> all ' + that.unitedStatesMap.legend_Values + '(s) with ' + key
-        filterPhrase += " more than " + target[key][1]
+        filterPhrase = '<select class="filterSwitch"><option value="Add" selected>Select</option><option value="Remove">Remove</option></select> those ' + legendSelect + ' with ' + key
+        filterPhrase += " less than " + target[key][1].toLocaleString( "en-US" )
+      }
+
+      if (that.unitedStatesMap.y_Axis_Values.length == 0) {
+
+        var reason = "Do you also want to add " + key + " to the " + that.metricLabel + "?"
+
+        textRec = '<select class="metricSwitch"><option value="Add" selected>Add</option><option value="Remove all except">Remove all and Add</option><option value="Remove">Remove</option><option value="Select all except">Add all and Remove</option></select>  ' + key + " at " + that.metricLabel
+
+
+        // Get Position of Ambiguity End
+        var pos1 = $('#y_Axis').offset();
+        ambiguityPosition = { x: pos1.left + $('#y_Axis').width() / 2, y: pos1.top + $('#y_Axis').height() }
+        lineSpecification = "y_Axis"
+
+        recommenderAction = {
+          'Add': {
+            'Visualizations': 'none',
+            'DataFields': [key],
+            'Legend': 'none',
+            'Filter': 'none',
+            'State': "none",
+            'Date': 'none',
+            'Aggregate': 'none',
+            'Cumulative': 'none',
+            'StatesSelect': 'none'
+          },
+          'Remove': {
+            'Visualizations': 'none',
+            'DataFields': 'none',
+            'Legend': 'none',
+            'Filter': 'none',
+            'State': 'none',
+            'Date': 'none',
+            'Aggregate': 'none',
+            'Cumulative': 'none',
+            'StatesSelect': 'none'
+          }
+        }
+        recommondation.push({ value: "Add", text: textRec, action: recommenderAction, id: actionSequence.length, reason: reason, posted: false, specification: lineSpecification, position: ambiguityPosition })
       }
 
 
@@ -683,11 +810,14 @@ export class DrillDownService {
         }
       }
 
-      instances.push({
-        'text': filterPhrase + ".",
-        'id': actionSequence.length
-      });
-      actionSequence.push(newAction)
+      if (filterPhrase != "") {
+        instances.push({
+          'text': filterPhrase + ".",
+          'id': actionSequence.length
+        });
+        actionSequence.push(newAction)
+      }
+
     }
     else if (action == "RemoveFilter") {
 
@@ -731,7 +861,10 @@ export class DrillDownService {
       if (actionSequence.length >= 1 && (actionSequence[actionSequence.length - 1]['Add']['State'] != "none" || actionSequence[actionSequence.length - 1]['Remove']['State'] == "All")) {
         previousSequence = actionSequence.pop()
         var element = document.getElementById("ActionTemplate" + actionSequence.length);
-        element.parentNode.removeChild(element);
+        if (element) {
+          element.parentNode.removeChild(element);
+        }
+
       }
 
       /**
@@ -776,17 +909,22 @@ export class DrillDownService {
           var previouslyAdded = previousSequence['Add']['State']
 
           for (var i = 0; i < previouslyAdded.length; i++) {
-            target.push(previouslyAdded[i])
+
+            if (!target.includes(previouslyAdded[i])) {
+              target.push(previouslyAdded[i])
+            }
+
           }
         }
 
         if (previousSequence != "none" && previousSequence['Remove']['State'] == "All") {
           removeState = "All"
-          filterPhrase = '<select class="stateSwitch"><option value="Add">Add</option><option value="Remove all except" selected>Remove all except</option><option value="Remove">Remove</option><option value="Select all except">Select all except</option></select> ' + target[0]
+          //that.alreadyProposed["RemoveAllStates"] = true
+          filterPhrase = '<select class="stateSwitch"><option value="Add">Add</option><option value="Remove all except" selected>Remove all and Add</option><option value="Remove">Remove</option><option value="Select all except">Add all and Remove</option></select> ' + target[0]
 
         }
         else {
-          filterPhrase = '<select class="stateSwitch"><option value="Add" selected>Add</option><option value="Remove all except">Remove all except</option><option value="Remove">Remove</option><option value="Select all except">Select all except</option></select> ' + target[0]
+          filterPhrase = '<select class="stateSwitch"><option value="Add" selected>Add</option><option value="Remove all except">Remove all and Add</option><option value="Remove">Remove</option><option value="Select all except">Add all and Remove</option></select> ' + target[0]
 
         }
 
@@ -862,10 +1000,14 @@ export class DrillDownService {
 
 
         for (var index in that.stateList) {
-          if (removeState != "All" && target.every(state => that.stateList[index].includes(state)) && that.stateList[index].every(state => target.includes(state)) && that.unitedStatesMap.statesSelect.every(state => that.stateList[index].includes(state))) {
-            var reason = "**Ambiguity** \r\n I have two different interpretations of your action. \r\n Please select the action above that best represents your intentions of the command or I will use the first option as a default."
+          if (removeState != "All" && !recommendationPerformed && !that.alreadyProposed["RemoveAllStates"] &&
+            //((that.unitedStatesMap.statesSelect.every(state => target.includes(state)) && target.every(state => that.unitedStatesMap.statesSelect.includes(state))) ||
+            ((that.unitedStatesMap.statesSelect.every(state => that.stateList[index].includes(state)) && that.stateList[index].every(state => that.unitedStatesMap.statesSelect.includes(state))))) {
 
-            var textRec = 'Remove all except states '
+
+            //that.alreadyProposed["RemoveAllStates"] = true;
+
+            var textRec = ''
             for (var textIndex in that.stateList[index]) {
 
               if (parseInt(textIndex) == that.stateList[index].length - 1 && that.stateList[index].length != 1) {
@@ -875,8 +1017,15 @@ export class DrillDownService {
                 textRec += ", "
               }
               textRec += that.stateList[index][textIndex];
-
             }
+
+            var reason = "If there were already other States selected, would you have needed to remove them first?"
+
+            // Get Position of Ambiguity End
+            var pos1 = $('#State_Filter').offset();
+            ambiguityPosition = { x: pos1.left + $('#State_Filter').width(), y: pos1.top }
+            lineSpecification = "States"
+
             recommenderAction = {
               'Add': {
                 'Visualizations': 'none',
@@ -901,17 +1050,55 @@ export class DrillDownService {
                 'StatesSelect': 'none'
               }
             }
-            recommondation.push({ value: "Remove all except", text: textRec, action: recommenderAction, id: actionSequence.length, reason: reason })
+            recommondation.push({ value: "Remove all except", text: textRec, action: recommenderAction, id: actionSequence.length, reason: reason, posted: false, specification: lineSpecification, position: ambiguityPosition })
           }
           else {
             console.log("No")
           }
         }
+
+      }
+
+      if (that.unitedStatesMap.legend_Values != "State" && that.unitedStatesMap.legend_Values != "Date" && !that.alreadyProposed["State"]) {
+        //that.alreadyProposed["State"] = true;
+        var reason = "Do you also want at add States at the " + that.legendLabel + "?"
+        textRec = '<select class="legendSwitch"><option value="Add" selected>Add</option><option value="Remove">Remove</option></select> <b>' + "State</b> at <span class='trainLegend' style='color:" + this.fieldToColor['Legend'] + "'>" + that.legendLabel + "</span>."
+
+        // Get Position of Ambiguity End
+        var pos1 = $('#legend').offset();
+        ambiguityPosition = { x: pos1.left + 5, y: pos1.top + $('#legend').height() }
+        lineSpecification = "legend"
+
+        recommenderAction = {
+          'Add': {
+            'Visualizations': 'none',
+            'DataFields': 'none',
+            'Legend': 'State',
+            'Filter': 'none',
+            'State': "none",
+            'Date': 'none',
+            'Aggregate': 'none',
+            'Cumulative': 'none',
+            'StatesSelect': 'none'
+          },
+          'Remove': {
+            'Visualizations': 'none',
+            'DataFields': 'none',
+            'Legend': 'none',
+            'Filter': 'none',
+            'State': 'none',
+            'Date': 'none',
+            'Aggregate': 'none',
+            'Cumulative': 'none',
+            'StatesSelect': 'none'
+          }
+        }
+        recommondation.push({ value: "Add", text: textRec, action: recommenderAction, id: actionSequence.length, reason: reason, posted: false, specification: lineSpecification, position: ambiguityPosition })
       }
 
 
       instances.push({
-        'text': filterPhrase + " to States.",
+        'text': filterPhrase + " at States.",
         'id': actionSequence.length
       });
       actionSequence.push(newAction)
@@ -924,10 +1111,11 @@ export class DrillDownService {
       var previousSequence = "none"
       var filterPhrase = "";
       var previouslyAdded = []
+
       var previousAdd = false;
 
       if (target.length > 0 && target[0] != "All") {
-        if (actionSequence.length >= 1 && actionSequence[actionSequence.length - 1]['Add']['State'] != "none" && actionSequence[actionSequence.length - 1]['Remove']['Date'] == "none") {
+        if (actionSequence.length >= 1 && actionSequence[actionSequence.length - 1]['Add']['State'] != "none" && actionSequence[actionSequence.length - 1]['Remove']['State'] == "none") {
           previousAdd = true
           previousSequence = actionSequence.pop()
           var element = document.getElementById("ActionTemplate" + actionSequence.length);
@@ -935,28 +1123,34 @@ export class DrillDownService {
 
           previouslyAdded = previousSequence['Add']['State']
 
-          var mediatedList = target
+          mediatedList = []
 
-          for (var index in mediatedList) {
-            var state = mediatedList[index]
+          for (var index in target) {
+            var state = target[index]
 
 
             if (previouslyAdded.indexOf(state) != -1) {
               previouslyAdded.splice(previouslyAdded.indexOf(state), 1)
               target.splice(target.indexOf(state), 1)
             }
+            else {
+              mediatedList.push(state);
+            }
           }
+          target = mediatedList
         }
         else if (actionSequence.length >= 1 && actionSequence[actionSequence.length - 1]['Remove']['State'] != "none" && actionSequence[actionSequence.length - 1]['Add']['State'] == "none") {
           previousSequence = actionSequence.pop()
           var element = document.getElementById("ActionTemplate" + actionSequence.length);
           element.parentNode.removeChild(element);
 
-          previouslyAdded = previousSequence['Remove']['State']
+          mediatedList = previousSequence['Remove']['State']
 
 
-          for (var index in previouslyAdded) {
-            target.push(previouslyAdded[index])
+          for (var index in mediatedList) {
+            if (!target.includes(mediatedList[index])) {
+              target.push(mediatedList[index])
+            }
           }
         }
 
@@ -965,8 +1159,9 @@ export class DrillDownService {
 
 
 
-        if (previouslyAdded.length > 0 && previousAdd) {
-          filterPhrase = '<select class="stateSwitch"><option value="Add" selected>Add</option><option value="Remove all except">Remove all except</option><option value="Remove">Remove</option><option value="Select all except">Select all except</option></select>  ' + previouslyAdded[0]
+        if (previouslyAdded.length > 0 && previousAdd && !previouslyAdded.includes("All")) {
+
+          filterPhrase = '<select class="stateSwitch"><option value="Add" selected>Add</option><option value="Remove all except">Remove all and Add</option><option value="Remove">Remove</option><option value="Select all except">Add all and Remove</option></select>  ' + previouslyAdded[0]
           for (var i = 1; i < previouslyAdded.length; i++) {
             if (i == previouslyAdded.length - 1) {
               filterPhrase += " and "
@@ -977,40 +1172,7 @@ export class DrillDownService {
             filterPhrase += previouslyAdded[i];
           }
 
-          if (that.unitedStatesMap.statesSelect.every(state => previouslyAdded.includes(state))) {
-            var reason = "**Ambiguity** \r\n I have two different interpretations of your action. \r\n Please select the action above that best represents your intentions of the command or I will use the first option as a default."
 
-            var textRec = 'Remove all states '
-
-            recommenderAction = {
-              'Add': {
-                'Visualizations': 'none',
-                'DataFields': 'none',
-                'Legend': 'none',
-                'Filter': 'none',
-                'State': 'none',
-                'Date': 'none',
-                'Aggregate': 'none',
-                'Cumulative': 'none',
-                'StatesSelect': 'none'
-              },
-              'Remove': {
-                'Visualizations': 'none',
-                'DataFields': 'none',
-                'Legend': 'none',
-                'Filter': 'none',
-                'State': ["All"],
-                'Date': 'none',
-                'Aggregate': 'none',
-                'Cumulative': 'none',
-                'StatesSelect': 'none'
-              }
-            }
-            recommondation.push({ value: "Remove all", text: textRec, action: recommenderAction, id: actionSequence.length, reason: reason })
-          }
-          else {
-            console.log("No")
-          }
 
           newAction = {
             'Add': {
@@ -1046,7 +1208,7 @@ export class DrillDownService {
         }
 
         if (target.length > 0 && target != ["All"]) {
-          filterPhrase = "Remove " + target[0]
+          filterPhrase = target[0]
           for (var i = 1; i < target.length; i++) {
             if (i == target.length - 1) {
               filterPhrase += " and "
@@ -1058,31 +1220,61 @@ export class DrillDownService {
 
           }
 
-          newAction = {
-            'Add': {
-              'Visualizations': 'none',
-              'DataFields': 'none',
-              'Legend': 'none',
-              'Filter': 'none',
-              'State': 'none',
-              'Date': 'none',
-              'Aggregate': 'none',
-              'Cumulative': 'none',
-              'StatesSelect': 'none'
-            },
-            'Remove': {
-              'Visualizations': 'none',
-              'DataFields': 'none',
-              'Legend': 'none',
-              'Filter': 'none',
-              'State': target,
-              'Date': 'none',
-              'Aggregate': 'none',
-              'Cumulative': 'none',
-              'StatesSelect': 'none'
+          if (previouslyAdded.length > 0 && previousAdd && !previouslyAdded.includes("All")) {
+            filterPhrase = '<select class="stateSwitch"><option value="Add">Add</option><option value="Remove all except">Remove all and Add</option><option value="Remove">Remove</option><option value="Select all except" selected>Add all and Remove</option></select>  ' + filterPhrase + " for selected States"
+            newAction = {
+              'Add': {
+                'Visualizations': 'none',
+                'DataFields': 'none',
+                'Legend': 'none',
+                'Filter': 'none',
+                'State': ["All"],
+                'Date': 'none',
+                'Aggregate': 'none',
+                'Cumulative': 'none',
+                'StatesSelect': 'none'
+              },
+              'Remove': {
+                'Visualizations': 'none',
+                'DataFields': 'none',
+                'Legend': 'none',
+                'Filter': 'none',
+                'State': target,
+                'Date': 'none',
+                'Aggregate': 'none',
+                'Cumulative': 'none',
+                'StatesSelect': 'none'
+              }
             }
           }
+          else {
+            filterPhrase = '<select class="stateSwitch"><option value="Add">Add</option><option value="Remove all except">Remove all and Add</option><option value="Remove" selected>Remove</option><option value="Select all except">Add all and Remove</option></select>  ' + filterPhrase + " from selected States"
 
+            newAction = {
+              'Add': {
+                'Visualizations': 'none',
+                'DataFields': 'none',
+                'Legend': 'none',
+                'Filter': 'none',
+                'State': 'none',
+                'Date': 'none',
+                'Aggregate': 'none',
+                'Cumulative': 'none',
+                'StatesSelect': 'none'
+              },
+              'Remove': {
+                'Visualizations': 'none',
+                'DataFields': 'none',
+                'Legend': 'none',
+                'Filter': 'none',
+                'State': target,
+                'Date': 'none',
+                'Aggregate': 'none',
+                'Cumulative': 'none',
+                'StatesSelect': 'none'
+              }
+            }
+          }
           instances.push({
             'text': filterPhrase + ".",
             'id': actionSequence.length
@@ -1128,52 +1320,90 @@ export class DrillDownService {
 
 
 
+      if (that.unitedStatesMap.statesSelect.length == 0 && (that.stateList.length === 0 || !that.stateList.some(list => target.every(state => list.includes(state)))) && target != "All") {
 
-      for (var index in that.stateList) {
-        if (target.every(state => that.stateList[index].includes(state)) && that.stateList[index].every(state => target.includes(state)) && that.unitedStatesMap.statesSelect.every(state => that.stateList[index].includes(state))) {
-          var reason = "**Ambiguity** \r\n I have two different interpretations of your action. \r\n Please select the action above that best represents your intentions of the command or I will use the first option as a default."
-          var textRec = "Add all states except "
-          for (var textIndex in that.stateList[index]) {
 
-            if (parseInt(textIndex) == that.stateList[index].length - 1 && that.stateList[index].length != 1) {
-              textRec += " and "
-            }
-            else if (parseInt(textIndex) > 0) {
-              textRec += ", "
-            }
-            textRec += that.stateList[index][textIndex];
+        var reason = "Did you mean to remove all States from selected States?"
+        textRec = '<select class="stateSwitchAll"><option value="Add">Add</option><option value="Remove" selected>Remove</option></select> all States from selected States.'
 
+        // Get Position of Ambiguity End
+        var pos1 = $('#State_Filter').offset();
+        ambiguityPosition = { x: pos1.left + $('#State_Filter').width(), y: pos1.top }
+        lineSpecification = "States"
+
+        recommenderAction = {
+          'Add': {
+            'Visualizations': 'none',
+            'DataFields': 'none',
+            'Legend': 'none',
+            'Filter': 'none',
+            'State': 'none',
+            'Date': 'none',
+            'Aggregate': 'none',
+            'Cumulative': 'none',
+            'StatesSelect': 'none'
+          },
+          'Remove': {
+            'Visualizations': 'none',
+            'DataFields': 'none',
+            'Legend': 'none',
+            'Filter': 'none',
+            'State': ["All"],
+            'Date': 'none',
+            'Aggregate': 'none',
+            'Cumulative': 'none',
+            'StatesSelect': 'none'
           }
-          recommenderAction = {
-            'Add': {
-              'Visualizations': 'none',
-              'DataFields': 'none',
-              'Legend': 'none',
-              'Filter': 'none',
-              'State': that.stateList[index],
-              'Date': 'none',
-              'Aggregate': 'none',
-              'Cumulative': 'none',
-              'StatesSelect': 'none'
-            },
-            'Remove': {
-              'Visualizations': 'none',
-              'DataFields': 'none',
-              'Legend': 'none',
-              'Filter': 'none',
-              'State': ["All"],
-              'Date': 'none',
-              'Aggregate': 'none',
-              'Cumulative': 'none',
-              'StatesSelect': 'none'
-            }
-          }
-          recommondation.push({ value: "Remove all except", text: textRec, action: recommenderAction, id: actionSequence.length, reason: reason })
         }
-        else {
-          console.log("No")
-        }
+        recommondation.push({ value: "Remove all", text: textRec, action: recommenderAction, id: actionSequence.length - 1, reason: reason, posted: false, specification: lineSpecification, position: ambiguityPosition })
       }
+      else if (!previouslyAdded.includes("All") &&
+        that.scaleButtons.every(state => (target.includes(state) || that.unitedStatesMap.statesSelect.includes(state)) && !(target.includes(state) && that.unitedStatesMap.statesSelect.includes(state)))) {
+        var textRec = ""
+        for (var textIndex in target) {
+          if (parseInt(textIndex) == target.length - 1 && target.length != 1) {
+            textRec += " and "
+          }
+          else if (parseInt(textIndex) > 0) {
+            textRec += ", "
+          }
+          textRec += target[textIndex];
+        }
+
+        var reason = "Did you mean to add all States and then remove ***" + textRec + "*** from selected States?"
+
+        // Get Position of Ambiguity End
+        var pos1 = $('#State_Filter').offset();
+        ambiguityPosition = { x: pos1.left + $('#State_Filter').width(), y: pos1.top }
+        lineSpecification = "States"
+
+        recommenderAction = {
+          'Add': {
+            'Visualizations': 'none',
+            'DataFields': 'none',
+            'Legend': 'none',
+            'Filter': 'none',
+            'State': ["All"],
+            'Date': 'none',
+            'Aggregate': 'none',
+            'Cumulative': 'none',
+            'StatesSelect': 'none'
+          },
+          'Remove': {
+            'Visualizations': 'none',
+            'DataFields': 'none',
+            'Legend': 'none',
+            'Filter': 'none',
+            'State': target,
+            'Date': 'none',
+            'Aggregate': 'none',
+            'Cumulative': 'none',
+            'StatesSelect': 'none'
+          }
+        }
+        recommondation.push({ value: "Select all except", text: textRec, action: recommenderAction, id: actionSequence.length - 1, reason: reason, posted: false, specification: lineSpecification, position: ambiguityPosition })
+      }
+
     }
 
     /**
@@ -1182,9 +1412,11 @@ export class DrillDownService {
      */
     else if (action == "AddDate") {
 
+      var removeDate = "none"
+
       var previousSequence = "none"
 
-      if (actionSequence.length >= 1 && actionSequence[actionSequence.length - 1]['Add']['Date'] != "none") {
+      if (actionSequence.length >= 1 && (actionSequence[actionSequence.length - 1]['Add']['Date'] != "none" || actionSequence[actionSequence.length - 1]['Remove']['Date'] == "All")) {
         previousSequence = actionSequence.pop()
         var element = document.getElementById("ActionTemplate" + actionSequence.length);
         element.parentNode.removeChild(element);
@@ -1219,18 +1451,68 @@ export class DrillDownService {
 
         filterPhrase = '<select class="dateSwitchAll"><option value="Add" selected>Add</option><option value="Remove">Remove</option></select> All dates'
 
+
+        if (that.unitedStatesMap.legend_Values != "State" && that.unitedStatesMap.legend_Values != "Date" && !that.alreadyProposed["Date"] && !recommendationPerformed) {
+          //that.alreadyProposed["Date"] = true;
+          var reason = "Do you also want to add Date to the " + that.legendLabel + "?"
+
+          textRec = '<select class="legendSwitch"><option value="Add" selected>Add</option><option value="Remove">Remove</option></select> <b>' + "Date</b> at <span class='trainLegend' style='color:" + this.fieldToColor['Legend'] + "'>" + that.legendLabel + "</span>."
+
+
+          // Get Position of Ambiguity End
+          var pos1 = $('#legend').offset();
+          ambiguityPosition = { x: pos1.left + 5, y: pos1.top + $('#legend').height() }
+          lineSpecification = "legend"
+
+          recommenderAction = {
+            'Add': {
+              'Visualizations': 'none',
+              'DataFields': 'none',
+              'Legend': 'Date',
+              'Filter': 'none',
+              'State': "none",
+              'Date': 'none',
+              'Aggregate': 'none',
+              'Cumulative': 'none',
+              'StatesSelect': 'none'
+            },
+            'Remove': {
+              'Visualizations': 'none',
+              'DataFields': 'none',
+              'Legend': 'none',
+              'Filter': 'none',
+              'State': 'none',
+              'Date': 'none',
+              'Aggregate': 'none',
+              'Cumulative': 'none',
+              'StatesSelect': 'none'
+            }
+          }
+          recommondation.push({ value: "Add", text: textRec, action: recommenderAction, id: actionSequence.length, reason: reason, posted: false, specification: lineSpecification, position: ambiguityPosition })
+        }
+
       }
       else {
 
-        if (previousSequence != "none") {
+        if (previousSequence != "none" && previousSequence['Add']['Date'] != "none") {
           var previouslyAdded = previousSequence['Add']['Date']
 
           for (var i = 0; i < previouslyAdded.length; i++) {
-            target.push(previouslyAdded[i])
+            if (!target.includes(previouslyAdded[i])) {
+              target.push(previouslyAdded[i])
+            }
           }
         }
+        if (previousSequence != "none" && previousSequence['Remove']['Date'] == "All") {
+          removeDate = "All"
+          //that.alreadyProposed["RemoveAllDates"] = true
+          filterPhrase = '<select class="dateSwitch"><option value="Add">Add</option><option value="Remove all except" selected>Remove all and Add</option><option value="Remove">Remove</option><option value="Select all except">Add all and Remove</option></select> ' + target[0]
 
-        filterPhrase = '<select class="dateSwitch"><option value="Add" selected>Add</option><option value="Remove all except">Remove all except</option><option value="Remove">Remove</option><option value="Select all except">Select all except</option></select> ' + target[0]
+        }
+        else {
+          filterPhrase = '<select class="dateSwitch"><option value="Add" selected>Add</option><option value="Remove all except">Remove all and Add</option><option value="Remove">Remove</option><option value="Select all except">Add all and Remove</option></select> ' + target[0]
+        }
+
         for (var i = 1; i < target.length; i++) {
           if (i == target.length - 1) {
             filterPhrase += " and "
@@ -1243,16 +1525,19 @@ export class DrillDownService {
         }
 
         var maxTarget = Math.max.apply(Math, target.map(function (o) { return Date.parse(o); }))
-        console.log(formatDate(maxTarget, 'yyyy-MM-dd', 'en'))
         var minTarget = Math.min.apply(Math, target.map(function (o) { return Date.parse(o); }))
-        console.log(formatDate(minTarget, 'yyyy-MM-dd', 'en'))
         var difference = (maxTarget - minTarget) / (1000 * 60 * 60 * 24)
 
 
-        if (target.every(date => that.trainableEntites["Date"].includes(date))) {
-          var reason = "**Ambiguity** \r\n I have two different interpretations of your action. \r\n Please select the action above that best represents your intentions of the command or I will use the first option as a default."
+        if (!recommendationPerformed &&
+          !that.alreadyProposed["RemoveAllDates"] &&
+          ((that.unitedStatesMap.datesSelect.every(date => target.includes(date)) && target.every(date => that.unitedStatesMap.datesSelect.includes(date))) ||
+            (that.unitedStatesMap.datesSelect.every(date => that.trainableEntites["Date"].includes(date)) && that.trainableEntites["Date"].every(date => that.unitedStatesMap.datesSelect.includes(date))))) {
 
-          var textRec = 'Remove all dates except '
+          //that.alreadyProposed["RemoveAllDates"] = true
+          recommendationPerformed = true;
+
+          var textRec = ''
           for (var textIndex in target) {
 
             if (parseInt(textIndex) == target.length - 1 && target.length != 1) {
@@ -1264,6 +1549,14 @@ export class DrillDownService {
             textRec += target[textIndex];
 
           }
+
+          var reason = "If there were already other Dates selected, would you have needed to remove them first?"
+
+          // Get Position of Ambiguity End
+          var pos1 = $('#Date_Filter').offset();
+          ambiguityPosition = { x: pos1.left + $('#Date_Filter').width(), y: pos1.top }
+          lineSpecification = "Dates"
+
           recommenderAction = {
             'Add': {
               'Visualizations': 'none',
@@ -1288,22 +1581,28 @@ export class DrillDownService {
               'StatesSelect': 'none'
             }
           }
-          recommondation.push({ value: "Remove all except", text: textRec, action: recommenderAction, id: actionSequence.length, reason: reason })
+          recommondation.push({ value: "Remove all except", text: textRec, action: recommenderAction, id: actionSequence.length, reason: reason, posted: false, specification: lineSpecification, position: ambiguityPosition })
         }
-        else if (target.length >= 3 && difference == target.length - 1) {
+        if (that.unitedStatesMap.legend_Values != "State" && that.unitedStatesMap.legend_Values != "Date" && !that.alreadyProposed["Date"] && !recommendationPerformed) {
+          //that.alreadyProposed["Date"] = true;
+          var reason = "Do you also want to add Date to the " + that.legendLabel + "?"
 
-          var reason = "**Ambiguity** \r\n Since your selected dates form a Range, I have two different interpretations of your action. \r\n Please select the action above that best represents your intentions of the command."
+          textRec = '<select class="legendSwitch"><option value="Add" selected>Add</option><option value="Remove">Remove</option></select> <b>' + "State</b> at <span class='trainLegend' style='color:" + this.fieldToColor['Legend'] + "'>" + that.legendLabel + "</span>."
 
-          var textRec = 'Add ' + formatDate(minTarget, 'yyyy-MM-dd', 'en') + " till " + formatDate(maxTarget, 'yyyy-MM-dd', 'en') + " to Dates"
+
+          // Get Position of Ambiguity End
+          var pos1 = $('#legend').offset();
+          ambiguityPosition = { x: pos1.left + 5, y: pos1.top + $('#legend').height() }
+          lineSpecification = "legend"
 
           recommenderAction = {
             'Add': {
               'Visualizations': 'none',
               'DataFields': 'none',
-              'Legend': 'none',
+              'Legend': 'Date',
               'Filter': 'none',
-              'State': 'none',
-              'Date': [String(formatDate(minTarget, 'yyyy-MM-dd', 'en') + " till " + formatDate(maxTarget, 'yyyy-MM-dd', 'en'))],
+              'State': "none",
+              'Date': 'none',
               'Aggregate': 'none',
               'Cumulative': 'none',
               'StatesSelect': 'none'
@@ -1314,44 +1613,68 @@ export class DrillDownService {
               'Legend': 'none',
               'Filter': 'none',
               'State': 'none',
-              'Date': ["All"],
+              'Date': 'none',
               'Aggregate': 'none',
               'Cumulative': 'none',
               'StatesSelect': 'none'
             }
           }
-          recommondation.push({ value: "Add", text: textRec, action: recommenderAction, id: actionSequence.length, reason: reason })
-
-        }
-        else {
-          console.log("No")
+          recommondation.push({ value: "Add", text: textRec, action: recommenderAction, id: actionSequence.length, reason: reason, posted: false, specification: lineSpecification, position: ambiguityPosition })
         }
 
-
-        newAction = {
-          'Add': {
-            'Visualizations': 'none',
-            'DataFields': 'none',
-            'Legend': 'none',
-            'Filter': 'none',
-            'State': 'none',
-            'Date': target,
-            'Aggregate': 'none',
-            'Cumulative': 'none',
-            'StatesSelect': 'none'
-          },
-          'Remove': {
-            'Visualizations': 'none',
-            'DataFields': 'none',
-            'Legend': 'none',
-            'Filter': 'none',
-            'State': 'none',
-            'Date': 'none',
-            'Aggregate': 'none',
-            'Cumulative': 'none',
-            'StatesSelect': 'none'
+        if (removeDate == "none") {
+          newAction = {
+            'Add': {
+              'Visualizations': 'none',
+              'DataFields': 'none',
+              'Legend': 'none',
+              'Filter': 'none',
+              'State': 'none',
+              'Date': target,
+              'Aggregate': 'none',
+              'Cumulative': 'none',
+              'StatesSelect': 'none'
+            },
+            'Remove': {
+              'Visualizations': 'none',
+              'DataFields': 'none',
+              'Legend': 'none',
+              'Filter': 'none',
+              'State': 'none',
+              'Date': 'none',
+              'Aggregate': 'none',
+              'Cumulative': 'none',
+              'StatesSelect': 'none'
+            }
           }
         }
+        else {
+          newAction = {
+            'Add': {
+              'Visualizations': 'none',
+              'DataFields': 'none',
+              'Legend': 'none',
+              'Filter': 'none',
+              'State': 'none',
+              'Date': target,
+              'Aggregate': 'none',
+              'Cumulative': 'none',
+              'StatesSelect': 'none'
+            },
+            'Remove': {
+              'Visualizations': 'none',
+              'DataFields': 'none',
+              'Legend': 'none',
+              'Filter': 'none',
+              'State': 'none',
+              'Date': ['All'],
+              'Aggregate': 'none',
+              'Cumulative': 'none',
+              'StatesSelect': 'none'
+            }
+          }
+        }
+
       }
 
       instances.push({
@@ -1408,16 +1731,19 @@ export class DrillDownService {
 
           previouslyAdded = previousSequence['Add']['Date']
 
-          var mediatedList = target
+          mediatedList = []
 
-          for (var index in mediatedList) {
-            var dates = mediatedList[index]
+          for (var index in target) {
+            var dates = target[index]
 
 
             if (previouslyAdded.indexOf(dates) != -1) {
               previouslyAdded.splice(previouslyAdded.indexOf(dates), 1)
-              target.splice(target.indexOf(dates), 1)
             }
+            else {
+              mediatedList.push(dates)
+            }
+            target = mediatedList
           }
         }
         else if (actionSequence.length >= 1 && actionSequence[actionSequence.length - 1]['Remove']['Date'] != "none" && actionSequence[actionSequence.length - 1]['Add']['Date'] == "none") {
@@ -1429,7 +1755,9 @@ export class DrillDownService {
 
 
           for (var index in previouslyAdded) {
+            if(!target.includes(mediatedList[index])){
             target.push(previouslyAdded[index])
+            }
           }
         }
 
@@ -1439,7 +1767,7 @@ export class DrillDownService {
 
 
         if (previouslyAdded.length > 0 && previousAdd) {
-          filterPhrase = '<select class="dateSwitch"><option value="Add" selected>Add</option><option value="Remove all except">Remove all except</option><option value="Remove">Remove</option><option value="Select all except">Select all except</option></select>  ' + previouslyAdded[0]
+          filterPhrase = '<select class="dateSwitch"><option value="Add" selected>Add</option><option value="Remove all except">Remove all and Add</option><option value="Remove">Remove</option><option value="Select all except">Add all and Remove</option></select>  ' + previouslyAdded[0]
           for (var i = 1; i < previouslyAdded.length; i++) {
             if (i == previouslyAdded.length - 1) {
               filterPhrase += " and "
@@ -1525,7 +1853,16 @@ export class DrillDownService {
 
         }
 
-        if (that.datesSelect.every(date => target.includes(date))) {
+        if (that.unitedStatesMap.datesSelect.length == 0 && (that.trainableEntites["Date"].length === 0 || !that.trainableEntites["Date"].some(date => target.includes(date)))) {
+
+          var reason = "Did you mean to remove all Dates from selected Dates?"
+          textRec = '<select class="dateSwitchAll"><option value="Add">Add</option><option value="Remove" selected>Remove</option></select> all Dates from selected Dates.'
+
+          // Get Position of Ambiguity End
+          var pos1 = $('#Date_Filter').offset();
+          ambiguityPosition = { x: pos1.left + $('#Date_Filter').width(), y: pos1.top }
+          lineSpecification = "Dates"
+
           recommenderAction = {
             'Add': {
               'Visualizations': 'none',
@@ -1550,14 +1887,12 @@ export class DrillDownService {
               'StatesSelect': 'none'
             }
           }
-          recommondation.push({ value: "Remove all", text: "Remove all dates.", action: recommenderAction, id: actionSequence.length })
+          recommondation.push({ value: "Remove all", text: textRec, action: recommenderAction, id: actionSequence.length, reason: reason, posted: false, specification: lineSpecification, position: ambiguityPosition })
         }
-        else if (target.every(date => that.trainableEntites["Date"].includes(date))) {
-          var reason = "**Ambiguity** \r\n I have two different interpretations of your action. \r\n Please select the action above that best represents your intentions of the command or I will use the first option as a default."
-  
-          var textRec = "Add all dates except "
+        else if (that.dates.every(date => (target.includes(date) || that.unitedStatesMap.datesSelect.includes(date)) && !(target.includes(date) && that.unitedStatesMap.datesSelect.includes(date)))) {
+          var textRec = ""
           for (var textIndex in target) {
-  
+
             if (parseInt(textIndex) == target.length - 1 && target.length != 1) {
               textRec += " and "
             }
@@ -1565,8 +1900,15 @@ export class DrillDownService {
               textRec += ", "
             }
             textRec += target[textIndex];
-  
           }
+
+          var reason = "Did you mean to add all Dates and then remove ***" + textRec + "*** from selected Dates?"
+
+          // Get Position of Ambiguity End
+          var pos1 = $('#Date_Filter').offset();
+          ambiguityPosition = { x: pos1.left + $('#Date_Filter').width(), y: pos1.top }
+          lineSpecification = "Dates"
+
           recommenderAction = {
             'Add': {
               'Visualizations': 'none',
@@ -1591,7 +1933,7 @@ export class DrillDownService {
               'StatesSelect': 'none'
             }
           }
-          recommondation.push({ value: "Remove all except", text: textRec, action: recommenderAction, id: actionSequence.length, reason: reason })
+          recommondation.push({ value: "Remove all except", text: textRec, action: recommenderAction, id: actionSequence.length, reason: reason, posted: false, specification: lineSpecification, position: ambiguityPosition })
         }
       }
 
@@ -1600,12 +1942,6 @@ export class DrillDownService {
         'id': actionSequence.length
       });
       actionSequence.push(newAction)
-
-
-
-
-      
-
     }
     else if (action == "ChangeAggregate") {
       newAction = {
@@ -1740,6 +2076,13 @@ export class DrillDownService {
         }
       }
 
+      if (typeof that.unusedEntities["StatesSelect"] != 'undefined') {
+        var unusedIndex = that.unusedEntities["StatesSelect"].indexOf(target)
+        if (unusedIndex != -1) {
+          that.unusedEntities["StatesSelect"].splice(unusedIndex, 1)
+        }
+      }
+
 
       if (actionSequence.length >= 1 && actionSequence[actionSequence.length - 1]['Add']['StatesSelect'] != "none") {
         previousSequence = actionSequence.pop()
@@ -1748,7 +2091,7 @@ export class DrillDownService {
       }
       else {
         instances.push({
-          'text': "Combine states through <span class='groupLegend' style='font-weight:bold;'>" + target + "</span>.",
+          'text': "Show selected states <span class='groupLegend' style='font-weight:bold;'>" + target + "</span>.",
           'id': actionSequence.length
         });
         actionSequence.push(newAction)

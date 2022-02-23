@@ -6,7 +6,6 @@ import { AppRoutingModule } from './app-routing.module';
 import { AppComponent } from './app.component';
 import { UnitedStatesComponent } from './unitedstates/unitedstates.component';
 import { UnitedStatesMapComponent} from './unitedstates-map/unitedstates-map.component'
-import { MetricSummaryComponent } from './metric-summary/metric-summary.component';
 import { DrillDownService } from './shared/drilldown.services';
 import { FunctionService } from './shared/function.services';
 import { SimpleService } from './shared/simple.services';
@@ -36,7 +35,6 @@ declare var $: any;
     AppComponent,
     UnitedStatesComponent,
     UnitedStatesMapComponent,
-    MetricSummaryComponent,
   ],
   imports: [
     BrowserModule,

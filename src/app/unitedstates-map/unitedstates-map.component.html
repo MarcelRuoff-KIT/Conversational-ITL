@@ -1,19 +1,12 @@
-<div id="Header" class="row" style="float: right;margin-right: 15px; position: relative; z-index: 1100;">
+<div id="Header" class="row" style="width:100% ;float: right;margin-right: 15px; position: relative; z-index: 1100;">
 
-    <select id = "Cumulative" name="Cumulative">
-        <option value="Total">Total</option>
-        <option value="New">New</option>
-      </select>
-    <p id="cumulateText" style="width: 280px;"> &nbsp; Tests, Cases, Deaths, ...</p>
+    <div id="loading" style="width: 20%;top: calc(15vh);left: 40%;position: relative;display: none;"><img src="../../assets/images/loader.gif" style="width:200px"></div>
 
+    <div id="requiredVisPar" style="width: 20%;top: calc(15vh);left: 45%;position: relative;display: none; background-color:white; padding:10px"></div>
 
-    
+    <div id="followUpNotification" (mouseover)="highlightMessage()" (mouseout)="undoHighlight()" style="width: 20%;top: calc(15vh);left: 45%;position: absolute; display: none; background-color:white; padding:10px; border:1px solid black;box-shadow: lightcoral 5px 5px 10px 0px;">You received a follow-up question in the chat interface! <br/> <button id = timer (click) = "closeFollowUp()" style="text-align: right;">Ok</button></div>
 
-    <div style="width: 500px;"></div>
-
-    <div id="loading" style="width: 20%;top: 180px;left: 25%;position: absolute;display: none;"><img src="../../assets/images/loader.gif" style="width:200px"></div>
-
-    <div id="testSVG" #testSVG  style="height: 100px; width:125px; overflow-x: hidden; position: absolute; left: 540px; top: 0px; z-index: 1000"></div>
+    <div id="testSVG" #testSVG  style="height: 100px; width:125px; overflow-x: hidden; position: absolute; left: 85%; top: 10px; z-index: 1000"></div>
 
 
 </div>
