@@ -731,6 +731,10 @@ export class DrillDownService {
 
       var legendSelect = that.unitedStatesMap.legend_Values ? that.unitedStatesMap.legend_Values + "(s)" : "";
 
+      if(key == "Population"){
+        legendSelect = "State(s)"
+      }
+
       if (target[key][0] != "none" && target[key][0] != that.minSlider[key] && target[key][1] != "none" && target[key][1] != "max" && target[key][1] != that.maxSlider[key]) {
         filterPhrase = 'Select thoes ' + legendSelect + ' with ' + key
         filterPhrase += " more than " + target[key][0].toLocaleString( "en-US" ) + " and less than " + target[key][1].toLocaleString( "en-US" )

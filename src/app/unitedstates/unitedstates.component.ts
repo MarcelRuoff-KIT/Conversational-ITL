@@ -792,6 +792,9 @@ export class UnitedStatesComponent implements OnInit, OnDestroy, AfterViewInit, 
         if ((<any>event).data.channelData.clientTimestamp != this.componentMessage) {
           this.componentMessage = (<any>event).data.channelData.clientTimestamp;
 
+          this.drillDownService.post("NLInput", (<any>event).data.text, this, this.userID, this.task, this.treatment, 1, this.trainingMode)
+
+
 
           if ((<any>event).data.channelData.speech != null) {
             //console.log("speech");
@@ -2004,7 +2007,12 @@ export class UnitedStatesComponent implements OnInit, OnDestroy, AfterViewInit, 
           this["style"]["display"] = "none"
           that.communicateToBot("I set the default action for the ambiguity")
         }
+      });
 
+      $("img[class^='attention']").each(function (i, el) {
+        if (this["style"]["display"] != "none") {
+          this["style"]["display"] = "none"
+        }
       });
 
       if (this.noSpeechInteraction) {
@@ -2173,7 +2181,7 @@ export class UnitedStatesComponent implements OnInit, OnDestroy, AfterViewInit, 
 
   checkforHover(target, event) {
 
-    if (target == this.lineSpecification && this.trainingMode && this.giveHover) {
+    if (target == this.lineSpecification && this.trainingMode && this.giveHover && this.treatment == "1") {
 
       this.drillDownService.post("HoverRecommendation", this.lineSpecification, this, this.userID, this.task, this.treatment, 0, this.trainingMode)
 

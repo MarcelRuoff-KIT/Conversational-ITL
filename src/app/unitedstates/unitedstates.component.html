@@ -207,11 +207,11 @@
           <div class="col closed" id="Cases_Filter">
             <div class="filterTitle">
               <div class="filterContent">
-                <input type="text" id="Cases-From" size="6" (change)="this.inputCheck($event)" title="From">
-                <p><b>Cases</b></p><input type="text" id="Cases-To" size="6" (change)="this.inputCheck($event)"
-                  title="To">
+                <input type="text" id="Cases-From" size="6" (input)="this.inputCheck($event)" title="More Than">
+                <p><b>Cases</b></p><input type="text" id="Cases-To" size="6" (input)="this.inputCheck($event)"
+                  title="Less Than">
                 <kendo-rangeslider id="Cases-Slider" [tickPlacement]="tickPlacement" [style.width]="'85%'"
-                  [min]="minSlider['Cases']" [max]="maxSlider['Cases']" [smallStep]="1"
+                  [min]="minSlider['Cases']" [max]="maxSlider['Cases']"  [smallStep]="1000"
                   [(ngModel)]="filterValue['Cases']" (valueChange)="mouseFilterChange($event, 'Cases')">
                 </kendo-rangeslider>
               </div>
@@ -225,11 +225,11 @@
           <div class="col closed" id="Population_Filter">
             <div class="filterTitle">
               <div class="filterContent">
-                <input type="text" id="Population-From" size="6" (change)="this.inputCheck($event)" title="From">
-                <p><b>Population</b></p><input type="text" id="Population-To" size="6" (change)="this.inputCheck($event)"
-                  title="To">
+                <input type="text" id="Population-From" size="6" (input)="this.inputCheck($event)" title="More Than">
+                <p><b>Population</b></p><input type="text" id="Population-To" size="6" (input)="this.inputCheck($event)"
+                  title="Less Than">
                 <kendo-rangeslider id="Population-Slider" [tickPlacement]="tickPlacement" [style.width]="'85%'"
-                  [min]="minSlider['Population']" [max]="maxSlider['Population']" [smallStep]="1"
+                  [min]="minSlider['Population']" [max]="maxSlider['Population']" [smallStep]="1000"
                   [(ngModel)]="filterValue['Population']" (valueChange)="mouseFilterChange($event, 'Population')">
                 </kendo-rangeslider>
               </div>
@@ -245,11 +245,11 @@
             <div class="filterTitle">
               <div class="filterContent">
 
-                <input type="text" id="Tests-From" size="6" (change)="this.inputCheck($event)" title="From">
-                <p><b>Tests</b></p><input type="text" id="Tests-To" size="6" (change)="this.inputCheck($event)"
-                  title="To">
+                <input type="text" id="Tests-From" size="6" (input)="this.inputCheck($event)" title="More Than">
+                <p><b>Tests</b></p><input type="text" id="Tests-To" size="6" (input)="this.inputCheck($event)"
+                  title="Less Than">
                 <kendo-rangeslider id="Tests-Slider" [tickPlacement]="tickPlacement" [style.width]="'85%'"
-                  [min]="minSlider['Tests']" [max]="maxSlider['Tests']" [smallStep]="1"
+                  [min]="minSlider['Tests']" [max]="maxSlider['Tests']" [smallStep]="1000"
                   [(ngModel)]="filterValue['Tests']" (valueChange)="mouseFilterChange($event, 'Tests')">
                 </kendo-rangeslider>
               </div>
@@ -264,11 +264,11 @@
             <div class="filterTitle">
               <div class="filterContent">
 
-                <input type="text" id="Deaths-From" size="6" (change)="this.inputCheck($event)" title="From">
-                <p><b>Deaths</b></p><input type="text" id="Deaths-To" size="6" (change)="this.inputCheck($event)"
-                  title="To">
+                <input type="text" id="Deaths-From" size="6" (input)="this.inputCheck($event)" title="More Than">
+                <p><b>Deaths</b></p><input type="text" id="Deaths-To" size="6" (input)="this.inputCheck($event)"
+                  title="Less Than">
                 <kendo-rangeslider id="Deaths-Slider" [tickPlacement]="tickPlacement" [style.width]="'85%'"
-                  [min]="minSlider['Deaths']" [max]="maxSlider['Deaths']" [smallStep]="1"
+                  [min]="minSlider['Deaths']" [max]="maxSlider['Deaths']" [smallStep]="1000"
                   [(ngModel)]="filterValue['Deaths']" (valueChange)="mouseFilterChange($event, 'Deaths')">
                 </kendo-rangeslider>
               </div>
@@ -283,11 +283,11 @@
             <div class="filterTitle">
               <div class="filterContent">
 
-                <input type="text" id="FullyVaccinated-From" size="6" (change)="this.inputCheck($event)" title="From">
+                <input type="text" id="FullyVaccinated-From" size="6" (input)="this.inputCheck($event)" title="More Than">
                 <p><b>FullyVaccinated</b></p><input type="text" id="FullyVaccinated-To" size="6"
-                  (change)="this.inputCheck($event)" title="To">
+                  (input)="this.inputCheck($event)" title="Less Than">
                 <kendo-rangeslider id="FullyVaccinated-Slider" [tickPlacement]="tickPlacement" [style.width]="'85%'"
-                  [min]="minSlider['FullyVaccinated']" [max]="maxSlider['FullyVaccinated']" [smallStep]="1"
+                  [min]="minSlider['FullyVaccinated']" [max]="maxSlider['FullyVaccinated']" [smallStep]="1000"
                   [(ngModel)]="filterValue['FullyVaccinated']"
                   (valueChange)="mouseFilterChange($event, 'FullyVaccinated')"></kendo-rangeslider>
 
@@ -303,11 +303,11 @@
             <div class="filterTitle">
               <div class="filterContent">
 
-                <input type="text" id="PartialVaccinated-From" size="6" (change)="this.inputCheck($event)" title="From">
+                <input type="text" id="PartialVaccinated-From" size="6" (input)="this.inputCheck($event)" title="More Than">
                 <p><b>PartialVaccinated</b></p><input type="text" id="PartialVaccinated-To" size="6"
-                  (change)="this.inputCheck($event)" title="To">
+                  (input)="this.inputCheck($event)" title="Less Than">
                 <kendo-rangeslider id="PartialVaccinated-Slider" [tickPlacement]="tickPlacement" [style.width]="'85%'"
-                  [min]="minSlider['PartialVaccinated']" [max]="maxSlider['PartialVaccinated']" [smallStep]="1"
+                  [min]="minSlider['PartialVaccinated']" [max]="maxSlider['PartialVaccinated']" [smallStep]="1000"
                   [(ngModel)]="filterValue['PartialVaccinated']"
                   (valueChange)="mouseFilterChange($event, 'PartialVaccinated')"></kendo-rangeslider>
               </div>
@@ -365,7 +365,7 @@
     </div>
   </div>
   <div id="trainingModeInter"style=" width: 100%;height: 100%; background-color: #eeeeeecc; position: absolute;top: 0px;left: 0px; z-index: 2000; display: none; cursor:not-allowed" ></div>
-  <div id="interactionBlocker"style="display:none; width: 100%;height: 100%; background-color: #eeeeeecc; opacity: 0; position: absolute;top: 0px;left: 0px; z-index: 2000; cursor:not-allowed;" ></div>
+  <div id="interactionBlocker"style="display:block; width: 100%;height: 100%; background-color: #eeeeeecc; opacity: 0; position: absolute;top: 0px;left: 0px; z-index: 2000; cursor:not-allowed;" ></div>
 
 </div>
 <div class="row">
