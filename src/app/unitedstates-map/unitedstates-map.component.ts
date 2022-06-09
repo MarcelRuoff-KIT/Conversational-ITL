@@ -53,7 +53,7 @@ export class UnitedStatesMapComponent implements OnInit, AfterViewInit {
 
   @Input() filterValue = { Date: [new Date("2020-01-21").getTime(), new Date("2021-06-30").getTime()], Tests: [0, false], Cases: [0, false], Deaths: [0, false], Population: [0, false], PartialVaccinated: [0, false], FullyVaccinated: [0, false] };
 
-  baseURL = "https://interactive-analytics.org:3001/"; //"http://127.0.0.1:5000/"
+  baseURL = "https://interactive-analytics.org:3001/"; //"http://127.0.0.1:5000/" // 
   hostElement; // Native element hosting the SVG container
   svg; // Top level SVG element
   g; // SVG Group element

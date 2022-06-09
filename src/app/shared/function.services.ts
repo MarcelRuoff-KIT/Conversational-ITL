@@ -488,7 +488,9 @@ export class FunctionService {
 
   public changeFilter(that, filter) {
 
-    var key = Object.keys(filter)[0]
+    for(var i = 0; i < Object.keys(filter).length; i++){
+
+    var key = Object.keys(filter)[i]
     that.addElementtoITL('ChangeFilter', filter);
 
     if (key != "Date" && key != "State") {
@@ -543,7 +545,7 @@ export class FunctionService {
     }
 
     that.unitedStatesMap.filterValue = that.filterValue;
-
+  }
     
   }
 

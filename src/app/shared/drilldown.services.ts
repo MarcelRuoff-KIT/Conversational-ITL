@@ -53,7 +53,7 @@ export class DrillDownService {
     }
 
     var datetime = new Date().toISOString().slice(0, 23).replace('T', ' ');
-
+/*
     this.http.post<any>('https://interactive-analytics.org:8443/interactionLog', { sessionID: limeID, interaction: interactionType, parameters: JSON.stringify(parameters), date: datetime, modality: modality, task: task, treatment: treatment, mode: mode, configuration: JSON.stringify({ Visualization: configuration, Training: that.actionSequence, Recommendation: that.recommendationList }) }).subscribe({
       next: data => {
         console.log(data);
@@ -63,6 +63,7 @@ export class DrillDownService {
         console.error('There was an error!', error);
       }
     })
+    */
   }
 
   public postSpeech(limeID, task, treatment, speech, text, state) {

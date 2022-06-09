@@ -198,6 +198,14 @@ export class UnitedStatesComponent implements OnInit, OnDestroy, AfterViewInit, 
       this.functionService.addDate(this, ["2020-12-31", "2021-03-31", "2021-06-30"])
 
     }
+    if (this.task == "7") {
+      this.functionService.addLegend(this, "Date");
+      this.functionService.addDate(this, ["All"])
+      this.functionService.changeVisualization(this, "scatter")
+      this.functionService.addMetric(this, ["FullyVaccinated", "Deaths"]);
+      this.functionService.removeState(this, ["All"])
+      this.functionService.addState(this, ["North Carolina"])
+    }
     this.update()
 
 
@@ -254,8 +262,8 @@ export class UnitedStatesComponent implements OnInit, OnDestroy, AfterViewInit, 
           window.dispatchEvent(event);
 
           if((<any>event).data["type"] != "message" || (<any>event).data["text"] != "Processing..."){
-            $("li[class$='from-bot']").each(function (i, el) {
-              if (this["innerText"].indexOf("Bot said:Processing") !== -1) {
+            $("div[class$='webchat__stacked-layout__content']").each(function (i, el) {
+              if (this["innerText"].indexOf("Processing…") !== -1) {
                 this["style"]["display"] = "none";
               }
             });
@@ -781,7 +789,7 @@ export class UnitedStatesComponent implements OnInit, OnDestroy, AfterViewInit, 
         }
         else if ((<any>event).data.name == "DemonstrationEnded") {
           this.drillDownService.post("DemonstrationEnded", (<any>event).data.value, this, this.userID, this.task, this.treatment, 1, this.trainingMode)
-          this.finishTask((<any>event).data.value)
+          //this.finishTask((<any>event).data.value)
           parent.postMessage("DemonstrationFinished", "*")
         }
 
@@ -1583,6 +1591,8 @@ export class UnitedStatesComponent implements OnInit, OnDestroy, AfterViewInit, 
       "FullyVaccinated": false,
     }
 
+    this.initialState = JSON.parse(JSON.stringify(this.initialState))
+
     this.unusedEntities = {}
 
     for (var tIndex in this.trainableEntites) {
@@ -1968,13 +1978,15 @@ export class UnitedStatesComponent implements OnInit, OnDestroy, AfterViewInit, 
       that.functionService.addDate(that, initialState['Dates'])
     }
 
-    that.functionService.changeFilter(that, initialState["Filters"])
 
     //that.functionService.changeAggregate(that, initialState["Aggregate"])
 
     that.functionService.changeStatesSelect(that, initialState["GroupBy"])
 
     that.functionService.changeCumulative(that, initialState["Cumulative"])
+
+    that.functionService.changeFilter(that, initialState["Filters"])
+
 
     that.resetProzess = false;
 
